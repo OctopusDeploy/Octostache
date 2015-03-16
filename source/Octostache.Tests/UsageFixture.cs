@@ -68,7 +68,7 @@ namespace Octostache.Tests
             }
 
             Console.WriteLine(iterations);
-            Assert.That(iterations, Is.GreaterThan(100000));
+            Assert.That(iterations, Is.GreaterThan(10000));
         }
 
         [Test]
