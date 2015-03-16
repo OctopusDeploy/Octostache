@@ -12,7 +12,7 @@
     <licenseUrl>https://github.com/OctopusDeploy/Octostache/blob/master/LICENSE</licenseUrl>
   </metadata>
   <dependencies>
-    <dependencies id="MarkdownSharp" version="" />
-    <dependencies id="Sprache" version="" />
+    <dependency id="MarkdownSharp" version="" />
+    <dependency id="Sprache" version="" />
   </dependencies>
 </package>
