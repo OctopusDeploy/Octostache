@@ -71,6 +71,7 @@
     <Compile Include="Templates\TemplateToken.cs" />
     <Compile Include="Templates\TextToken.cs" />
     <Compile Include="VariableDictionary.cs" />
+    <Compile Include="VariablesFileFormatter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
