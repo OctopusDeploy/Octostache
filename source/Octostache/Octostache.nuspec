@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd" xmlns:octopus="http://octopus.org">
+  <metadata>
+    <id>Octostache</id>
+    <version>1.0.0.0</version>
+    <authors>Octopus Deploy</authors>
+    <description>Variable substitution syntax used in Octopus Deploy.</description>
+    <releaseNotes></releaseNotes>
+    <language>en-US</language>
+    <iconUrl>http://i.octopusdeploy.com/resources/Avatar3-32x32.png</iconUrl>
+    <projectUrl>https://github.com/OctopusDeploy/Octostache/</projectUrl>
+    <licenseUrl>https://github.com/OctopusDeploy/Octostache/blob/master/LICENSE</licenseUrl>
+  </metadata>
+  <dependencies>
+    <dependencies id="MarkdownSharp" version="" />
+    <dependencies id="Sprache" version="" />
+  </dependencies>
+</package>
