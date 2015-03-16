@@ -13,12 +13,13 @@ Usage is simple: install **Octostache** from NuGet.org, then create a `VariableD
 ```csharp
 var variables = new VariableDictionary();
 variables.Set("Server", "Web01");
-variables.Set("Port" "10933");
-variables.Set("Url", "http://#{Server | ToLower}/{Port}");
+variables.Set("Port", "10933");
+variables.Set("Url", "http://#{Server | ToLower}:#{Port}");
 
 var url = variables.Get("Url");               // http://web01:10933
-var raw = variables.GetRaw("Url");            // http://#{Server | ToLower}/{Port}
+var raw = variables.GetRaw("Url");            // http://#{Server | ToLower}:#{Port}
 var eval = variables.Evaluate("#{Url}/foo");  // http://web01:10933/foo
 ```
 
 More examples can be found in [UsageFixture](https://github.com/OctopusDeploy/Octostache/blob/master/source/Octostache.Tests/UsageFixture.cs). 
+
