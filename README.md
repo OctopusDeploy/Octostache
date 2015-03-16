@@ -17,7 +17,7 @@ variables.Set("Port" "10933");
 variables.Set("Url", "http://#{Server | ToLower}/{Port}");
 
 var url = variables.Get("Url");               // http://web01:10933
-var raw = variables.GetRaw("Url);             // http://#{Server | ToLower}/{Port}
+var raw = variables.GetRaw("Url");            // http://#{Server | ToLower}/{Port}
 var eval = variables.Evaluate("#{Url}/foo");  // http://web01:10933/foo
 ```
 
