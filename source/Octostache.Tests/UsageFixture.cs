@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
@@ -244,6 +245,29 @@ namespace Octostache.Tests
             Assert.AreEqual("http://web01:10933", url);
             Assert.AreEqual("http://#{Server | ToLower}:#{Port}", raw);
             Assert.AreEqual("http://web01:10933/foo", eval);
+        }
+
+        [Test]
+        public void ShouldSupportRoundTripping()
+        {
+            var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                {"Name", "Web01"},
+                {"Port", "10933"},
+                {"Hello world", "This is a \"string\"!@#$"}
+            };
+
+            using (var ms = new MemoryStream())
+            {
+                VariablesFileFormatter.WriteTo(variables, ms);
+                ms.Position = 0;
+
+                variables = VariablesFileFormatter.ReadFrom(ms);
+
+                Assert.That(variables["Name"], Is.EqualTo("Web01"));
+                Assert.That(variables["Port"], Is.EqualTo("10933"));
+                Assert.That(variables["Hello world"], Is.EqualTo("This is a \"string\"!@#$"));
+            }
         }
 
         static string Evaluate(string template, IDictionary<string, string> variables)
