@@ -15,4 +15,9 @@
       <dependency id="Sprache" version="" />
     </dependencies>
   </metadata>
+  <files>
+    <file src="bin\Release\Octostache.dll" target="lib/net40" />
+    <file src="bin\Release\Octostache.xml" target="lib/net40" />
+    <file src="bin\Release\Octostache.pdb" target="lib/net40" />
+  </files>
 </package>
