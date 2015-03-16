@@ -229,6 +229,23 @@ namespace Octostache.Tests
             Assert.AreEqual("####### world", result);
         }
 
+        [Test]
+        public void DocumentationIntroduction()
+        {
+            var variables = new VariableDictionary();
+            variables.Set("Server", "Web01");
+            variables.Set("Port", "10933");
+            variables.Set("Url", "http://#{Server | ToLower}:#{Port}");
+
+            var url = variables.Get("Url");
+            var raw = variables.GetRaw("Url");
+            var eval = variables.Evaluate("#{Url}/foo");
+
+            Assert.AreEqual("http://web01:10933", url);
+            Assert.AreEqual("http://#{Server | ToLower}:#{Port}", raw);
+            Assert.AreEqual("http://web01:10933/foo", eval);
+        }
+
         static string Evaluate(string template, IDictionary<string, string> variables)
         {
             var dictionary = new VariableDictionary(new Dictionary<string, string>(variables, StringComparer.OrdinalIgnoreCase));
