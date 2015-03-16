@@ -10,7 +10,7 @@ This library contains the code for parsing and evaluating these variable express
 
 Usage is simple: install **Octostache** from NuGet.org, then create a `VariableDictionary`:
 
-```
+```csharp
 var variables = new VariableDictionary();
 variables.Set("Server", "Web01");
 variables.Set("Port" "10933");
@@ -21,3 +21,4 @@ var raw = variables.GetRaw("Url);             // http://#{Server | ToLower}/{Por
 var eval = variables.Evaluate("#{Url}/foo");  // http://web01:10933/foo
 ```
 
+More examples can be found in [UsageFixture](https://github.com/OctopusDeploy/Octostache/blob/master/source/Octostache.Tests/UsageFixture.cs). 
