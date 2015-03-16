@@ -8,23 +8,23 @@ namespace Octostache
 {
     public class VariableDictionary
     {
-        readonly IDictionary<string, string> variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        readonly Dictionary<string, string> variables;
 
-        public VariableDictionary()
+        public VariableDictionary() : this(null)
         {
         }
 
-        public VariableDictionary(IEnumerable<KeyValuePair<string, string>> variables)
+        public VariableDictionary(Dictionary<string, string> variables)
         {
-            if (variables == null)
+            variables = variables ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            if (variables.Comparer != StringComparer.OrdinalIgnoreCase)
             {
-                return;
+                // Rather than copying/creating a new dictionary (slow), force them to set the comparer properly
+                throw new Exception("The dictionary passed into VariableDictionary must have a comparer set to StringComparer.OrdinalIgnoreCase, to ensure case-insensitive matches.");
             }
 
-            foreach (var variable in variables)
-            {
-                Set(variable.Key, variable.Value);
-            }
+            this.variables = variables;
         }
 
         /// <summary>
@@ -203,16 +203,6 @@ namespace Octostache
         public List<string> GetNames()
         {
             return variables.Keys.ToList();
-        }
-
-        /// <summary>
-        /// Sets a variable value.
-        /// </summary>
-        /// <param name="name">The name of the variable.</param>
-        /// <param name="value">The value of the variable.</param>
-        public void Add(string name, string value)
-        {
-            Set(name, value);
         }
     }
 }

@@ -2,16 +2,16 @@
 {
     class Identifier : SymbolExpressionStep
     {
-        readonly string _text;
+        readonly string text;
 
         public Identifier(string text)
         {
-            _text = text;
+            this.text = text;
         }
 
         public string Text
         {
-            get { return _text; }
+            get { return text; }
         }
 
         public override string ToString()

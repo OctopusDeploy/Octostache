@@ -12,16 +12,16 @@ namespace Octostache.Templates
     /// </summary>
     class SymbolExpression : ContentExpression
     {
-        readonly SymbolExpressionStep[] _steps;
+        readonly SymbolExpressionStep[] steps;
 
         public SymbolExpression(IEnumerable<SymbolExpressionStep> steps)
         {
-            _steps = steps.ToArray();
+            this.steps = steps.ToArray();
         }
 
         public SymbolExpressionStep[] Steps
         {
-            get { return _steps; }
+            get { return steps; }
         }
 
         public override string ToString()

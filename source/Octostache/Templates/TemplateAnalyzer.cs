@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Octostache.Templates
 {
-    public static class TemplateAnalyzer
+    static class TemplateAnalyzer
     {
         public static IEnumerable<string> GetDependencies(Template template)
         {

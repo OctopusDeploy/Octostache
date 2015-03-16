@@ -8,30 +8,30 @@ namespace Octostache.Templates
     /// </summary>
     class ConditionalToken : TemplateToken
     {
-        readonly SymbolExpression _expression;
-        readonly TemplateToken[] _truthyTemplate;
-        readonly TemplateToken[] _falsyTemplate;
+        readonly SymbolExpression expression;
+        readonly TemplateToken[] truthyTemplate;
+        readonly TemplateToken[] falsyTemplate;
 
         public ConditionalToken(SymbolExpression expression, IEnumerable<TemplateToken> truthyBranch, IEnumerable<TemplateToken> falsyBranch)
         {
-            _expression = expression;
-            _truthyTemplate = truthyBranch.ToArray();
-            _falsyTemplate = falsyBranch.ToArray();
+            this.expression = expression;
+            truthyTemplate = truthyBranch.ToArray();
+            falsyTemplate = falsyBranch.ToArray();
         }
 
         public SymbolExpression Expression
         {
-            get { return _expression; }
+            get { return expression; }
         }
 
         public TemplateToken[] TruthyTemplate
         {
-            get { return _truthyTemplate; }
+            get { return truthyTemplate; }
         }
 
         public TemplateToken[] FalsyTemplate
         {
-            get { return _falsyTemplate; }
+            get { return falsyTemplate; }
         }
 
         public override string ToString()

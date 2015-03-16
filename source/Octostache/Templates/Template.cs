@@ -3,23 +3,23 @@ using System.Linq;
 
 namespace Octostache.Templates
 {
-    public class Template
+    class Template
     {
-        readonly TemplateToken[] _tokens;
+        readonly TemplateToken[] tokens;
 
         public Template(IEnumerable<TemplateToken> tokens)
         {
-            _tokens = tokens.ToArray();
+            this.tokens = tokens.ToArray();
         }
 
         public TemplateToken[] Tokens
         {
-            get { return _tokens; }
+            get { return tokens; }
         }
 
         public override string ToString()
         {
-            return string.Join("", _tokens.Cast<object>());
+            return string.Concat(tokens.Cast<object>());
         }
     }
 }

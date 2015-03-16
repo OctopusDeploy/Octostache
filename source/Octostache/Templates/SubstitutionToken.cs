@@ -5,7 +5,6 @@
     /// </summary>
     class SubstitutionToken : TemplateToken
     {
-        readonly SubstitutionToken substitution;
         readonly ContentExpression expression;
 
         public SubstitutionToken(ContentExpression expression)

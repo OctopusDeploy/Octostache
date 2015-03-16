@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Octostache.Templates
 {
-    public static class TemplateEvaluator
+    static class TemplateEvaluator
     {
         public static void Evaluate(Template template, Binding properties, TextWriter output, bool echoMissingTokens = false)
         {

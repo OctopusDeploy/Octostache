@@ -5,30 +5,30 @@ namespace Octostache.Templates
 {
     class RepetitionToken : TemplateToken
     {
-        readonly SymbolExpression _collection;
-        readonly Identifier _enumerator;
-        readonly TemplateToken[] _template;
+        readonly SymbolExpression collection;
+        readonly Identifier enumerator;
+        readonly TemplateToken[] template;
 
         public RepetitionToken(SymbolExpression collection, Identifier enumerator, IEnumerable<TemplateToken> template)
         {
-            _collection = collection;
-            _enumerator = enumerator;
-            _template = template.ToArray();
+            this.collection = collection;
+            this.enumerator = enumerator;
+            this.template = template.ToArray();
         }
 
         public SymbolExpression Collection
         {
-            get { return _collection; }
+            get { return collection; }
         }
 
         public Identifier Enumerator
         {
-            get { return _enumerator; }
+            get { return enumerator; }
         }
 
         public TemplateToken[] Template
         {
-            get { return _template; }
+            get { return template; }
         }
 
         public override string ToString()

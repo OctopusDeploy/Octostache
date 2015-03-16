@@ -2,7 +2,7 @@
 
 namespace Octostache.Templates
 {
-    public abstract class TemplateToken : IInputToken
+    abstract class TemplateToken : IInputToken
     {
         public Position InputPosition { get; set; }
     }

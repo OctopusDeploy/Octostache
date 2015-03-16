@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Octostache.Templates
 {
-    public static class PropertyListBinder
+    static class PropertyListBinder
     {
         public static Binding CreateFrom(IDictionary<string, string> properties)
         {

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Octostache.Templates;
 
 namespace Octostache.Tests
 {
@@ -42,6 +40,15 @@ namespace Octostache.Tests
         {
             var result = ParseVariables(variableDefinitions).Evaluate(template);
             Assert.That(result, Is.EqualTo(expectedResult));
+        }
+
+        [Test]
+        public void Required()
+        {
+            var variables = new VariableDictionary();
+            variables.Set("FirstName", "Paul");
+            Assert.That(variables.Get("FirstName"), Is.EqualTo("Paul"));
+            Assert.Throws<ArgumentOutOfRangeException>(() => variables.Require("LastName"));
         }
 
         [Test]
@@ -224,13 +231,13 @@ namespace Octostache.Tests
 
         static string Evaluate(string template, IDictionary<string, string> variables)
         {
-            var dictionary = new VariableDictionary(variables);
+            var dictionary = new VariableDictionary(new Dictionary<string, string>(variables, StringComparer.OrdinalIgnoreCase));
             return dictionary.Evaluate(template);
         }
 
         private static VariableDictionary ParseVariables(string variableDefinitions)
         {
-            var variables = new Dictionary<string, string>();
+            var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var items = variableDefinitions.Split(';');
             foreach (var item in items)

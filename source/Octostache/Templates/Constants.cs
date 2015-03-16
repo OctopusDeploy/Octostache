@@ -1,6 +1,6 @@
 ﻿namespace Octostache.Templates
 {
-    internal class Constants
+    class Constants
     {
         public static class Each
         {

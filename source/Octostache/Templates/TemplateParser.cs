@@ -7,7 +7,7 @@ using Sprache;
 
 namespace Octostache.Templates
 {
-    public static class TemplateParser
+    static class TemplateParser
     {
         static readonly Parser<Identifier> Identifier = Parse
             .Char(c => char.IsLetter(c) || char.IsDigit(c) || c == '_' || c == '-' || c == ':', "identifier")

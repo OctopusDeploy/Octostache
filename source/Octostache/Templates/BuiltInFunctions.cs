@@ -6,14 +6,14 @@ using MarkdownSharp;
 
 namespace Octostache.Templates
 {
-    public static class BuiltInFunctions
+    static class BuiltInFunctions
     {
-        static readonly IDictionary<string, Func<string, string>> _extensions = new Dictionary<string, Func<string, string>>();
+        static readonly IDictionary<string, Func<string, string>> extensions = new Dictionary<string, Func<string, string>>(StringComparer.OrdinalIgnoreCase);
  
         // Configuration shoudl be done at startup, this isn't thread-safe.
         public static void Register(string name, Func<string, string> implementation)
         {
-            _extensions.Add(name.ToLowerInvariant(), implementation);
+            extensions.Add(name.ToLowerInvariant(), implementation);
         }
 
         public static string InvokeOrNull(string function, string[] args)
@@ -41,7 +41,7 @@ namespace Octostache.Templates
             }
 
             Func<string, string> ext;
-            if (_extensions.TryGetValue(functionName, out ext))
+            if (extensions.TryGetValue(functionName, out ext))
                 return ext(arg0);
 
             return null; // Undefined, will cause source text to print

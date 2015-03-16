@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Octostache.Templates
 {
@@ -12,7 +11,7 @@ namespace Octostache.Templates
             this.text = text;
         }
 
-        public IList<string> Text
+        public IEnumerable<string> Text
         {
             get { return text; }
         }
