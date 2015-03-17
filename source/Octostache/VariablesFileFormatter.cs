@@ -7,7 +7,7 @@ namespace Octostache
 {
     public static class VariablesFileFormatter
     {
-        public static Dictionary<string, string> ReadFrom(string variablesFilePath)
+        public static VariableDictionary ReadFrom(string variablesFilePath)
         {
             using (var sourceStream = new FileStream(variablesFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
@@ -15,7 +15,7 @@ namespace Octostache
             }
         }
 
-        public static Dictionary<string, string> ReadFrom(Stream stream)
+        public static VariableDictionary ReadFrom(Stream stream)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -34,10 +34,10 @@ namespace Octostache
                 result[name] = value;
             }
 
-            return result;
+            return new VariableDictionary(result);
         }
 
-        public static void WriteTo(Dictionary<string, string> variables, string variablesFilePath)
+        public static void WriteTo(VariableDictionary variables, string variablesFilePath)
         {
             using (var targetStream = new FileStream(variablesFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
@@ -45,22 +45,21 @@ namespace Octostache
             }
         }
 
-        public static void WriteTo(Dictionary<string, string> variables, Stream stream)
+        public static void WriteTo(VariableDictionary variables, Stream stream)
         {
             var writer = new StreamWriter(stream, Encoding.UTF8);
-            foreach (var pair in variables)
+            foreach (var name in variables.GetNames())
             {
-                var name = pair.Key;
-                var value = pair.Value;
+                var value = variables.Get(name);
 
                 if (string.IsNullOrEmpty(name)) { continue; }
                 if (string.IsNullOrEmpty(value)) { value = ""; }
 
-                name = Convert.ToBase64String(Encoding.UTF8.GetBytes(name));
-                value = Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
-                writer.Write(name);
+                var encodedName = Convert.ToBase64String(Encoding.UTF8.GetBytes(name));
+                var encodedValue = Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
+                writer.Write(encodedName);
                 writer.Write(",");
-                writer.WriteLine(value);
+                writer.WriteLine(encodedValue);
             }
             writer.Flush();
         }

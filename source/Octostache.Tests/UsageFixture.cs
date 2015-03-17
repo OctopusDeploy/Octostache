@@ -250,12 +250,10 @@ namespace Octostache.Tests
         [Test]
         public void ShouldSupportRoundTripping()
         {
-            var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                {"Name", "Web01"},
-                {"Port", "10933"},
-                {"Hello world", "This is a \"string\"!@#$"}
-            };
+            var variables = new VariableDictionary();
+            variables.Set("Name", "Web01");
+            variables.Set("Port", "10933");
+            variables.Set("Hello world", "This is a \"string\"!@#$");
 
             using (var ms = new MemoryStream())
             {

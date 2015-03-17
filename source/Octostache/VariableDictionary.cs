@@ -40,6 +40,17 @@ namespace Octostache
         }
 
         /// <summary>
+        /// Gets or sets a variable by name.
+        /// </summary>
+        /// <param name="name">The name of the variable to set.</param>
+        /// <returns>The current (evaluated) value of the variable.</returns>
+        public string this[string name]
+        {
+            get { return Get(name); }
+            set { Set(name, value); }
+        }
+
+        /// <summary>
         /// Sets a variable to a list of strings, by joining each value with a separator.
         /// </summary>
         /// <param name="variableName">The name of the variable to set.</param>
