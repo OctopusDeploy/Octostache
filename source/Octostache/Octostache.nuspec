@@ -13,6 +13,7 @@
     <dependencies>
       <dependency id="MarkdownSharp" version="" />
       <dependency id="Sprache" version="" />
+      <dependency id="Newtonsoft.Json" version="" />
     </dependencies>
   </metadata>
   <files>
