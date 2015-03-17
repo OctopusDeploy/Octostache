@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Octostache.Tests
@@ -250,33 +251,58 @@ namespace Octostache.Tests
         [Test]
         public void ShouldSupportRoundTripping()
         {
-            var variables = new VariableDictionary();
-            variables.Set("Name", "Web01");
-            variables.Set("Port", "10933");
-            variables.Set("Hello world", "This is a \"string\"!@#$");
+            var temp = Path.GetTempFileName();
 
-            using (var ms = new MemoryStream())
-            {
-                VariablesFileFormatter.WriteTo(variables, ms);
-                ms.Position = 0;
+            var parent = new VariableDictionary();
+            parent.Set("Name", "Web01");
+            parent.Set("Port", "10933");
+            parent.Set("Hello world", "This is a \"string\"!@#$");
 
-                variables = VariablesFileFormatter.ReadFrom(ms);
+            parent.Save(temp);
 
-                Assert.That(variables["Name"], Is.EqualTo("Web01"));
-                Assert.That(variables["Port"], Is.EqualTo("10933"));
-                Assert.That(variables["Hello world"], Is.EqualTo("This is a \"string\"!@#$"));
-            }
+            var child = new VariableDictionary(temp);
+            Assert.That(child["Name"], Is.EqualTo("Web01"));
+            Assert.That(child["Port"], Is.EqualTo("10933"));
+            Assert.That(child["Hello world"], Is.EqualTo("This is a \"string\"!@#$"));
+
+            // Since this variable dictionary was loaded from disk, setting variables
+            // will automatically persist the change
+            child["SomeVariable"] = "Hello";
+
+            Assert.That(parent["SomeVariable"], Is.Null);
+
+            // If one process calls another (using the same variables file), the parent process should 
+            // reload its variables once the child finishes.
+            parent.Reload();
+
+            Assert.That(parent["SomeVariable"], Is.EqualTo("Hello"));
+
+            File.Delete(temp);
+        }
+
+        [Test]
+        public void X()
+        {
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            dict["FirstName"] = "Paul";
+            dict["LastName"] = "Stovell";
+            var text = JsonConvert.SerializeObject(dict, Formatting.Indented);
+            Console.WriteLine(text);
         }
 
         static string Evaluate(string template, IDictionary<string, string> variables)
         {
-            var dictionary = new VariableDictionary(new Dictionary<string, string>(variables, StringComparer.OrdinalIgnoreCase));
+            var dictionary = new VariableDictionary();
+            foreach (var pair in variables)
+            {
+                dictionary[pair.Key] = pair.Value;
+            }
             return dictionary.Evaluate(template);
         }
 
         private static VariableDictionary ParseVariables(string variableDefinitions)
         {
-            var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var variables = new VariableDictionary();
 
             var items = variableDefinitions.Split(';');
             foreach (var item in items)
@@ -287,7 +313,7 @@ namespace Octostache.Tests
                 variables[key] = value;
             }
 
-            return new VariableDictionary(variables);
+            return variables;
         }
     }
 }

@@ -8,23 +8,17 @@ namespace Octostache
 {
     public class VariableDictionary
     {
-        readonly Dictionary<string, string> variables;
+        readonly Dictionary<string, string> variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        string storageFilePath;
 
         public VariableDictionary() : this(null)
         {
         }
 
-        public VariableDictionary(Dictionary<string, string> variables)
+        public VariableDictionary(string storageFilePath)
         {
-            variables = variables ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            if (variables.Comparer != StringComparer.OrdinalIgnoreCase)
-            {
-                // Rather than copying/creating a new dictionary (slow), force them to set the comparer properly
-                throw new Exception("The dictionary passed into VariableDictionary must have a comparer set to StringComparer.OrdinalIgnoreCase, to ensure case-insensitive matches.");
-            }
-
-            this.variables = variables;
+            this.storageFilePath = storageFilePath;
+            Reload();
         }
 
         /// <summary>
@@ -35,8 +29,8 @@ namespace Octostache
         public void Set(string name, string value)
         {
             if (name == null) return;
-
             variables[name] = value;
+            Save();
         }
 
         /// <summary>
@@ -70,6 +64,31 @@ namespace Octostache
         public void SetPaths(string variableName, IEnumerable<string> values)
         {
             SetStrings(variableName, values, Environment.NewLine);
+        }
+
+        /// <summary>
+        /// If this variable dictionary was read from a file, reloads all variables from the file.
+        /// </summary>
+        public void Reload()
+        {
+            if (!string.IsNullOrWhiteSpace(storageFilePath))
+            {
+                VariablesFileFormatter.Populate(variables, storageFilePath);
+            }
+        }
+
+        public void Save(string path)
+        {
+            storageFilePath = path;
+            Save();
+        }
+
+        public void Save()
+        {
+            if (!string.IsNullOrWhiteSpace(storageFilePath))
+            {
+                VariablesFileFormatter.Persist(variables, storageFilePath);
+            }
         }
 
         /// <summary>

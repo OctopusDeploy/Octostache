@@ -1,67 +1,43 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace Octostache
 {
-    public static class VariablesFileFormatter
+    static class VariablesFileFormatter
     {
-        public static VariableDictionary ReadFrom(string variablesFilePath)
+        static readonly JsonSerializer serializer = new JsonSerializer { Formatting = Formatting.Indented };
+        static readonly Encoding fileEncoding = Encoding.UTF8;
+
+        public static void Populate(Dictionary<string, string> variables, string variablesFilePath)
         {
-            using (var sourceStream = new FileStream(variablesFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            var fullPath = Path.GetFullPath(variablesFilePath);
+            if (!File.Exists(fullPath))
+                return;
+
+            using (var sourceStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                return ReadFrom(sourceStream);
+                var reader = new JsonTextReader(new StreamReader(sourceStream, fileEncoding));
+                serializer.Populate(reader, variables);
             }
         }
 
-        public static VariableDictionary ReadFrom(Stream stream)
+        public static void Persist(Dictionary<string, string> variables, string variablesFilePath)
         {
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            var reader = new StreamReader(stream, Encoding.UTF8);
-            string line;
-            while ((line = reader.ReadLine()) != null)
+            var fullPath = Path.GetFullPath(variablesFilePath);
+            var parentDirectory = Path.GetDirectoryName(fullPath);
+            if (parentDirectory != null && !Directory.Exists(parentDirectory))
             {
-                if (string.IsNullOrEmpty(line))
-                {
-                    continue;
-                }
-
-                var parts = line.Split(',');
-                var name = Encoding.UTF8.GetString(Convert.FromBase64String(parts[0]));
-                var value = Encoding.UTF8.GetString(Convert.FromBase64String(parts[1]));
-                result[name] = value;
+                Directory.CreateDirectory(parentDirectory);
             }
 
-            return new VariableDictionary(result);
-        }
-
-        public static void WriteTo(VariableDictionary variables, string variablesFilePath)
-        {
             using (var targetStream = new FileStream(variablesFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
-                WriteTo(variables, targetStream);
+                var writer = new StreamWriter(targetStream, fileEncoding);
+                serializer.Serialize(new JsonTextWriter(writer), variables);
+                writer.Flush();
             }
-        }
-
-        public static void WriteTo(VariableDictionary variables, Stream stream)
-        {
-            var writer = new StreamWriter(stream, Encoding.UTF8);
-            foreach (var name in variables.GetNames())
-            {
-                var value = variables.Get(name);
-
-                if (string.IsNullOrEmpty(name)) { continue; }
-                if (string.IsNullOrEmpty(value)) { value = ""; }
-
-                var encodedName = Convert.ToBase64String(Encoding.UTF8.GetBytes(name));
-                var encodedValue = Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
-                writer.Write(encodedName);
-                writer.Write(",");
-                writer.WriteLine(encodedValue);
-            }
-            writer.Flush();
         }
     }
 }
