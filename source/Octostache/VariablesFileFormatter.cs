@@ -18,8 +18,10 @@ namespace Octostache
 
             using (var sourceStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                var reader = new JsonTextReader(new StreamReader(sourceStream, fileEncoding));
-                serializer.Populate(reader, variables);
+                using (var reader = new JsonTextReader(new StreamReader(sourceStream, fileEncoding)))
+                {
+                    serializer.Populate(reader, variables);
+                }
             }
         }
 
@@ -34,9 +36,11 @@ namespace Octostache
 
             using (var targetStream = new FileStream(variablesFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
-                var writer = new StreamWriter(targetStream, fileEncoding);
-                serializer.Serialize(new JsonTextWriter(writer), variables);
-                writer.Flush();
+                using (var writer = new StreamWriter(targetStream, fileEncoding))
+                {
+                    serializer.Serialize(new JsonTextWriter(writer), variables);
+                    writer.Flush();
+                }
             }
         }
     }

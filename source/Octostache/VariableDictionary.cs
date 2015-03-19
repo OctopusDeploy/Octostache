@@ -17,7 +17,7 @@ namespace Octostache
 
         public VariableDictionary(string storageFilePath)
         {
-            this.storageFilePath = storageFilePath;
+            this.storageFilePath = Path.GetFullPath(storageFilePath);
             Reload();
         }
 
@@ -79,7 +79,7 @@ namespace Octostache
 
         public void Save(string path)
         {
-            storageFilePath = path;
+            storageFilePath = Path.GetFullPath(path);
             Save();
         }
 
