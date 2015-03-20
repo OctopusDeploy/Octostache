@@ -17,6 +17,7 @@ namespace Octostache
 
         public VariableDictionary(string storageFilePath)
         {
+            if (string.IsNullOrWhiteSpace(storageFilePath)) return;
             this.storageFilePath = Path.GetFullPath(storageFilePath);
             Reload();
         }
