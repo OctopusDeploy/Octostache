@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Octostache.Tests
@@ -281,13 +280,13 @@ namespace Octostache.Tests
         }
 
         [Test]
-        public void X()
+        public void ShouldSaveAsString()
         {
-            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            dict["FirstName"] = "Paul";
-            dict["LastName"] = "Stovell";
-            var text = JsonConvert.SerializeObject(dict, Formatting.Indented);
-            Console.WriteLine(text);
+            var variables = new VariableDictionary();
+            variables.Set("Name", "Web01");
+            variables.Set("Port", "10933");
+
+            Assert.AreEqual("{\r\n  \"Name\": \"Web01\",\r\n  \"Port\": \"10933\"\r\n}", variables.SaveAsString());
         }
 
         static string Evaluate(string template, IDictionary<string, string> variables)

@@ -25,6 +25,12 @@ namespace Octostache
             }
         }
 
+        public static void Persist(Dictionary<string, string> variables, TextWriter output)
+        {
+            serializer.Serialize(new JsonTextWriter(output), variables);
+            output.Flush();
+        }
+
         public static void Persist(Dictionary<string, string> variables, string variablesFilePath)
         {
             var fullPath = Path.GetFullPath(variablesFilePath);
@@ -38,8 +44,7 @@ namespace Octostache
             {
                 using (var writer = new StreamWriter(targetStream, fileEncoding))
                 {
-                    serializer.Serialize(new JsonTextWriter(writer), variables);
-                    writer.Flush();
+                    Persist(variables, writer);
                 }
             }
         }

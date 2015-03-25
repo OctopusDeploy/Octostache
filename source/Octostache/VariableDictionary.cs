@@ -92,6 +92,15 @@ namespace Octostache
             }
         }
 
+        public string SaveAsString()
+        {
+            using (var writer = new StringWriter())
+            {
+                VariablesFileFormatter.Persist(variables, writer);
+                return writer.ToString();
+            }
+        }
+
         /// <summary>
         /// Performs the raw (not evaluated) value of a variable.
         /// </summary>
