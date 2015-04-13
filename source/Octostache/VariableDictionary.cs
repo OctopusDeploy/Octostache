@@ -195,7 +195,7 @@ namespace Octostache
         public bool GetFlag(string variableName, bool defaultValueIfUnset = false)
         {
             bool value;
-            var text = GetRaw(variableName);
+            var text = Get(variableName);
             if (string.IsNullOrWhiteSpace(text) || !bool.TryParse(text, out value))
             {
                 value = defaultValueIfUnset;
