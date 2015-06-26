@@ -10,6 +10,7 @@ namespace Octostache
     {
         readonly Dictionary<string, string> variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         string storageFilePath;
+        Binding binding;
 
         public VariableDictionary() : this(null)
         {
@@ -22,6 +23,14 @@ namespace Octostache
             Reload();
         }
 
+        Binding Binding
+        {
+            get
+            {
+                return binding ?? (binding = PropertyListBinder.CreateFrom(variables));
+            }
+        }
+
         /// <summary>
         /// Sets a variable value.
         /// </summary>
@@ -31,6 +40,7 @@ namespace Octostache
         {
             if (name == null) return;
             variables[name] = value;
+            binding = null;
             Save();
         }
 
@@ -75,6 +85,7 @@ namespace Octostache
             if (!string.IsNullOrWhiteSpace(storageFilePath))
             {
                 VariablesFileFormatter.Populate(variables, storageFilePath);
+                binding = null;
             }
         }
 
@@ -144,11 +155,9 @@ namespace Octostache
             if (!TemplateParser.TryParseTemplate(expressionOrVariableOrText, out template, out error))
                 return expressionOrVariableOrText;
 
-            var binder = PropertyListBinder.CreateFrom(variables);
-
             using (var writer = new StringWriter())
             {
-                TemplateEvaluator.Evaluate(template, binder, writer, true);
+                TemplateEvaluator.Evaluate(template, Binding, writer, true);
                 return writer.ToString();
             }
         }
