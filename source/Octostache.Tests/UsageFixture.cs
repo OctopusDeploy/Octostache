@@ -29,18 +29,16 @@ namespace Octostache.Tests
             Assert.That(variables.GetInt32("FollowerCount"), Is.EqualTo(null));
         }
 
-        [Test]       
+        [Test]
         [TestCase("#{Foo}", "", "#{Foo}")]
         [TestCase("#{Foo}", "Foo=Bar", "Bar")]
         [TestCase("#{Foo}", "foo=Bar", "Bar")]
         [TestCase("#{Foo}", "Foo=#{Bar};Bar=Baz", "Baz")]
         [TestCase("#{Foo}", "Foo=#{Bar | ToLower};Bar=Baz", "baz")]
-        [TestCase("#{Foo Bar}", "Foo Bar=Bar", "Bar")]
         [TestCase("#{Foo Bar Jazz}", "Foo Bar Jazz=Bar", "Bar")]
         [TestCase("#{Foo|ToUpper}", "Foo=#{Bar | ToLower};Bar=Baz", "BAZ")]
-        [TestCase("##{Foo}", "foo=Bar", "#{Foo}")]
         [TestCase("#{Foo | ToUpper}", "Foo=baz", "BAZ")]
-        [TestCase("#{Foo|ToUpper}", "Foo=baz", "BAZ")]
+        [TestCase("##{Foo}", "foo=Bar", "#{Foo}")]
         public void BasicExamples(string template, string variableDefinitions, string expectedResult)
         {
             var result = ParseVariables(variableDefinitions).Evaluate(template);
@@ -151,7 +149,6 @@ namespace Octostache.Tests
             var result = Evaluate("#{foo}", new Dictionary<string, string>());
             Assert.AreEqual("#{foo}", result);
         }
-
 
         [Test]
         public void UnmatchedSubstitutionsAreEchoedEvenWithFiltering()
