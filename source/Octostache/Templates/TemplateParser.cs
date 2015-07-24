@@ -96,10 +96,8 @@ namespace Octostache.Templates
                     if (i.Source.Length <= result.Remainder.Position + length)
                         continue;
 
-
                     if (!char.IsWhiteSpace(i.Source[result.Remainder.Position + length]))
                         continue;
-
 
                     var match = i.Source.Substring(result.Remainder.Position, length);
                     if (match == keyword)
