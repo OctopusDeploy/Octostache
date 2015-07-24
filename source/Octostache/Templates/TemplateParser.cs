@@ -10,17 +10,20 @@ namespace Octostache.Templates
     static class TemplateParser
     {
         static readonly Parser<Identifier> Identifier = Parse
-            .Char(c => char.IsLetter(c) || char.IsDigit(c) || c == '_' || c == '-' || c == ':', "identifier")
+            .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':', "identifier")
+            .Except(Parse.WhiteSpace.FollowedBy("|"))
+            .ExceptWhiteSpaceBeforeKeyword()
             .AtLeastOnce()
             .Text()
             .Select(s => new Identifier(s))
             .WithPosition();
 
+        
         static readonly Parser<Indexer> Indexer =
             (from open in Parse.Char('[')
-                from index in Parse.CharExcept(']').AtLeastOnce().Text()
-                from close in Parse.Char(']')
-                select new Indexer(index))
+             from index in Parse.CharExcept(']').AtLeastOnce().Text()
+             from close in Parse.Char(']')
+             select new Indexer(index))
                 .WithPosition()
                 .Named("indexer");
 
@@ -30,8 +33,8 @@ namespace Octostache.Templates
 
         static readonly Parser<SymbolExpression> Symbol =
             (from first in Identifier
-                from rest in TrailingStep.Many()
-                select new SymbolExpression(new[] { first }.Concat(rest)))
+             from rest in TrailingStep.Many()
+             select new SymbolExpression(new[] { first }.Concat(rest)))
                 .WithPosition();
 
         // Some trickery applied here to prevent a left-recursive definition
@@ -44,7 +47,7 @@ namespace Octostache.Templates
             FilterChain.Select(c => (ContentExpression)c)
             .Or(Symbol);
 
-        static readonly Parser<string> LDelim = Parse.String("#{").Text(); 
+        static readonly Parser<string> LDelim = Parse.String("#{").Text();
         static readonly Parser<string> RDelim = Parse.String("}").Text();
 
         static readonly Parser<SubstitutionToken> Substitution =
@@ -54,7 +57,7 @@ namespace Octostache.Templates
              select new SubstitutionToken(expression))
                 .WithPosition();
 
-        public static Parser<T> FollowedBy<T>(this Parser<T> parser, string lookahead)
+        static Parser<T> FollowedBy<T>(this Parser<T> parser, string lookahead)
         {
             if (parser == null)
                 throw new ArgumentNullException("parser");
@@ -66,11 +69,45 @@ namespace Octostache.Templates
                     return result;
 
                 if (result.Remainder.Position >= (i.Source.Length - lookahead.Length))
-                    return Result.Failure<T>(result.Remainder, "end of input reached while expecting lookahead", new[] {lookahead});
+                    return Result.Failure<T>(result.Remainder, "end of input reached while expecting lookahead", new[] { lookahead });
 
                 var next = i.Source.Substring(result.Remainder.Position, lookahead.Length);
                 if (next != lookahead)
-                    return Result.Failure<T>(result.Remainder, string.Format("unexpected {0}", next), new[] {lookahead});
+                    return Result.Failure<T>(result.Remainder, string.Format("unexpected {0}", next), new[] { lookahead });
+
+                return result;
+            };
+        }
+
+        static Parser<char> ExceptWhiteSpaceBeforeKeyword(this Parser<char> parser)
+        {
+            if (parser == null)
+                throw new ArgumentNullException("parser");
+
+            return i =>
+            {
+                var result = parser(i);
+                if (!result.WasSuccessful || !char.IsWhiteSpace(result.Value))
+                    return result;
+
+                foreach (var keyword in new[] { "in" })
+                {
+                    var length = keyword.Length;
+                    if (i.Source.Length <= result.Remainder.Position + length)
+                        continue;
+
+
+                    if (!char.IsWhiteSpace(i.Source[result.Remainder.Position + length]))
+                        continue;
+
+
+                    var match = i.Source.Substring(result.Remainder.Position, length);
+                    if (match == keyword)
+                    {
+                        return Result.Failure<char>(result.Remainder, string.Format("unexpected keyword used {0}", keyword),
+                            new[] { keyword });
+                    }
+                }
 
                 return result;
             };
@@ -83,15 +120,15 @@ namespace Octostache.Templates
 
         static readonly Parser<ConditionalToken> Conditional =
             (from ldelim in LDelim
-                from kw in Keyword("if").Or(Keyword("unless"))
-                from sp in Parse.WhiteSpace.AtLeastOnce()
-                from expression in Symbol.Token()
-                from rdelim in RDelim
-                from truthy in Parse.Ref(() => Template)
-                from end in Parse.String("#{/" + kw + "}")
-                select kw == "if" ?
-                    new ConditionalToken(expression, truthy, Enumerable.Empty<TemplateToken>()) :
-                    new ConditionalToken(expression, Enumerable.Empty<TemplateToken>(), truthy))
+             from kw in Keyword("if").Or(Keyword("unless"))
+             from sp in Parse.WhiteSpace.AtLeastOnce()
+             from expression in Symbol.Token()
+             from rdelim in RDelim
+             from truthy in Parse.Ref(() => Template)
+             from end in Parse.String("#{/" + kw + "}")
+             select kw == "if" ?
+                 new ConditionalToken(expression, truthy, Enumerable.Empty<TemplateToken>()) :
+                 new ConditionalToken(expression, Enumerable.Empty<TemplateToken>(), truthy))
                 .WithPosition();
 
         static readonly Parser<RepetitionToken> Repetition =
@@ -126,20 +163,32 @@ namespace Octostache.Templates
         static readonly Parser<TemplateToken[]> Template =
             Token.Many().Select(tokens => tokens.ToArray());
 
-        private static MemoryCache cache;
+        static Parser<T> WithPosition<T>(this Parser<T> parser) where T : IInputToken
+        {
+            return i =>
+            {
+                var r = parser(i);
+                if (r.WasSuccessful)
+                    r.Value.InputPosition = new Position(i.Position, i.Line, i.Column);
+
+                return r;
+            };
+        }
+
+        static readonly MemoryCache Cache;
 
         static TemplateParser()
         {
-            cache = new MemoryCache("Octostache", new NameValueCollection() { { "CacheMemoryLimitMegabytes", (20 * 1024).ToString() } });
+            Cache = new MemoryCache("Octostache", new NameValueCollection() { { "CacheMemoryLimitMegabytes", (20 * 1024).ToString() } });
         }
 
         public static Template ParseTemplate(string template)
         {
-            var cached = cache.Get(template) as Template;
+            var cached = Cache.Get(template) as Template;
             if (cached == null)
             {
                 cached = new Template(Template.End().Parse(template));
-                cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
+                Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
             }
 
             return cached;
@@ -147,7 +196,7 @@ namespace Octostache.Templates
 
         public static bool TryParseTemplate(string template, out Template result, out string error)
         {
-            var cached = cache.Get(template) as Template;
+            var cached = Cache.Get(template) as Template;
             if (cached == null)
             {
                 var tokens = Template.End().TryParse(template);
@@ -156,7 +205,7 @@ namespace Octostache.Templates
                     result = new Template(tokens.Value);
                     error = null;
                     cached = new Template(Template.End().Parse(template));
-                    cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
+                    Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
                     return true;
                 }
                 result = null;
@@ -179,19 +228,6 @@ namespace Octostache.Templates
             }
             expression = null;
             return false;
-        }
-
-        static Parser<T> WithPosition<T>(this Parser<T> parser)
-            where T : IInputToken
-        {
-            return i =>
-                   {
-                       var r = parser(i);
-                       if (r.WasSuccessful)
-                           r.Value.InputPosition = new Position(i.Position, i.Line, i.Column);
-
-                       return r;
-                   };
         }
     }
 }
