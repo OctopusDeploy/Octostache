@@ -46,6 +46,14 @@ namespace Octostache.Tests
         }
 
         [Test]
+        [TestCase("#{a/b}", "a/b=Foo", "Foo")]
+        public void AwkwardCharacters(string template, string variableDefinitions, string expectedResult)
+        {
+            var result = ParseVariables(variableDefinitions).Evaluate(template);
+            Assert.That(result, Is.EqualTo(expectedResult));
+        }
+
+        [Test]
         [TestCase("#{ }", "Foo=Value; =Bar", "#{ }")]
         [TestCase("#{}","Foo=Value;=Bar", "#{}")]
         public void EmptyValuesAreEchoed(string template, string variableDefinitions, string expectedResult)
