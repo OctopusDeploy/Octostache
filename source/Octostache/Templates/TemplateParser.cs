@@ -10,7 +10,7 @@ namespace Octostache.Templates
     static class TemplateParser
     {
         static readonly Parser<Identifier> Identifier = Parse
-            .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':', "identifier")
+            .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':' || c == '/', "identifier")
             .Except(Parse.WhiteSpace.FollowedBy("|"))
             .ExceptWhiteSpaceBeforeKeyword()
             .AtLeastOnce()
@@ -47,7 +47,7 @@ namespace Octostache.Templates
             FilterChain.Select(c => (ContentExpression)c)
             .Or(Symbol);
 
-        static readonly Parser<string> LDelim = Parse.String("#{").Text();
+        static readonly Parser<string> LDelim = Parse.String("#{").Except(Parse.String("#{/")).Text();
         static readonly Parser<string> RDelim = Parse.String("}").Text();
 
         static readonly Parser<SubstitutionToken> Substitution =
