@@ -126,6 +126,21 @@ namespace Octostache.Tests
         }
 
         [Test]
+        public void RecursiveIterationIsSupported()
+        {
+            var result = Evaluate("#{each a in Octopus.Action}#{a.Name}#{/each}",
+                new Dictionary<string, string>
+                {
+                    { "PackageA_Name", "A" },
+                    { "PackageB_Name", "B" },
+                    { "Octopus.Action[Package A].Name", "#{PackageA_Name}" },
+                    { "Octopus.Action[Package B].Name", "#{PackageB_Name}" },
+                });
+
+            Assert.AreEqual("AB", result);
+        }
+
+        [Test]
         public void IndexingIsSupportedWithWildcards()
         {
             var result = Evaluate("#{Octopus.Action[*].Name}",

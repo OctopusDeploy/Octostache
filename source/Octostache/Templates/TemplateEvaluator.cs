@@ -13,6 +13,11 @@ namespace Octostache.Templates
             Evaluate(template.Tokens, context, echoMissingTokens);  
         }
 
+        public static void Evaluate(Template template, EvaluationContext context, bool echoMissingTokens)
+        {
+           Evaluate(template.Tokens, context, echoMissingTokens); 
+        }
+
         static void Evaluate(IEnumerable<TemplateToken> tokens, EvaluationContext context, bool echoMissingTokens) 
         {
             foreach (var token in tokens)
