@@ -10,7 +10,7 @@ namespace Octostache.Templates
     static class TemplateParser
     {
         static readonly Parser<Identifier> Identifier = Parse
-            .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':' || c == '/', "identifier")
+            .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':' || c == '/' || c == '~', "identifier")
             .Except(Parse.WhiteSpace.FollowedBy("|"))
             .ExceptWhiteSpaceBeforeKeyword()
             .AtLeastOnce()

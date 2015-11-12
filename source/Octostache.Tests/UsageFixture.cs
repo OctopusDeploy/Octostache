@@ -47,6 +47,7 @@ namespace Octostache.Tests
 
         [Test]
         [TestCase("#{a/b}", "a/b=Foo", "Foo")]
+        [TestCase("#{a~b}", "a~b=Foo", "Foo")]
         public void AwkwardCharacters(string template, string variableDefinitions, string expectedResult)
         {
             var result = ParseVariables(variableDefinitions).Evaluate(template);
