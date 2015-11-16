@@ -84,7 +84,8 @@ namespace Octostache.Templates
                     using (var x = new StringWriter())
                     {
                         var context = new EvaluationContext(new Binding(), x, this);
-                        TemplateEvaluator.Evaluate(template, context, true );
+                        string[] missingTokens;
+                        TemplateEvaluator.Evaluate(template, context, out missingTokens);
                         x.Flush();
                         return new Binding(x.ToString());
                     }

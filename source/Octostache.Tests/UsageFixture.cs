@@ -30,7 +30,6 @@ namespace Octostache.Tests
         }
 
         [Test]
-        [TestCase("#{Foo}", "", "#{Foo}")]
         [TestCase("#{Foo}", "Foo=Bar", "Bar")]
         [TestCase("#{Foo}", "foo=Bar", "Bar")]
         [TestCase("#{Foo}", "Foo=#{Bar};Bar=Baz", "Baz")]
@@ -41,8 +40,33 @@ namespace Octostache.Tests
         [TestCase("##{Foo}", "foo=Bar", "#{Foo}")]
         public void BasicExamples(string template, string variableDefinitions, string expectedResult)
         {
-            var result = ParseVariables(variableDefinitions).Evaluate(template);
+            string error;
+            var result = ParseVariables(variableDefinitions).Evaluate(template, out error);
             Assert.That(result, Is.EqualTo(expectedResult));
+            Assert.IsNull(error);
+        }
+
+        [Test]
+        [TestCase("#{Foo}", "", "#{Foo}")]
+        [TestCase("#{Foo}#{Jazz}", "Foo=#{Bar};Bar=Baz", "Baz#{Jazz}")]
+        [TestCase("#{each a in Action}#{a.Size}#{/each}", "Action[x].Name=Baz;Action[y].Name=Baz", "#{a.Size}#{a.Size}")]
+        public void MissingTokenErrorExamples(string template, string variableDefinitions, string expectedResult)
+        {
+            string error;
+            var result = ParseVariables(variableDefinitions).Evaluate(template, out error);
+            Assert.That(result, Is.EqualTo(expectedResult));
+            Assert.IsNotNull(error);
+        }
+
+        [TestCase("#{Foo", "Foo=Bar;")]
+        [TestCase("#{Fo[o}", "Foo=Bar;Fo[o]=Bar")]
+        [TestCase("#{each a in Action}","Action[a]=One")]
+        public void ParseErrorExamples(string template, string variableDefinitions)
+        {
+            string error;
+            var result = ParseVariables(variableDefinitions).Evaluate(template, out error);
+            Assert.That(result, Is.EqualTo(template));
+            Assert.IsNotNull(error);
         }
 
         [Test]

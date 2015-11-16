@@ -145,21 +145,47 @@ namespace Octostache
         /// Evaluates a given expression as if it were the value of a variable.
         /// </summary>
         /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>
+        /// <param name="error">Any parsing errors silently found.</param>
         /// <returns>The result of the expression.</returns>
-        public string Evaluate(string expressionOrVariableOrText)
+        public string Evaluate(string expressionOrVariableOrText, out string error)
         {
+            error = null;
             if (expressionOrVariableOrText == null) return null;
 
             Template template;
-            string error;
             if (!TemplateParser.TryParseTemplate(expressionOrVariableOrText, out template, out error))
                 return expressionOrVariableOrText;
 
             using (var writer = new StringWriter())
             {
-                TemplateEvaluator.Evaluate(template, Binding, writer, true);
+                string[] missingTokens;
+                TemplateEvaluator.Evaluate(template, Binding, writer, out missingTokens);
+                error = AppendMissingTokensToError(error, missingTokens);
+
                 return writer.ToString();
             }
+        }
+
+        string AppendMissingTokensToError(string error, string[] missingTokens)
+        {
+            if (!missingTokens.Any())
+                return error;
+            
+            return error +
+                (string.IsNullOrWhiteSpace(error) ? string.Empty : "\n") +
+                string.Format("The following tokens were unable to be evaluated: {0}", string.Join(", ", "'"+ missingTokens +"'"));
+        }
+
+
+        /// <summary>
+        /// Evaluates a given expression as if it were the value of a variable.
+        /// </summary>
+        /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>
+        /// <returns>The result of the expression.</returns>
+        public string Evaluate(string expressionOrVariableOrText)
+        {
+            string error;
+            return Evaluate(expressionOrVariableOrText, out error);
         }
 
         /// <summary>

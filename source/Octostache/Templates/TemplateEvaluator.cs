@@ -5,88 +5,114 @@ using System.Linq;
 
 namespace Octostache.Templates
 {
-    static class TemplateEvaluator
+    class TemplateEvaluator
     {
-        public static void Evaluate(Template template, Binding properties, TextWriter output, bool echoMissingTokens = false)
+        private readonly List<string> _missingTokens = new List<string>(); 
+
+        public static void Evaluate(Template template, EvaluationContext context, out string[] missingTokens)
+        {
+            var evaluator = new TemplateEvaluator();
+            evaluator.Evaluate(template.Tokens, context);
+            missingTokens = evaluator._missingTokens.Distinct().ToArray();
+        }
+
+        public static void Evaluate(Template template, Binding properties, TextWriter output, out string[] missingTokens)
         {
             var context = new EvaluationContext(properties, output);
-            Evaluate(template.Tokens, context, echoMissingTokens);  
+            Evaluate(template, context, out missingTokens);
         }
 
-        public static void Evaluate(Template template, EvaluationContext context, bool echoMissingTokens)
-        {
-           Evaluate(template.Tokens, context, echoMissingTokens); 
-        }
-
-        static void Evaluate(IEnumerable<TemplateToken> tokens, EvaluationContext context, bool echoMissingTokens) 
+        void Evaluate(IEnumerable<TemplateToken> tokens, EvaluationContext context) 
         {
             foreach (var token in tokens)
             {
-                Evaluate(token, context, echoMissingTokens);
+                Evaluate(token, context);
             }
         }
 
-        static void Evaluate(TemplateToken token, EvaluationContext context, bool echoMissingTokens)
+        void Evaluate(TemplateToken token, EvaluationContext context)
         {
             var tt = token as TextToken;
             if (tt != null)
             {
-                foreach (var text in tt.Text)
-                {
-                    context.Output.Write(text);
-                }
+                EvaluateTextToken(context, tt);
                 return;
             }
 
             var st = token as SubstitutionToken;
             if (st != null)
             {
-                var value = Calculate(st.Expression, context);
-
-
-                context.Output.Write(value ?? (echoMissingTokens ? st.ToString() : ""));
+                EvaluateSubstitutionToken(context, st);
                 return;
             }
 
             var ct = token as ConditionalToken;
             if (ct != null)
             {
-                var value = context.Resolve(ct.Expression);
-                if (IsTruthy(value))
-                    Evaluate(ct.TruthyTemplate, context, echoMissingTokens);
-                else
-                    Evaluate(ct.FalsyTemplate, context, echoMissingTokens);
+                EvaluateConditionalToken(context, ct);
                 return;
             }
 
             var rt = token as RepetitionToken;
             if (rt != null)
             {
-                var items = context.ResolveAll(rt.Collection).ToArray();
-
-                for (var i = 0; i < items.Length; ++i)
-                {
-                    var item = items[i];
-
-                    var specials = new Dictionary<string, string>();
-
-                    if (i == 0)
-                        specials.Add(Constants.Each.First, "True");
-
-                    if (i == items.Length - 1)
-                        specials.Add(Constants.Each.Last, "True");
-
-                    var locals = PropertyListBinder.CreateFrom(specials);
-
-                    locals.Add(rt.Enumerator.Text, item);
-
-                    var newContext = context.BeginChild(locals);
-                    Evaluate(rt.Template, newContext, echoMissingTokens);
-                }
+                EvaluateRepititionToken(context, rt);
                 return;
             }
 
             throw new NotImplementedException("Unknown token type: " + token);
+        }
+
+        void EvaluateRepititionToken(EvaluationContext context, RepetitionToken rt)
+        {
+            var items = context.ResolveAll(rt.Collection).ToArray();
+
+            for (var i = 0; i < items.Length; ++i)
+            {
+                var item = items[i];
+
+                var specials = new Dictionary<string, string>();
+
+                if (i == 0)
+                    specials.Add(Constants.Each.First, "True");
+
+                if (i == items.Length - 1)
+                    specials.Add(Constants.Each.Last, "True");
+
+                var locals = PropertyListBinder.CreateFrom(specials);
+
+                locals.Add(rt.Enumerator.Text, item);
+
+                var newContext = context.BeginChild(locals);
+                Evaluate(rt.Template, newContext);
+            }
+        }
+
+        void EvaluateConditionalToken(EvaluationContext context, ConditionalToken ct)
+        {
+            var value = context.Resolve(ct.Expression);
+            if (IsTruthy(value))
+                Evaluate(ct.TruthyTemplate, context);
+            else
+                Evaluate(ct.FalsyTemplate, context);
+        }
+
+        void EvaluateSubstitutionToken(EvaluationContext context, SubstitutionToken st)
+        {
+            var value = Calculate(st.Expression, context);
+            if (value == null)
+            {
+                _missingTokens.Add(st.ToString());
+            }
+            context.Output.Write(value ?? st.ToString());
+        }
+
+        static void EvaluateTextToken(EvaluationContext context, TextToken tt)
+        {
+            foreach (var text in tt.Text)
+            {
+                context.Output.Write(text);
+            }
         }
 
         static string Calculate(ContentExpression expression, EvaluationContext context)
@@ -96,16 +122,16 @@ namespace Octostache.Templates
                 return context.ResolveOptional(sx);
 
             var fx = expression as FunctionCallExpression;
-            if (fx != null)
+            if (fx == null)
             {
-                var args = fx.Arguments.Select(a => Calculate(a, context)).ToArray();
-                if (args.Any(a => a == null))
-                    return null; // If any argument is undefined, we fail the whole shebang
-
-                return BuiltInFunctions.InvokeOrNull(fx.Function, args);
+                throw new NotImplementedException("Unknown expression type: " + expression);
             }
 
-            throw new NotImplementedException("Unknown expression type: " + expression);
+            var args = fx.Arguments.Select(a => Calculate(a, context)).ToArray();
+            if (args.Any(a => a == null))
+                return null; // If any argument is undefined, we fail the whole shebang
+
+            return BuiltInFunctions.InvokeOrNull(fx.Function, args);
         }
 
         static bool IsTruthy(string value)
