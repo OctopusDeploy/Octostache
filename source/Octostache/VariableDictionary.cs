@@ -134,11 +134,25 @@ namespace Octostache
         /// <returns>The value of the variable, or the default value if the variable is not defined.</returns>
         public string Get(string variableName, string defaultValue = null)
         {
+            string error;
+            return Get(variableName, out error, defaultValue);
+        }
+
+        /// <summary>
+        /// Gets the value of a variable, or returns a default value if the variable is not defined. If the variable contains an expression, it will be evaluated first.
+        /// </summary>
+        /// <param name="variableName">The name of the variable.</param>
+        /// <param name="error">Any parsing errors silently found.</param>
+        /// <param name="defaultValue">The default value to return.</param>
+        /// <returns>The value of the variable, or the default value if the variable is not defined.</returns>
+        public string Get(string variableName, out string error, string defaultValue = null)
+        {
+            error = null;
             string variable;
             if (!variables.TryGetValue(variableName, out variable) || variable == null)
                 return defaultValue;
 
-            return Evaluate(variable);
+            return Evaluate(variable, out error);
         }
 
         /// <summary>
@@ -160,22 +174,12 @@ namespace Octostache
             {
                 string[] missingTokens;
                 TemplateEvaluator.Evaluate(template, Binding, writer, out missingTokens);
-                error = AppendMissingTokensToError(error, missingTokens);
+                if(missingTokens.Any())
+                    error = string.Format("The following tokens were unable to be evaluated: {0}", string.Join(", ", "'" + missingTokens + "'"));
 
                 return writer.ToString();
             }
         }
-
-        string AppendMissingTokensToError(string error, string[] missingTokens)
-        {
-            if (!missingTokens.Any())
-                return error;
-
-            return error +
-                (string.IsNullOrWhiteSpace(error) ? string.Empty : "\n") +
-                string.Format("The following tokens were unable to be evaluated: {0}", string.Join(", ", missingTokens.Select(t => "'" + t + "'")));
-        }
-
 
         /// <summary>
         /// Evaluates a given expression as if it were the value of a variable.
