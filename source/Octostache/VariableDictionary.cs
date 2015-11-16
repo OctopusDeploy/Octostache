@@ -170,10 +170,10 @@ namespace Octostache
         {
             if (!missingTokens.Any())
                 return error;
-            
+
             return error +
                 (string.IsNullOrWhiteSpace(error) ? string.Empty : "\n") +
-                string.Format("The following tokens were unable to be evaluated: {0}", string.Join(", ", "'"+ missingTokens +"'"));
+                string.Format("The following tokens were unable to be evaluated: {0}", string.Join(", ", missingTokens.Select(t => "'" + t + "'")));
         }
 
 
