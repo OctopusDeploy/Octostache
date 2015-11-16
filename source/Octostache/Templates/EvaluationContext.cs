@@ -23,24 +23,24 @@ namespace Octostache.Templates
             get { return output; }
         }
 
-        public string Resolve(SymbolExpression expression)
+        public string Resolve(SymbolExpression expression, out string[] missingTokens)
         {
-            var val = WalkTo(expression);
+            var val = WalkTo(expression, out missingTokens);
             if (val == null) return "";
             return val.Item ?? "";
         }
 
-        public string ResolveOptional(SymbolExpression expression)
+        public string ResolveOptional(SymbolExpression expression, out string[] missingTokens)
         {
-            var val = WalkTo(expression);
+            var val = WalkTo(expression, out missingTokens);
             if (val == null) return null;
             return val.Item;
         }
 
-        Binding WalkTo(SymbolExpression expression)
+        Binding WalkTo(SymbolExpression expression, out string[] missingTokens)
         {
             var val = binding;
-
+            missingTokens = new string[0];
             foreach (var step in expression.Steps)
             {
                 var iss = step as Identifier;
@@ -72,7 +72,7 @@ namespace Octostache.Templates
                 if (parent == null)
                     return null;
 
-                return parent.WalkTo(expression);
+                return parent.WalkTo(expression, out missingTokens);
             }
 
             if (val != null && val.Item != null)
@@ -84,7 +84,6 @@ namespace Octostache.Templates
                     using (var x = new StringWriter())
                     {
                         var context = new EvaluationContext(new Binding(), x, this);
-                        string[] missingTokens;
                         TemplateEvaluator.Evaluate(template, context, out missingTokens);
                         x.Flush();
                         return new Binding(x.ToString());
@@ -95,9 +94,9 @@ namespace Octostache.Templates
             return val;
         }
 
-        public IEnumerable<Binding> ResolveAll(SymbolExpression collection)
+        public IEnumerable<Binding> ResolveAll(SymbolExpression collection, out string[] missingTokens)
         {
-            var val = WalkTo(collection);
+            var val = WalkTo(collection, out missingTokens);
             if (val == null) return Enumerable.Empty<Binding>();
 
             if (val.Indexable.Count != 0)

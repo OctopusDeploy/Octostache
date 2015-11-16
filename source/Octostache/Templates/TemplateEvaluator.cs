@@ -65,7 +65,9 @@ namespace Octostache.Templates
 
         void EvaluateRepititionToken(EvaluationContext context, RepetitionToken rt)
         {
-            var items = context.ResolveAll(rt.Collection).ToArray();
+            string[] innerTokens;
+            var items = context.ResolveAll(rt.Collection, out innerTokens).ToArray();
+            _missingTokens.AddRange(innerTokens);
 
             for (var i = 0; i < items.Length; ++i)
             {
@@ -90,7 +92,10 @@ namespace Octostache.Templates
 
         void EvaluateConditionalToken(EvaluationContext context, ConditionalToken ct)
         {
-            var value = context.Resolve(ct.Expression);
+            string[] innerTokens;
+            var value = context.Resolve(ct.Expression, out innerTokens);
+            _missingTokens.AddRange(innerTokens);
+
             if (IsTruthy(value))
                 Evaluate(ct.TruthyTemplate, context);
             else
@@ -115,11 +120,16 @@ namespace Octostache.Templates
             }
         }
 
-        static string Calculate(ContentExpression expression, EvaluationContext context)
+        string Calculate(ContentExpression expression, EvaluationContext context)
         {
             var sx = expression as SymbolExpression;
             if (sx != null)
-                return context.ResolveOptional(sx);
+            {
+                string[] innerTokens;
+                var resolvedSymbol = context.ResolveOptional(sx, out innerTokens);
+                _missingTokens.AddRange(innerTokens);
+                return resolvedSymbol;
+            }
 
             var fx = expression as FunctionCallExpression;
             if (fx == null)
