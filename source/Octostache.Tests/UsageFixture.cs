@@ -297,14 +297,19 @@ namespace Octostache.Tests
             variables.Set("Server", "Web01");
             variables.Set("Port", "10933");
             variables.Set("Url", "http://#{Server | ToLower}:#{Port}");
+            variables.Set("Protocol", "#{Proto}");
 
             var url = variables.Get("Url");
             var raw = variables.GetRaw("Url");
             var eval = variables.Evaluate("#{Url}/foo");
 
+            string error;
+            variables.Get("Protocol", out error);
+
             Assert.AreEqual("http://web01:10933", url);
             Assert.AreEqual("http://#{Server | ToLower}:#{Port}", raw);
             Assert.AreEqual("http://web01:10933/foo", eval);
+            Assert.IsNotNull(error);
         }
 
         [Test]

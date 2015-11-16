@@ -174,8 +174,12 @@ namespace Octostache
             {
                 string[] missingTokens;
                 TemplateEvaluator.Evaluate(template, Binding, writer, out missingTokens);
-                if(missingTokens.Any())
-                    error = string.Format("The following tokens were unable to be evaluated: {0}", string.Join(", ", "'" + missingTokens + "'"));
+                if (missingTokens.Any())
+                {
+                    var tokenList = string.Join(", ", missingTokens.Select(token => "'" + token + "'"));
+                    error = string.Format("The following tokens were unable to be evaluated: {0}", tokenList);
+                }
+
 
                 return writer.ToString();
             }
