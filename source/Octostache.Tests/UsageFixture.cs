@@ -89,6 +89,16 @@ namespace Octostache.Tests
         }
 
         [Test]
+        [TestCase("#{Foo}", "Foo=#{Foo}")]
+        [TestCase("#{Foo}", "Foo=#{Fox};Fox=#{Fax};Fax=#{Fix};Fix=#{Foo}")]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void MaximumRecursionLimitException(string template, string variableDefinitions)
+        {
+            ParseVariables(variableDefinitions).Evaluate(template);
+        }
+
+
+        [Test]
         public void Required()
         {
             var variables = new VariableDictionary();
