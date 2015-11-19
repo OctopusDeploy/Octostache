@@ -34,14 +34,14 @@ namespace Octostache.Templates
 
         private void ValidateNoRecursion(SymbolExpression expression)
         {
-            if (symbolStack.Contains(expression))
+            var ancestor = this;
+            while(ancestor != null)
             {
-                throw new InvalidOperationException(string.Format("An attempt to parse the variable symbol \"{0}\" appears to have resulted in a self referencing loop. Ensure that recursive loops do not exist in the variable values.", expression));
-            }
-
-            if (parent != null)
-            {
-                parent.ValidateNoRecursion(expression);
+                if (ancestor.symbolStack.Contains(expression))
+                {
+                    throw new InvalidOperationException(string.Format("An attempt to parse the variable symbol \"{0}\" appears to have resulted in a self referencing loop. Ensure that recursive loops do not exist in the variable values.", expression));
+                }
+                ancestor = ancestor.parent;
             }
         }
 
