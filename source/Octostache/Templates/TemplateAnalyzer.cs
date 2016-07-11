@@ -38,7 +38,12 @@ namespace Octostache.Templates
             var ct = token as ConditionalToken;
             if (ct != null)
             {
-                yield return context.Expand(ct.Expression);
+                yield return context.Expand(ct.Token.LeftSide);
+                var exp = ct.Token as ConditionalSymbolExpressionToken;
+                if (exp != null)
+                {
+                    yield return context.Expand(exp.RightSide);
+                }
                 foreach (var templateDependency in GetDependencies(ct.TruthyTemplate.Concat(ct.FalsyTemplate), context))
                 {
                     yield return templateDependency;

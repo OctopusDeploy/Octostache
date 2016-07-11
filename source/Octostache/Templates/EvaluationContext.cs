@@ -32,6 +32,8 @@ namespace Octostache.Templates
         }
 
 
+
+
         private void ValidateNoRecursion(SymbolExpression expression)
         {
             var ancestor = this;

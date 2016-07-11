@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.Caching;
 using Sprache;
 
@@ -90,7 +92,7 @@ namespace Octostache.Templates
                 if (!result.WasSuccessful || !char.IsWhiteSpace(result.Value))
                     return result;
 
-                foreach (var keyword in new[] { "in" })
+                foreach (var keyword in new[] { "in", "==", "!=" })
                 {
                     var length = keyword.Length;
                     if (i.Source.Length <= result.Remainder.Position + length)
@@ -120,13 +122,34 @@ namespace Octostache.Templates
             (from ldelim in LDelim
              from kw in Keyword("if").Or(Keyword("unless"))
              from sp in Parse.WhiteSpace.AtLeastOnce()
-             from expression in Symbol.Token()
+             from expression in TokenMatch.Token().Or(StringMatch.Token()).Or(TruthyMatch.Token())
              from rdelim in RDelim
              from truthy in Parse.Ref(() => Template)
              from end in Parse.String("#{/" + kw + "}")
              select kw == "if" ?
                  new ConditionalToken(expression, truthy, Enumerable.Empty<TemplateToken>()) :
                  new ConditionalToken(expression, Enumerable.Empty<TemplateToken>(), truthy))
+                .WithPosition();
+
+        private static readonly Parser<ConditionalExpressionToken> TruthyMatch =
+            (from expression in Symbol.Token()
+             select new ConditionalExpressionToken(expression))
+                .WithPosition();
+
+        private static readonly Parser<ConditionalExpressionToken> TokenMatch =
+            (from expression in Symbol.Token()
+             from _eq in Keyword("==").Token().Or(Keyword("!=").Token())
+             from compareTo in QuotedText.Token()
+             let eq = _eq == "=="
+             select new ConditionalStringExpressionToken(expression, eq, compareTo))
+                .WithPosition();
+
+        private static readonly Parser<ConditionalExpressionToken> StringMatch =
+            (from expression in Symbol.Token()
+             from _eq in Keyword("==").Token().Or(Keyword("!=").Token())
+             from compareTo in Symbol.Token()
+             let eq = _eq == "=="
+             select new ConditionalSymbolExpressionToken(expression, eq, compareTo))
                 .WithPosition();
 
         static readonly Parser<RepetitionToken> Repetition =
@@ -151,6 +174,12 @@ namespace Octostache.Templates
                 .AtLeastOnce()
                 .Select(s => new TextToken(s.ToList()))
                 .WithPosition();
+
+        public static readonly Parser<string> QuotedText =
+            (from open in Parse.Char('"')
+             from content in Parse.CharExcept(new[] { '"', '#' }).Many().Text()
+             from close in Parse.Char('"')
+             select content).Token();
 
         static readonly Parser<TemplateToken> Token =
             Conditional.Select(t => (TemplateToken)t)

@@ -5,38 +5,64 @@ namespace Octostache.Templates
 {
     /// <summary>
     /// Example: <code>#{if Octopus.IsCool}...#{/if}</code>
+    /// Example: <code>#{if Octopus.CoolStatus != "Uncool"}...#{/if}</code>
+    /// Example: <code>#{if Octopus.IsCool == Octostache.IsCool}...#{/if}</code>
     /// </summary>
     class ConditionalToken : TemplateToken
     {
-        readonly SymbolExpression expression;
-        readonly TemplateToken[] truthyTemplate;
-        readonly TemplateToken[] falsyTemplate;
-
-        public ConditionalToken(SymbolExpression expression, IEnumerable<TemplateToken> truthyBranch, IEnumerable<TemplateToken> falsyBranch)
+        public ConditionalToken(ConditionalExpressionToken token, IEnumerable<TemplateToken> truthyBranch, IEnumerable<TemplateToken> falsyBranch)
         {
-            this.expression = expression;
-            truthyTemplate = truthyBranch.ToArray();
-            falsyTemplate = falsyBranch.ToArray();
+            Token = token;
+            TruthyTemplate = truthyBranch.ToArray();
+            FalsyTemplate = falsyBranch.ToArray();
         }
 
-        public SymbolExpression Expression
-        {
-            get { return expression; }
-        }
+        public ConditionalExpressionToken Token { get; }
 
-        public TemplateToken[] TruthyTemplate
-        {
-            get { return truthyTemplate; }
-        }
+        public TemplateToken[] TruthyTemplate { get; }
 
-        public TemplateToken[] FalsyTemplate
-        {
-            get { return falsyTemplate; }
-        }
+        public TemplateToken[] FalsyTemplate { get; }
 
         public override string ToString()
         {
-            return "#{if " + Expression + "}" + string.Join("", TruthyTemplate.Cast<object>()) + "#{else}" + string.Join("", FalsyTemplate.Cast<object>()) + "#{/if}";
+            return "#{if " + Token.LeftSide + Token.EqualityText + "}" + string.Join("", TruthyTemplate.Cast<object>()) + "#{else}" + string.Join("", FalsyTemplate.Cast<object>()) + "#{/if}";
+        }
+    }
+
+    class ConditionalExpressionToken : TemplateToken
+    {
+        public SymbolExpression LeftSide { get; }
+        public virtual string EqualityText => "";
+
+        public ConditionalExpressionToken(SymbolExpression leftSide)
+        {
+            LeftSide = leftSide;
+        }
+    }
+
+    class ConditionalStringExpressionToken : ConditionalExpressionToken
+    {
+        public string RightSide { get; }
+        public bool Equality { get; }
+        public override string EqualityText => " " + (Equality ? "==" : "!=") + " " + RightSide + " ";
+
+        public ConditionalStringExpressionToken(SymbolExpression leftSide, bool eq, string rightSide) : base(leftSide)
+        {
+            Equality = eq;
+            RightSide = rightSide;
+        }
+    }
+
+    class ConditionalSymbolExpressionToken : ConditionalExpressionToken
+    {
+        public SymbolExpression RightSide { get; }
+        public bool Equality { get; }
+        public override string EqualityText => " " + (Equality ? "==" : "!=") + " " + RightSide + " ";
+
+        public ConditionalSymbolExpressionToken(SymbolExpression leftSide, bool eq, SymbolExpression rightSide) : base(leftSide)
+        {
+            Equality = eq;
+            RightSide = rightSide;
         }
     }
 }

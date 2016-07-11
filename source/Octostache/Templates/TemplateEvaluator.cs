@@ -93,10 +93,40 @@ namespace Octostache.Templates
         void EvaluateConditionalToken(EvaluationContext context, ConditionalToken ct)
         {
             string[] innerTokens;
-            var value = context.Resolve(ct.Expression, out innerTokens);
+            var leftSide = context.Resolve(ct.Token.LeftSide, out innerTokens);
             _missingTokens.AddRange(innerTokens);
 
-            if (IsTruthy(value))
+            var eqToken = ct.Token as ConditionalStringExpressionToken;
+            if (eqToken != null)
+            {
+                var comparer = eqToken.Equality ? new Func<string, string, bool>((x, y) => x == y) : (x, y) => x != y;
+
+                if(comparer(leftSide, eqToken.RightSide))
+                    Evaluate(ct.TruthyTemplate, context);
+                else
+                    Evaluate(ct.FalsyTemplate, context);
+
+                return;
+            }
+
+            var symToken = ct.Token as ConditionalSymbolExpressionToken;
+            if (symToken != null)
+            {
+                var comparer = symToken.Equality ? new Func<string, string, bool>((x, y) => x == y) : (x, y) => x != y;
+
+                string[] innerTokns;
+                var rightSide = context.Resolve(symToken.RightSide, out innerTokns);
+                _missingTokens.AddRange(innerTokens);
+
+                if (comparer(leftSide, rightSide))
+                    Evaluate(ct.TruthyTemplate, context);
+                else
+                    Evaluate(ct.FalsyTemplate, context);
+
+                return;
+            }
+
+            if (IsTruthy(leftSide))
                 Evaluate(ct.TruthyTemplate, context);
             else
                 Evaluate(ct.FalsyTemplate, context);
@@ -146,6 +176,8 @@ namespace Octostache.Templates
 
         static bool IsTruthy(string value)
         {
+
+
             return value != "0" &&
                 value != "" &&
                 string.Compare(value, "no", StringComparison.OrdinalIgnoreCase) != 0 &&
