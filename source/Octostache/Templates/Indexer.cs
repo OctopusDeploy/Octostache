@@ -2,21 +2,26 @@
 {
     class Indexer : SymbolExpressionStep
     {
-        readonly string _index;
-
         public Indexer(string index)
         {
-            _index = index;
+            Index = index;
         }
 
-        public string Index
+        public Indexer(SymbolExpression expression)
         {
-            get { return _index; }
+            Symbol = expression;
+            
         }
+
+        public string Index { get; }
+
+        public SymbolExpression Symbol { get; }
+
+        public bool IsSymbol => Symbol != null; 
 
         public override string ToString()
         {
-            return "[" + Index + "]";
+            return "[" + (IsSymbol ? Symbol.ToString() : Index) + "]";
         }
     }
 }

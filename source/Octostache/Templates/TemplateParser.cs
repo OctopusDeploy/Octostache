@@ -20,12 +20,32 @@ namespace Octostache.Templates
             .Select(s => new Identifier(s))
             .WithPosition();
 
-        
+        static readonly Parser<string> LDelim = Parse.String("#{").Except(Parse.String("#{/")).Text();
+        static readonly Parser<string> RDelim = Parse.String("}").Text();
+
+        static readonly Parser<SubstitutionToken> Substitution =
+            (from ldelim in LDelim
+             from expression in Expression.Token()
+             from rdelim in RDelim
+             select new SubstitutionToken(expression))
+                .WithPosition();
+
+        static readonly Parser<Indexer> StringIndexer =
+            (from index in Parse.CharExcept(']').AtLeastOnce().Text()
+             select new Indexer(index))
+                .WithPosition();
+
+        static readonly Parser<Indexer> SymbolIndexer =
+            (from index in Substitution.Token()
+             where index.Expression is SymbolExpression
+             select new Indexer(index.Expression as SymbolExpression))
+                .WithPosition();
+
         static readonly Parser<Indexer> Indexer =
             (from open in Parse.Char('[')
-             from index in Parse.CharExcept(']').AtLeastOnce().Text()
+             from index in SymbolIndexer.Token().Or(StringIndexer.Token())
              from close in Parse.Char(']')
-             select new Indexer(index))
+             select index)
                 .WithPosition()
                 .Named("indexer");
 
@@ -48,16 +68,6 @@ namespace Octostache.Templates
         static readonly Parser<ContentExpression> Expression =
             FilterChain.Select(c => (ContentExpression)c)
             .Or(Symbol);
-
-        static readonly Parser<string> LDelim = Parse.String("#{").Except(Parse.String("#{/")).Text();
-        static readonly Parser<string> RDelim = Parse.String("}").Text();
-
-        static readonly Parser<SubstitutionToken> Substitution =
-            (from ldelim in LDelim
-             from expression in Expression.Token()
-             from rdelim in RDelim
-             select new SubstitutionToken(expression))
-                .WithPosition();
 
         static Parser<T> FollowedBy<T>(this Parser<T> parser, string lookahead)
         {

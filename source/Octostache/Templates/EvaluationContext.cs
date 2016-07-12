@@ -65,6 +65,21 @@ namespace Octostache.Templates
             {
                 var val = binding;
                 missingTokens = new string[0];
+
+                //any indexers that are lookups, do them now so we are in the right context
+                //take a copy so the lookup version remains for later use
+                expression = new SymbolExpression(expression.Steps.Select(s =>
+                {
+                    var indexer = s as Indexer;
+                    if (indexer != null && indexer.IsSymbol)
+                    {
+                        string[] missing;
+                        var index = WalkTo(indexer.Symbol, out missing);
+                        return new Indexer(index.Item);
+                    }
+                    return s;
+                }));
+
                 foreach (var step in expression.Steps)
                 {
                     var iss = step as Identifier;
@@ -76,7 +91,7 @@ namespace Octostache.Templates
                     else
                     {
                         var ix = step as Indexer;
-                        if (ix != null)
+                        if (ix != null && !ix.IsSymbol)
                         {
                             if (ix.Index == "*" && val.Indexable.Count > 0)
                             {

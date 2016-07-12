@@ -177,6 +177,39 @@ namespace Octostache.Tests
         }
 
         [Test]
+        public void ScopedSymbolIndexerInIterationIsSupported()
+        {
+            var result = Evaluate("#{each action in Octopus.Action}#{if Octopus.Step[#{action.StepName}].Status != \"Skipped\"}#{Octopus.Step[#{action.StepName}].Details}#{/if}#{/each}",
+                new Dictionary<string, string>
+                {
+                    { "Octopus.Action[Action 1].StepName", "Step 1" },
+                    { "Octopus.Action[Action 2].StepName", "Step 2" },
+                    { "Octopus.Step[Step 1].Details", "Step 1 Details" },
+                    { "Octopus.Step[Step 2].Details", "Step 2 Details" },
+                    { "Octopus.Step[Step 1].Status", "Skipped" },
+                    { "Octopus.Step[Step 2].Status", "Running" },
+                });
+
+            Assert.AreEqual("Step 2 Details", result);
+        }
+
+        [Test]
+        public void UnscopedIndexerInIterationIsSupported()
+        {
+            var result = Evaluate("#{each action in Octopus.Action}#{if Octopus.Step[#{SomeOtherVariable}].Status == \"Skipped\"}#{Octopus.Step[#{SomeOtherVariable}].Details}#{/if}#{/each}",
+                new Dictionary<string, string>
+                {
+                    { "Octopus.Action[Action 1].StepName", "Step 1" },
+                    { "Octopus.Action[Action 2].StepName", "Step 2" },
+                    { "Octopus.Step[OtherVariableValue].Details", "Octopus" },
+                    { "Octopus.Step[OtherVariableValue].Status", "Skipped" },
+                    { "SomeOtherVariable", "OtherVariableValue" }
+                });
+
+            Assert.AreEqual("OctopusOctopus", result);
+        }
+
+        [Test]
         public void ConditionalIsSupported()
         {
             var result = Evaluate("#{if Truthy}#{Result}#{/if}",
@@ -214,6 +247,19 @@ namespace Octostache.Tests
                 });
 
             Assert.AreEqual("result", result);
+        }
+
+        [Test]
+        public void IndexingWithASymbolIsSupported()
+        {
+            var result = Evaluate("#{Octopus.Step[#{action.StepName}].Status.Code}",
+                new Dictionary<string, string>
+                {
+                    { "action.StepName", "Step 1" },
+                    { "Octopus.Step[Step 1].Status.Code", "Running" },
+                });
+
+            Assert.AreEqual("Running", result);
         }
 
         [Test]
