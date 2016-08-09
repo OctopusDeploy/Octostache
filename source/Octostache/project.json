@@ -1,0 +1,17 @@
+{
+  "version": "0.0.0-*",
+  "dependencies": {
+    "MarkdownSharp": "1.13.0.0",
+    "Newtonsoft.Json": "6.0.8",
+    "Sprache": "2.0.0.45"
+  },
+  "frameworks": {
+    "net40": {
+      "frameworkAssemblies": {
+        "System.Core": "*",
+        "System.Runtime.Caching": "*",
+        "Microsoft.CSharp": "*"
+      }
+    }
+  }
+}

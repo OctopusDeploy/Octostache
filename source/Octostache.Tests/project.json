@@ -1,0 +1,21 @@
+{
+  "version": "0.0.0-*",
+  "dependencies": {
+    "Newtonsoft.Json": "6.0.8",
+    "NUnit": "2.6.4",
+    "Sprache": "2.0.0.45",
+    "Octostache": "*"
+  },
+  "frameworks": {
+    "net40": {
+      "frameworkAssemblies": {
+        "System.Core": "*",
+        "System.Xml.Linq": "*",
+        "System.Data.DataSetExtensions": "*",
+        "Microsoft.CSharp": "*",
+        "System.Data": "*",
+        "System.Xml": "*"
+      }
+    }
+  }
+}

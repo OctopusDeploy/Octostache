@@ -1,11 +1,11 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Octostache", "Octostache\Octostache.csproj", "{84654EEE-89BE-4507-A253-98F674417CF9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Octostache", "Octostache\Octostache.xproj", "{84654EEE-89BE-4507-A253-98F674417CF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Octostache.Tests", "Octostache.Tests\Octostache.Tests.csproj", "{31E68EAE-742C-4FA5-9C63-FE50F7D269D3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Octostache.Tests", "Octostache.Tests\Octostache.Tests.xproj", "{31E68EAE-742C-4FA5-9C63-FE50F7D269D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
