@@ -1,16 +1,25 @@
 {
   "version": "0.0.0-*",
   "dependencies": {
-    "MarkdownSharp": "1.13.0.0",
-    "Newtonsoft.Json": "6.0.8",
-    "Sprache": "2.0.0.45"
+    "Markdown": "2.0.0",
+    "NETStandard.Library": "1.6.0",
+    "Newtonsoft.Json": "9.0.1",
+    "Sprache": "2.0.1"
   },
   "frameworks": {
-    "net40": {
+    "net451": {
       "frameworkAssemblies": {
         "System.Core": "*",
         "System.Runtime.Caching": "*",
         "Microsoft.CSharp": "*"
+      },
+      "buildOptions": {
+        "define": [ "NET46" ]
+      }
+    },
+    "netstandard1.6": {
+      "dependencies": {
+        "Microsoft.Extensions.Caching.Memory": "1.0.0"
       }
     }
   }

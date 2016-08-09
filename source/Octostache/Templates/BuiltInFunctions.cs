@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using MarkdownSharp;
+using HeyRed.MarkdownSharp;
 
 namespace Octostache.Templates
 {
@@ -67,8 +67,9 @@ namespace Octostache.Templates
             var options = new MarkdownOptions();
             options.AutoHyperlink = true;
             options.LinkEmails = true;
+            options.AllowEmptyLinkText = true;
 
-            return new Markdown(options).Transform(raw.Trim());
+            return new Markdown(options).Transform(raw.Trim()) + "\n";
         }
 
         static string Escape(string raw, IDictionary<char, string> entities)
@@ -78,7 +79,7 @@ namespace Octostache.Templates
                 string entity;
                 if (entities.TryGetValue(c, out entity))
                     return entity;
-                return c.ToString(CultureInfo.InvariantCulture);
+                return c.ToString();
             }));
         }
 
