@@ -96,6 +96,58 @@ namespace Octostache.Tests
             Assert.That(() => ParseVariables(variableDefinitions).Evaluate(template), Throws.InvalidOperationException);
         }
 
+        [Test]
+        public void AbleToContinueWhenAParsingErrorIsHit()
+        {
+            const string input =
+                @"webpackJsonp([5],{139:function(e,n,o){""use strict"";(function(e){var o=""dev"",t=e?""prod"":o;n.ENV_MODE=t;var s=t===o;n.DEVELOPMENT_MODE=s;var
+                  r=""application/json; charset=utf-8"",a=function(e){return""#{""===e.substr(0,2)?void 0:e},i=""#{Web.Root}"";console.log(i);var l=""#{Wsf.Host}""
+                  ;console.log(l);var c=""#{Web.Site.Url[A]}"",u=a(c)||""http://localhost.com/apps/api"";n.APP_API_URL=u,n.getHeaders=function(e){return e||(e=new Headers),
+                  s&&(e.append(""SSO-LOGONID"",""username""),e.append(""X-Delta-ClientCode"",""UBS_YK""),e.append(""Accept"",""application/json"")),
+                  e.append(""Content-Type"",r),e}}).call(n,o(91))},241:function(e,n,o){""use strict"";o(139),o(262)},259:function(e,n,o){""use strict"";o(241)},262:
+                  function(e,n,o){""use strict"";var t=o(139),s=function(e){var n=function(e){e.withCredentials=!0;var n=t.getHeaders(new Headers);
+                  n.forEach(function(n,o){e.setRequestHeader(o,n)})";
+
+            var result = Evaluate(input, new Dictionary<string, string>
+            {
+                { "Web.Site.Url[A]", "Subbed.Web.Site.A" },
+                { "Web.Root", "Subbed.Web.Root" },
+                { "Wsf.Host", "Subbed.Wsf.Host" }
+            }, haltOnError: false);
+
+            const string match =
+                @"webpackJsonp([5],{139:function(e,n,o){""use strict"";(function(e){var o=""dev"",t=e?""prod"":o;n.ENV_MODE=t;var s=t===o;n.DEVELOPMENT_MODE=s;var
+                  r=""application/json; charset=utf-8"",a=function(e){return""#{""===e.substr(0,2)?void 0:e},i=""Subbed.Web.Root"";console.log(i);var l=""Subbed.Wsf.Host""
+                  ;console.log(l);var c=""Subbed.Web.Site.A"",u=a(c)||""http://localhost.com/apps/api"";n.APP_API_URL=u,n.getHeaders=function(e){return e||(e=new Headers),
+                  s&&(e.append(""SSO-LOGONID"",""username""),e.append(""X-Delta-ClientCode"",""UBS_YK""),e.append(""Accept"",""application/json"")),
+                  e.append(""Content-Type"",r),e}}).call(n,o(91))},241:function(e,n,o){""use strict"";o(139),o(262)},259:function(e,n,o){""use strict"";o(241)},262:
+                  function(e,n,o){""use strict"";var t=o(139),s=function(e){var n=function(e){e.withCredentials=!0;var n=t.getHeaders(new Headers);
+                  n.forEach(function(n,o){e.setRequestHeader(o,n)})";
+
+            Assert.AreEqual(match, result);
+        }
+
+        [Test]
+        public void AbleToContinueWhenAParsingErrorIsHitAtEndOfString()
+        {
+            const string input =
+                @"i=""#{Web.Root}"";console.log(i);var l=""#{Wsf.Host}""
+                  ;a=function(e){return""#{";
+
+            var result = Evaluate(input, new Dictionary<string, string>
+            {
+                { "Web.Site.Url[A]", "Subbed.Web.Site.A" },
+                { "Web.Root", "Subbed.Web.Root" },
+                { "Wsf.Host", "Subbed.Wsf.Host" }
+            }, haltOnError: false);
+
+            const string match =
+                @"i=""Subbed.Web.Root"";console.log(i);var l=""Subbed.Wsf.Host""
+                  ;a=function(e){return""#{";
+
+            Assert.AreEqual(match, result);
+        }
+
 
         [Test]
         public void Required()
@@ -449,14 +501,15 @@ namespace Octostache.Tests
             Assert.AreEqual("{\r\n  \"Name\": \"Web01\",\r\n  \"Port\": \"10933\"\r\n}", variables.SaveAsString());
         }
 
-        static string Evaluate(string template, IDictionary<string, string> variables)
+        static string Evaluate(string template, IDictionary<string, string> variables, bool haltOnError = true)
         {
             var dictionary = new VariableDictionary();
             foreach (var pair in variables)
             {
                 dictionary[pair.Key] = pair.Value;
             }
-            return dictionary.Evaluate(template);
+            string error;
+            return dictionary.Evaluate(template, out error, haltOnError);
         }
 
         private static VariableDictionary ParseVariables(string variableDefinitions)

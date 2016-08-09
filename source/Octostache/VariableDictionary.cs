@@ -160,14 +160,15 @@ namespace Octostache
         /// </summary>
         /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>
         /// <param name="error">Any parsing errors silently found.</param>
+        /// <param name="haltOnError">Stop parsing if an error is found.</param>
         /// <returns>The result of the expression.</returns>
-        public string Evaluate(string expressionOrVariableOrText, out string error)
+        public string Evaluate(string expressionOrVariableOrText, out string error, bool haltOnError = true)
         {
             error = null;
             if (expressionOrVariableOrText == null) return null;
 
             Template template;
-            if (!TemplateParser.TryParseTemplate(expressionOrVariableOrText, out template, out error))
+            if (!TemplateParser.TryParseTemplate(expressionOrVariableOrText, out template, out error, haltOnError))
                 return expressionOrVariableOrText;
 
             using (var writer = new StringWriter())

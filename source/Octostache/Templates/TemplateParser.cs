@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
-using System.Net.Sockets;
 #if NET46
 using System.Runtime.Caching;
 #else
@@ -145,12 +144,12 @@ namespace Octostache.Templates
                  new ConditionalToken(expression, Enumerable.Empty<TemplateToken>(), truthy))
                 .WithPosition();
 
-        private static readonly Parser<ConditionalExpressionToken> TruthyMatch =
+        static readonly Parser<ConditionalExpressionToken> TruthyMatch =
             (from expression in Symbol.Token()
              select new ConditionalExpressionToken(expression))
                 .WithPosition();
 
-        private static readonly Parser<ConditionalExpressionToken> TokenMatch =
+        static readonly Parser<ConditionalExpressionToken> TokenMatch =
             (from expression in Symbol.Token()
              from _eq in Keyword("==").Token().Or(Keyword("!=").Token())
              from compareTo in QuotedText.Token()
@@ -158,7 +157,7 @@ namespace Octostache.Templates
              select new ConditionalStringExpressionToken(expression, eq, compareTo))
                 .WithPosition();
 
-        private static readonly Parser<ConditionalExpressionToken> StringMatch =
+        static readonly Parser<ConditionalExpressionToken> StringMatch =
             (from expression in Symbol.Token()
              from _eq in Keyword("==").Token().Or(Keyword("!=").Token())
              from compareTo in Symbol.Token()
@@ -203,6 +202,9 @@ namespace Octostache.Templates
 
         static readonly Parser<TemplateToken[]> Template =
             Token.Many().Select(tokens => tokens.ToArray());
+
+        static readonly Parser<TemplateToken[]> ContinueOnErrorsTemplate =
+            Token.ContinueMany().Select(tokens => tokens.ToArray());
 
         static Parser<T> WithPosition<T>(this Parser<T> parser) where T : IInputToken
         {
@@ -265,18 +267,20 @@ namespace Octostache.Templates
         }
 
 
-        public static bool TryParseTemplate(string template, out Template result, out string error)
+        public static bool TryParseTemplate(string template, out Template result, out string error, bool haltOnError = true)
         {
+            var parser = haltOnError ? Template : ContinueOnErrorsTemplate;
+
             var cached = Cache.Get(template) as Template;
             if (cached == null)
             {
-                var tokens = Template.End().TryParse(template);
+                var tokens = parser.End().TryParse(template);
                 if (tokens.WasSuccessful)
                 {
                     result = new Template(tokens.Value);
                     error = null;
-                    cached = new Template(Template.End().Parse(template));
-                    AddToCache(template, cached);
+                    cached = new Template(parser.End().Parse(template));
+                    Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
                     return true;
                 }
                 result = null;
@@ -299,6 +303,45 @@ namespace Octostache.Templates
             }
             expression = null;
             return false;
+        }
+
+        // A copy of Sprache's built in Many but when it hits an error the unparsed text is returned
+        // as a text token and we continue
+        public static Parser<IEnumerable<TemplateToken>> ContinueMany(this Parser<TemplateToken> parser)
+        {
+            if (parser == null) throw new ArgumentNullException("parser");
+
+            return i =>
+            {
+                var remainder = i;
+                var result = new List<TemplateToken>();
+                var r = parser(i);
+
+                while (true)
+                {
+                    if (remainder.Equals(r.Remainder))
+                        break;
+
+                    if (r.WasSuccessful)
+                    {
+                        result.Add(r.Value);
+                    }
+                    else
+                    {
+                        var consumed = Consumed(remainder, r.Remainder);
+                        result.Add(new TextToken(new List<string> { consumed }));
+                    }
+                    remainder = r.Remainder;
+                    r = parser(remainder);
+                }
+
+                return Result.Success<IEnumerable<TemplateToken>>(result, remainder);
+            };
+        }
+
+        public static string Consumed(IInput before, IInput after)
+        {
+            return before.Source.Substring(before.Position, after.Position - before.Position);
         }
     }
 }
