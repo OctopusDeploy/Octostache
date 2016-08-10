@@ -14,7 +14,7 @@
         "Microsoft.CSharp": "*"
       },
       "buildOptions": {
-        "define": [ "NET46" ]
+        "define": [ "NET40" ]
       }
     },
     "netstandard1.6": {

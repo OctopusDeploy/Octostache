@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
-#if NET46
+using System.Net.Sockets;
+#if NET40
 using System.Runtime.Caching;
 #else
 using Microsoft.Extensions.Caching.Memory;
@@ -220,7 +221,7 @@ namespace Octostache.Templates
 
         static readonly MemoryCache Cache;
 
-#if NET46
+#if NET40
         static TemplateParser()
         {
             Cache = new MemoryCache("Octostache", new NameValueCollection() { { "CacheMemoryLimitMegabytes", (20 * 1024).ToString() } });
@@ -280,7 +281,7 @@ namespace Octostache.Templates
                     result = new Template(tokens.Value);
                     error = null;
                     cached = new Template(parser.End().Parse(template));
-                    Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
+                    AddToCache(template, cached);
                     return true;
                 }
                 result = null;
