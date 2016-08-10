@@ -231,11 +231,6 @@ namespace Octostache.Templates
         {
             Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
         }
-        
-        private static Template GetFromCache(string template)
-        {
-            return Cache.Get(template) as Template;
-        }
 
 #else
         static TemplateParser()
@@ -249,12 +244,12 @@ namespace Octostache.Templates
         {
             Cache.Set(template, cached, new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(10) });
         }
+#endif
+
         private static Template GetFromCache(string template)
         {
             return Cache.Get(template) as Template;
         }
-#endif
-
         public static Template ParseTemplate(string template)
         {
             var cached = GetFromCache(template);
