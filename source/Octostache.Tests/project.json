@@ -5,20 +5,10 @@
     "Octostache": "*",
     "NUnit": "3.4.1",
     "dotnet-test-nunit": "3.4.0-beta-1",
-    "Sprache": "2.1.0-develop-00006"
+    "Sprache": "2.1.0-develop-00007",
   },
   "testRunner": "nunit",
   "frameworks": {
-    "net46": {
-      "frameworkAssemblies": {
-        "System.Core": "*",
-        "System.Xml.Linq": "*",
-        "System.Data.DataSetExtensions": "*",
-        "Microsoft.CSharp": "*",
-        "System.Data": "*",
-        "System.Xml": "*"
-      }
-    },
     "netcoreapp1.0": {
       "imports": "portable-net45+win8",
       "dependencies": {
