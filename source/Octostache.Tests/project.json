@@ -3,9 +3,9 @@
   "dependencies": {
     "Newtonsoft.Json": "9.0.1",
     "Octostache": "*",
-    "NUnit": "3.4.1",
-    "dotnet-test-nunit": "3.4.0-beta-1",
     "Sprache": "2.1.0-develop-00007",
+    "dotnet-test-nunit": "3.4.0-beta-2",
+    "NUnit": "3.4.1"
   },
   "testRunner": "nunit",
   "frameworks": {
