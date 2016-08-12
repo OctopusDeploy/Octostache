@@ -1,7 +1,7 @@
 {
   "version": "0.0.0-*",
   "dependencies": {
-    "Markdown": "2.0.0",
+    "Markdown": "2.1.0",
     "NETStandard.Library": "1.6.0",
     "Newtonsoft.Json": "9.0.1",
     "Sprache": "2.1.0-develop-00007"
