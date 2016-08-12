@@ -7,17 +7,7 @@
     "Sprache": "2.1.0-develop-00007"
   },
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Core": "*",
-        "System.Runtime.Caching": "*",
-        "Microsoft.CSharp": "*"
-      },
-      "buildOptions": {
-        "define": [ "NET40" ]
-      }
-    },
-    "netstandard1.6": {
+    "netstandard1.3": {
       "dependencies": {
         "Microsoft.Extensions.Caching.Memory": "1.0.0"
       }

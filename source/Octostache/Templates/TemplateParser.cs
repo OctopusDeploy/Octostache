@@ -4,11 +4,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Net.Sockets;
-#if NET40
-using System.Runtime.Caching;
-#else
 using Microsoft.Extensions.Caching.Memory;
-#endif
 using Sprache;
 
 namespace Octostache.Templates
@@ -221,21 +217,9 @@ namespace Octostache.Templates
 
         static readonly MemoryCache Cache;
 
-#if NET40
         static TemplateParser()
         {
-            Cache = new MemoryCache("Octostache", new NameValueCollection() { { "CacheMemoryLimitMegabytes", (20 * 1024).ToString() } });
-        }
-
-        private static void AddToCache(string template, Template cached)
-        {
-            Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
-        }
-
-#else
-        static TemplateParser()
-        {
-            //todo: there is currently no support for CacheMemoryLimitMegabytes or similar
+            //todo: there is currently no support for CacheMemoryLimitMegabytes or similar (which is supported by the 4.5.1 System.Runtime.Caching.MemoryCache)
             //todo: there is currently no support for naming the cache
             Cache = new MemoryCache(new MemoryCacheOptions());
         }
@@ -244,12 +228,12 @@ namespace Octostache.Templates
         {
             Cache.Set(template, cached, new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(10) });
         }
-#endif
 
         private static Template GetFromCache(string template)
         {
             return Cache.Get(template) as Template;
         }
+
         public static Template ParseTemplate(string template)
         {
             var cached = GetFromCache(template);
