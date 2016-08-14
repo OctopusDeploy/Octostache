@@ -1,0 +1,22 @@
+{
+  "version": "0.0.0-*",
+  "dependencies": {
+    "Newtonsoft.Json": "9.0.1",
+    "Octostache": "*",
+    "Sprache": "2.1.0-develop-00007",
+    "dotnet-test-nunit": "3.4.0-beta-2",
+    "NUnit": "3.4.1"
+  },
+  "testRunner": "nunit",
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": "portable-net45+win8",
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
+    }
+  }
+}

@@ -91,10 +91,9 @@ namespace Octostache.Tests
         [Test]
         [TestCase("#{Foo}", "Foo=#{Foo}")]
         [TestCase("#{Foo}", "Foo=#{Fox};Fox=#{Fax};Fax=#{Fix};Fix=#{Foo}")]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void MaximumRecursionLimitException(string template, string variableDefinitions)
         {
-            ParseVariables(variableDefinitions).Evaluate(template);
+            Assert.That(() => ParseVariables(variableDefinitions).Evaluate(template), Throws.InvalidOperationException);
         }
 
         [Test]
@@ -499,7 +498,10 @@ namespace Octostache.Tests
             variables.Set("Name", "Web01");
             variables.Set("Port", "10933");
 
-            Assert.AreEqual("{\r\n  \"Name\": \"Web01\",\r\n  \"Port\": \"10933\"\r\n}", variables.SaveAsString());
+            Assert.AreEqual("{" + Environment.NewLine +
+                            "  \"Name\": \"Web01\"," + Environment.NewLine +
+                            "  \"Port\": \"10933\"" + Environment.NewLine +
+                            "}", variables.SaveAsString());
         }
 
         static string Evaluate(string template, IDictionary<string, string> variables, bool haltOnError = true)
