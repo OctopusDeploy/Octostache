@@ -14,7 +14,7 @@ var configuration = Argument("configuration", "Release");
 // GLOBAL VARIABLES
 ///////////////////////////////////////////////////////////////////////////////
 var artifactsDir = "./artifacts";
-var globalAssemblyFile = "./src/GlobalAssemblyInfo.cs";
+var globalAssemblyFile = "./source/Octostache/Properties/AssemblyInfo.cs";
 var projectToPackage = "./source/Octostache";
 
 var isContinuousIntegrationBuild = !BuildSystem.IsLocalBuild;
