@@ -7,3 +7,5 @@ artifacts:
 - path: artifacts\**\*.*
 cache:
 - '%USERPROFILE%\.nuget\packages'
+test: off
+deploy: off
