@@ -49,7 +49,8 @@ Task("__Default")
     .IsDependentOn("__Build")
     .IsDependentOn("__Test")
     .IsDependentOn("__UpdateProjectJsonVersion")
-    .IsDependentOn("__Pack");
+    .IsDependentOn("__Pack")
+    .IsDependentOn("__Publish");
 
 Task("__Clean")
     .Does(() =>
@@ -132,14 +133,14 @@ Task("__Publish")
 
     if (shouldPushToMyGet)
     {
-        NuGetPush("artifacts\Octostache.*.nupkg", new NuGetPushSettings {
+        NuGetPush("artifacts/Octostache.*.nupkg", new NuGetPushSettings {
             Source = "https://octopus.myget.org/F/octopus-dependencies/",
             ApiKey = EnvironmentVariable("MyGetApiKey")
         });
     }
     if (shouldPushToNuGet)
     {
-        NuGetPush("artifacts\Octostache.*.nupkg", new NuGetPushSettings {
+        NuGetPush("artifacts/Octostache.*.nupkg", new NuGetPushSettings {
             Source = "https://www.nuget.org/api/v2/package",
             ApiKey = EnvironmentVariable("NuGetApiKey")
         });
