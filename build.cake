@@ -122,6 +122,30 @@ Task("__Pack")
     });
 });
 
+Task("__Publish")
+    .Does(() =>
+{
+    var isPullRequest = !String.IsNullOrEmpty(EnvironmentVariable("APPVEYOR_PULL_REQUEST_NUMBER"));
+    var isMasterBranch = EnvironmentVariable("APPVEYOR_REPO_BRANCH") == "master" && !isPullRequest;
+    var shouldPushToMyGet = !BuildSystem.IsLocalBuild;
+    var shouldPushToNuGet = !BuildSystem.IsLocalBuild && isMasterBranch;
+
+    if (shouldPushToMyGet)
+    {
+        NuGetPush("artifacts\Octostache.*.nupkg", new NuGetPushSettings {
+            Source = "https://octopus.myget.org/F/octopus-dependencies/",
+            ApiKey = EnvironmentVariable("MyGetApiKey")
+        });
+    }
+    if (shouldPushToNuGet)
+    {
+        NuGetPush("artifacts\Octostache.*.nupkg", new NuGetPushSettings {
+            Source = "https://www.nuget.org/api/v2/package",
+            ApiKey = EnvironmentVariable("NuGetApiKey")
+        });
+    }
+});
+
 //////////////////////////////////////////////////////////////////////
 // TASKS
 //////////////////////////////////////////////////////////////////////
