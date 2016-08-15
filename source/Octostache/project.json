@@ -1,13 +1,5 @@
 {
   "version": "0.0.0-*",
-  "tools": {
-    "dotnet-gitversion": {
-      "version": "*",
-      "imports": [
-        "dotnet"
-      ]
-    }
-  },
   "dependencies": {
     "Markdown": "2.1.0",
     "NETStandard.Library": "1.6.0",
