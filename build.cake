@@ -124,6 +124,7 @@ Task("__Pack")
 });
 
 Task("__Publish")
+    .WithCriteria(isContinuousIntegrationBuild)
     .Does(() =>
 {
     var isPullRequest = !String.IsNullOrEmpty(EnvironmentVariable("APPVEYOR_PULL_REQUEST_NUMBER"));
@@ -133,14 +134,22 @@ Task("__Publish")
 
     if (shouldPushToMyGet)
     {
-        NuGetPush("artifacts/Octostache.*.nupkg", new NuGetPushSettings {
+        NuGetPush("artifacts/Octostache." + nugetVersion + ".nupkg", new NuGetPushSettings {
+            Source = "https://octopus.myget.org/F/octopus-dependencies/",
+            ApiKey = EnvironmentVariable("MyGetApiKey")
+        });
+        NuGetPush("artifacts/Octostache." + nugetVersion + ".symbols.nupkg", new NuGetPushSettings {
             Source = "https://octopus.myget.org/F/octopus-dependencies/",
             ApiKey = EnvironmentVariable("MyGetApiKey")
         });
     }
     if (shouldPushToNuGet)
     {
-        NuGetPush("artifacts/Octostache.*.nupkg", new NuGetPushSettings {
+        NuGetPush("artifacts/Octostache." + nugetVersion + ".nupkg", new NuGetPushSettings {
+            Source = "https://www.nuget.org/api/v2/package",
+            ApiKey = EnvironmentVariable("NuGetApiKey")
+        });
+        NuGetPush("artifacts/Octostache." + nugetVersion + ".symbols.nupkg", new NuGetPushSettings {
             Source = "https://www.nuget.org/api/v2/package",
             ApiKey = EnvironmentVariable("NuGetApiKey")
         });
