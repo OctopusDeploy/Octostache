@@ -135,11 +135,11 @@ Task("__Publish")
     if (shouldPushToMyGet)
     {
         NuGetPush("artifacts/Octostache." + nugetVersion + ".nupkg", new NuGetPushSettings {
-            Source = "https://octopus.myget.org/F/octopus-dependencies/",
+            Source = "https://www.myget.org/F/octopus-dependencies/api/v2/package",
             ApiKey = EnvironmentVariable("MyGetApiKey")
         });
         NuGetPush("artifacts/Octostache." + nugetVersion + ".symbols.nupkg", new NuGetPushSettings {
-            Source = "https://octopus.myget.org/F/octopus-dependencies/",
+            Source = "https://www.myget.org/F/octopus-dependencies/api/v2/package",
             ApiKey = EnvironmentVariable("MyGetApiKey")
         });
     }
