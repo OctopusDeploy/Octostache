@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/g4975pdrvf4cubr0?svg=true)](https://ci.appveyor.com/project/OctopusDeploy/octostache)
+
 Octostache is the variable substitution syntax for Octopus Deploy. 
 
 Octopus allows you to [define variables](http://docs.octopusdeploy.com/display/OD/Variables), which can then be referenced from deployment steps and in scripts using the following syntax:
