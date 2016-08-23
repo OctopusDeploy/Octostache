@@ -56,8 +56,8 @@ Task("__Clean")
     .Does(() =>
 {
     CleanDirectory(artifactsDir);
-    CleanDirectories("./src/**/bin");
-    CleanDirectories("./src/**/obj");
+    CleanDirectories("./source/**/bin");
+    CleanDirectories("./source/**/obj");
 });
 
 Task("__Restore")
