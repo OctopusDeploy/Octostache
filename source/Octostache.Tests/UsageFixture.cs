@@ -61,7 +61,7 @@ namespace Octostache.Tests
 
         [TestCase("#{Foo", "Foo=Bar;")]
         [TestCase("#{Fo[o}", "Foo=Bar;Fo[o]=Bar")]
-        [TestCase("#{each a in Action}","Action[a]=One")]
+        [TestCase("#{each a in Action}", "Action[a]=One")]
         public void ParseErrorExamples(string template, string variableDefinitions)
         {
             string error;
@@ -82,7 +82,7 @@ namespace Octostache.Tests
 
         [Test]
         [TestCase("#{ }", "Foo=Value; =Bar", "#{ }")]
-        [TestCase("#{}","Foo=Value;=Bar", "#{}")]
+        [TestCase("#{}", "Foo=Value;=Bar", "#{}")]
         public void EmptyValuesAreEchoed(string template, string variableDefinitions, string expectedResult)
         {
             var result = ParseVariables(variableDefinitions).Evaluate(template);
@@ -94,7 +94,7 @@ namespace Octostache.Tests
         [TestCase("#{Foo}", "Foo=#{Fox};Fox=#{Fax};Fax=#{Fix};Fix=#{Foo}")]
         public void MaximumRecursionLimitException(string template, string variableDefinitions)
         {
-            ParseVariables(variableDefinitions).Evaluate(template);
+            var ex = Assert.Throws<InvalidOperationException>(() => ParseVariables(variableDefinitions).Evaluate(template));
             Assert.That(ex.Message, Does.Contain("appears to have resulted in a self referencing loop"));
         }
 
@@ -172,7 +172,7 @@ namespace Octostache.Tests
 
             while (watch.ElapsedMilliseconds < 5000)
             {
-                result = Evaluate("Hello, #{Location}!", new Dictionary<string, string> {{"Location", "World"}});
+                result = Evaluate("Hello, #{Location}!", new Dictionary<string, string> { { "Location", "World" } });
                 Assert.That(result, Is.EqualTo("Hello, World!"));
                 iterations++;
             }
