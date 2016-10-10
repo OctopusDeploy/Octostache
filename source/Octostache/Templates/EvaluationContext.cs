@@ -31,15 +31,12 @@ namespace Octostache.Templates
             return val.Item ?? "";
         }
 
-
-
-
         private void ValidateNoRecursion(SymbolExpression expression)
         {
             var ancestor = this;
             while(ancestor != null)
             {
-                if (ancestor.symbolStack.Contains(expression))
+                if (ancestor.symbolStack.Contains(expression, SymbolExpression.StepsComparer))
                 {
                     throw new InvalidOperationException(string.Format("An attempt to parse the variable symbol \"{0}\" appears to have resulted in a self referencing loop. Ensure that recursive loops do not exist in the variable values.", expression));
                 }
@@ -47,14 +44,12 @@ namespace Octostache.Templates
             }
         }
 
-
         public string ResolveOptional(SymbolExpression expression, out string[] missingTokens)
         {
             var val = WalkTo(expression, out missingTokens);
             if (val == null) return null;
             return val.Item;
         }
-        
 
         Binding WalkTo(SymbolExpression expression, out string[] missingTokens)
         {
