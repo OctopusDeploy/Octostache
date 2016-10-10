@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Caching;
 using NUnit.Framework;
 
 namespace Octostache.Tests
@@ -12,17 +10,6 @@ namespace Octostache.Tests
     [TestFixture]
     public class UsageFixture
     {
-        [SetUp]
-        public void Setup()
-        {
-            //The TemplateParser Cache is retained between tests. A little hackery to clear it.
-            var parser = typeof(VariableDictionary).Assembly.GetType("Octostache.Templates.TemplateParser");
-            var cache = (MemoryCache)parser.GetField("Cache", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
-            foreach (var item in cache)
-            {
-                cache.Remove(item.Key);
-            }
-        }
 
         [Test]
         public void HowToUseTheDictionary()
