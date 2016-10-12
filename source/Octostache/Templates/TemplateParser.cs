@@ -19,6 +19,19 @@ namespace Octostache.Templates
             .Select(s => new Identifier(s))
             .WithPosition();
 
+
+
+        static readonly Parser<Identifier> IdentifierWithoutWhitespace = Parse
+         .Char(c => char.IsLetter(c) || char.IsDigit(c) || c == '_' || c == '-' || c == ':' || c == '/' || c == '~' || c == '(' || c == ')', "identifier")
+         .Except(Parse.WhiteSpace.FollowedBy("|"))
+         .ExceptWhiteSpaceBeforeKeyword()
+         .AtLeastOnce()
+         .Text()
+         .Select(s => new Identifier(s))
+         .WithPosition();
+
+
+
         static readonly Parser<string> LDelim = Parse.String("#{").Except(Parse.String("#{/")).Text();
         static readonly Parser<string> RDelim = Parse.String("}").Text();
 
@@ -58,14 +71,21 @@ namespace Octostache.Templates
              select new SymbolExpression(new[] { first }.Concat(rest)))
                 .WithPosition();
 
+
         // Some trickery applied here to prevent a left-recursive definition
-        static readonly Parser<FunctionCallExpression> FilterChain =
+        private static readonly Parser<FunctionCallExpression> FilterChain1 =
             from symbol in Symbol.Token()
-            from chain in Parse.Char('|').Then(_ => Identifier.Named("filter").WithPosition().Token()).AtLeastOnce()
-            select (FunctionCallExpression)chain.Aggregate((ContentExpression)symbol, (c, id) => new FunctionCallExpression(true, id.Text, c));
+            from chain in Parse.Char('|').Then(_ =>
+                from fn in IdentifierWithoutWhitespace.Named("filter").WithPosition().Token()
+                from option in Identifier.Token().Named("option").Optional()
+                select new {Function = fn.Text, arg = option}
+                ).AtLeastOnce()
+            select (FunctionCallExpression)chain.Aggregate((ContentExpression)symbol, 
+                (c, id) => new FunctionCallExpression(true, id.Function, c, id.arg.IsEmpty ? new Identifier[0] : new Identifier[] { id.arg.Get() }));
+
 
         static readonly Parser<ContentExpression> Expression =
-            FilterChain.Select(c => (ContentExpression)c)
+            FilterChain1.Select(c => (ContentExpression)c)
             .Or(Symbol);
 
         static Parser<T> FollowedBy<T>(this Parser<T> parser, string lookahead)

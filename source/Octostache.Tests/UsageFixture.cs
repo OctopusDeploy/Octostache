@@ -10,20 +10,8 @@ using NUnit.Framework;
 namespace Octostache.Tests
 {
     [TestFixture]
-    public class UsageFixture
+    public class UsageFixture :BaseFixture
     {
-        [SetUp]
-        public void Setup()
-        {
-            //The TemplateParser Cache is retained between tests. A little hackery to clear it.
-            var parser = typeof(VariableDictionary).Assembly.GetType("Octostache.Templates.TemplateParser");
-            var cache = (MemoryCache)parser.GetField("Cache", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
-            foreach (var item in cache)
-            {
-                cache.Remove(item.Key);
-            }
-        }
-
         [Test]
         public void HowToUseTheDictionary()
         {
@@ -319,11 +307,11 @@ namespace Octostache.Tests
         [Test]
         public void IndexingWithASymbolIsSupported()
         {
-            var result = Evaluate("#{Octopus.Step[#{action.StepName}].Status.Code}",
+            var result = Evaluate("#{Step[#{action.StepName}]}",
                 new Dictionary<string, string>
                 {
                     { "action.StepName", "Step 1" },
-                    { "Octopus.Step[Step 1].Status.Code", "Running" },
+                    { "Step[Step 1]", "Running" },
                 });
 
             Assert.AreEqual("Running", result);
@@ -362,61 +350,6 @@ namespace Octostache.Tests
             Assert.AreEqual("#{foo}", result);
         }
 
-        [Test]
-        public void UnmatchedSubstitutionsAreEchoedEvenWithFiltering()
-        {
-            var result = Evaluate("#{foo | ToUpper}", new Dictionary<string, string>());
-            Assert.AreEqual("#{foo | ToUpper}", result);
-        }
-
-        [Test]
-        public void UnknownFiltersAreEchoed()
-        {
-            var result = Evaluate("#{Foo | ToBazooka}", new Dictionary<string, string> { { "Foo", "Abc" } });
-            Assert.AreEqual("#{Foo | ToBazooka}", result);
-        }
-
-        [Test]
-        public void FiltersAreApplied()
-        {
-            var result = Evaluate("#{Foo | ToUpper}", new Dictionary<string, string> { { "Foo", "Abc" } });
-            Assert.AreEqual("ABC", result);
-        }
-
-        [Test]
-        public void HtmlIsEscaped()
-        {
-            var result = Evaluate("#{Foo | HtmlEscape}", new Dictionary<string, string> { { "Foo", "A&'bc" } });
-            Assert.AreEqual("A&amp;&apos;bc", result);
-        }
-
-        [Test]
-        public void XmlIsEscaped()
-        {
-            var result = Evaluate("#{Foo | XmlEscape}", new Dictionary<string, string> { { "Foo", "A&'bc" } });
-            Assert.AreEqual("A&amp;&apos;bc", result);
-        }
-
-        [Test]
-        public void JsonIsEscaped()
-        {
-            var result = Evaluate("#{Foo | JsonEscape}", new Dictionary<string, string> { { "Foo", "A&\"bc" } });
-            Assert.AreEqual("A&\\\"bc", result);
-        }
-
-        [Test]
-        public void MarkdownIsProcessed()
-        {
-            var result = Evaluate("#{Foo | Markdown}", new Dictionary<string, string> { { "Foo", "_yeah!_" } });
-            Assert.AreEqual("<p><em>yeah!</em></p>\n", result);
-        }
-
-        [Test]
-        public void FiltersAreAppliedInOrder()
-        {
-            var result = Evaluate("#{Foo|ToUpper|ToLower}", new Dictionary<string, string> { { "Foo", "Abc" } });
-            Assert.AreEqual("abc", result);
-        }
 
         [Test]
         public void DoubleHashEscapesToken()
@@ -515,33 +448,6 @@ namespace Octostache.Tests
             variables.Set("Port", "10933");
 
             Assert.AreEqual("{\r\n  \"Name\": \"Web01\",\r\n  \"Port\": \"10933\"\r\n}", variables.SaveAsString());
-        }
-
-        static string Evaluate(string template, IDictionary<string, string> variables, bool haltOnError = true)
-        {
-            var dictionary = new VariableDictionary();
-            foreach (var pair in variables)
-            {
-                dictionary[pair.Key] = pair.Value;
-            }
-            string error;
-            return dictionary.Evaluate(template, out error, haltOnError);
-        }
-
-        private static VariableDictionary ParseVariables(string variableDefinitions)
-        {
-            var variables = new VariableDictionary();
-
-            var items = variableDefinitions.Split(';');
-            foreach (var item in items)
-            {
-                var pair = item.Split('=');
-                var key = pair.First();
-                var value = pair.Last();
-                variables[key] = value;
-            }
-
-            return variables;
-        }
+        }     
     }
 }

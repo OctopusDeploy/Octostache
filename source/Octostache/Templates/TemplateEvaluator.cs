@@ -167,13 +167,16 @@ namespace Octostache.Templates
                 throw new NotImplementedException("Unknown expression type: " + expression);
             }
 
-            var args = fx.Arguments.Select(a => Calculate(a, context)).ToArray();
-            if (args.Any(a => a == null))
+            var argument = Calculate(fx.Argument, context);
+            if (argument == null)
                 return null; // If any argument is undefined, we fail the whole shebang
 
-            return BuiltInFunctions.InvokeOrNull(fx.Function, args);
+            var args = fx.Options.Select(opt => opt.Text).ToList();
+            args.Insert(0, argument);
+            return BuiltInFunctions.InvokeOrNull(fx.Function, args.ToArray());
         }
 
+        
         static bool IsTruthy(string value)
         {
 

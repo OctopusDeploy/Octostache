@@ -9,33 +9,29 @@ namespace Octostache.Templates
     /// </summary>
     class FunctionCallExpression : ContentExpression
     {
-        readonly bool filterSyntax;
-        readonly string function;
-        readonly ContentExpression[] arguments;
+        
+        readonly bool _filterSyntax;
 
-        public FunctionCallExpression(bool filterSyntax, string function, params ContentExpression[] arguments)
+        public FunctionCallExpression(bool filterSyntax, string function, ContentExpression argument, params Identifier[] options)
         {
-            this.filterSyntax = filterSyntax;
-            this.function = function;
-            this.arguments = arguments;
+            Options = options;
+            _filterSyntax = filterSyntax;
+            Function = function;
+            Argument = argument;
         }
 
-        public string Function
-        {
-            get { return function; }
-        }
+        public Identifier[] Options { get; }
+        public string Function { get; }
 
-        public ContentExpression[] Arguments
-        {
-            get { return arguments; }
-        }
+        public ContentExpression Argument { get; }
 
         public override string ToString()
         {
-            if (filterSyntax)
-                return arguments[0] + " | "  + function;
+            if (_filterSyntax)
+                return $"{Argument} | {Function}{(Options.Any() ? " " : "")}{string.Join(" ", Options.Select(t => t.ToString()))}";
+                    
 
-            return function + "(" + string.Join(",", Arguments.Select(a => a.ToString())) + ")";
+            return $"{Function} ({Argument}{(Options.Any() ? ", " : "")}{string.Join(", ", Options.Select(t => t.ToString()))})";
         }
     }
 }

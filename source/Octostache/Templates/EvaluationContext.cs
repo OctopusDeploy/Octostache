@@ -8,21 +8,17 @@ namespace Octostache.Templates
     class EvaluationContext
     {
         readonly Binding binding;
-        readonly TextWriter output;
         readonly EvaluationContext parent;
         readonly Stack<SymbolExpression> symbolStack = new Stack<SymbolExpression>();
 
         public EvaluationContext(Binding binding, TextWriter output, EvaluationContext parent = null)
         {
             this.binding = binding;
-            this.output = output;
+            this.Output = output;
             this.parent = parent;
         }
 
-        public TextWriter Output
-        {
-            get { return output; }
-        }
+        public TextWriter Output { get; }
 
         public string Resolve(SymbolExpression expression, out string[] missingTokens)
         {
@@ -49,6 +45,13 @@ namespace Octostache.Templates
             var val = WalkTo(expression, out missingTokens);
             if (val == null) return null;
             return val.Item;
+        }
+
+        public Binding Walker(TemplateToken token, out string[] missingTokens)
+        {
+            
+            missingTokens = null;
+            return null;
         }
 
         Binding WalkTo(SymbolExpression expression, out string[] missingTokens)

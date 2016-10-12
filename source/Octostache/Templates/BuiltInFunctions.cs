@@ -8,43 +8,57 @@ namespace Octostache.Templates
 {
     static class BuiltInFunctions
     {
-        static readonly IDictionary<string, Func<string, string>> extensions = new Dictionary<string, Func<string, string>>(StringComparer.OrdinalIgnoreCase);
+        static readonly IDictionary<string, Func<string[], string>> extensions = new Dictionary<string, Func<string[], string>>(StringComparer.OrdinalIgnoreCase);
  
         // Configuration shoudl be done at startup, this isn't thread-safe.
-        public static void Register(string name, Func<string, string> implementation)
+        public static void Register(string name, Func<string[], string> implementation)
         {
             extensions.Add(name.ToLowerInvariant(), implementation);
         }
 
         public static string InvokeOrNull(string function, string[] args)
         {
-            if (args.Length != 1)
-                return null; // Undefined, will cause source text to print
-
             var functionName = function.ToLowerInvariant();
-            var arg0 = args[0];
 
             switch (functionName)
             {
                 case "tolower":
-                    return arg0.ToLower(); // Happy to leave this culture-specific
+                    return args[0].ToLower(); // Happy to leave this culture-specific
                 case "toupper":
-                    return arg0.ToUpper();
+                    return args[0].ToUpper();
                 case "htmlescape":
-                    return HtmlEscape(arg0);
+                    return HtmlEscape(args[0]);
                 case "xmlescape":
-                    return XmlEscape(arg0);
+                    return XmlEscape(args[0]);
                 case "jsonescape":
-                    return JsonEscape(arg0);
+                    return JsonEscape(args[0]);
                 case "markdown":
-                    return Markdown(arg0);
+                    return Markdown(args[0]);
+                case "formatdate":
+                    return DateTimeFormat(args[0], args[1]);
             }
 
-            Func<string, string> ext;
+            Func<string[], string> ext;
             if (extensions.TryGetValue(functionName, out ext))
-                return ext(arg0);
+                return ext(args);
 
             return null; // Undefined, will cause source text to print
+        }
+
+        static string DateTimeFormat(string raw, string format)
+        {
+            DateTime val;
+            if (DateTime.TryParse(raw, out val))
+            {
+                try
+                {
+                    return val.ToString(format);
+                }
+                catch (FormatException)
+                {
+                }
+            }
+            return raw;
         }
 
         static string HtmlEscape(string raw)
@@ -64,9 +78,11 @@ namespace Octostache.Templates
 
         static string Markdown(string raw)
         {
-            var options = new MarkdownOptions();
-            options.AutoHyperlink = true;
-            options.LinkEmails = true;
+            var options = new MarkdownOptions
+            {
+                AutoHyperlink = true,
+                LinkEmails = true
+            };
 
             return new Markdown(options).Transform(raw.Trim());
         }
