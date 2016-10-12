@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Octostache.CustomStringParsers;
 
 namespace Octostache.Templates
 {
+
     class EvaluationContext
     {
         readonly Binding binding;
@@ -61,27 +65,26 @@ namespace Octostache.Templates
                 var val = binding;
                 missingTokens = new string[0];
 
-                //any indexers that are lookups, do them now so we are in the right context
-                //take a copy so the lookup version remains for later use
-                expression = new SymbolExpression(expression.Steps.Select(s =>
-                {
-                    var indexer = s as Indexer;
-                    if (indexer != null && indexer.IsSymbol)
-                    {
-                        string[] missing;
-                        var index = WalkTo(indexer.Symbol, out missing);
-                        return new Indexer(index.Item);
-                    }
-                    return s;
-                }));
+                
+                expression = CopyExpression(expression);
 
                 foreach (var step in expression.Steps)
                 {
                     var iss = step as Identifier;
                     if (iss != null)
                     {
-                        if (val.TryGetValue(iss.Text, out val))
+                        Binding newVal;
+                        if (val.TryGetValue(iss.Text, out newVal))
+                        {
+                            val = newVal;
                             continue;
+                        }
+
+                        if (TryCustomParsers(val, iss.Text, out newVal))
+                        {
+                            val = newVal;
+                            continue;
+                        }
                     }
                     else
                     {
@@ -94,8 +97,19 @@ namespace Octostache.Templates
                                 continue;
                             }
 
-                            if (val.Indexable.TryGetValue(ix.Index, out val))
+
+                            Binding newVal;
+                            if (val.Indexable.TryGetValue(ix.Index, out newVal))
+                            {
+                                val = newVal;
                                 continue;
+                            }
+
+                            if (TryCustomParsers(val, ix.Index, out newVal))
+                            {
+                                val = newVal;
+                                continue;
+                            }
                         }
                         else
                         {
@@ -108,29 +122,74 @@ namespace Octostache.Templates
 
                     return parent.WalkTo(expression, out missingTokens);
                 }
-
-                if (val != null && val.Item != null)
-                {
-                    Template template;
-                    string error;
-                    if (TemplateParser.TryParseTemplate(val.Item, out template, out error))
-                    {
-                        using (var x = new StringWriter())
-                        {
-                            var context = new EvaluationContext(new Binding(), x, this);
-                            TemplateEvaluator.Evaluate(template, context, out missingTokens);
-                            x.Flush();
-                            return new Binding(x.ToString());
-                        }
-                    }
-                }
-
-                return val;
+                return ParseTemplate(val, out missingTokens);
             }
             finally
             {
                 symbolStack.Pop();
             }
+        }
+
+
+        Binding ParseTemplate(Binding b, out string[] missingTokens)
+        {
+            if (b?.Item != null)
+            {
+                Template template;
+                string error;
+                if (TemplateParser.TryParseTemplate(b.Item, out template, out error))
+                {
+                    using (var x = new StringWriter())
+                    {
+                        var context = new EvaluationContext(new Binding(), x, this);
+
+                        TemplateEvaluator.Evaluate(template, context, out missingTokens);
+                        x.Flush();
+                        return new Binding(x.ToString());
+                    }
+                }
+            }
+            missingTokens = new string[0];
+            return b;
+        }
+
+
+
+        bool TryCustomParsers(Binding parentBinding, string property, out Binding subBinding)
+        {
+
+            subBinding = null;
+            if (string.IsNullOrEmpty(parentBinding.Item) || string.IsNullOrEmpty(property))
+                return false;
+
+            
+            if (parentBinding.Item.Contains("#{")) //Shortcut the inner variable replacement if no templates are detected
+            {
+                string[] missingTokens;
+                parentBinding = ParseTemplate(parentBinding, out missingTokens);
+            }
+
+
+            return JsonParser.TryParse(parentBinding, property, out subBinding);
+        }
+
+        
+
+        private SymbolExpression CopyExpression(SymbolExpression expression)
+        {
+            //any indexers that are lookups, do them now so we are in the right context
+            //take a copy so the lookup version remains for later use
+            return new SymbolExpression(expression.Steps.Select(s =>
+            {
+                var indexer = s as Indexer;
+                if (indexer != null && indexer.IsSymbol)
+                {
+                    string[] missing;
+                    var index = WalkTo(indexer.Symbol, out missing);
+                    return new Indexer(index.Item);
+                }
+                return s;
+            }));
         }
 
         public IEnumerable<Binding> ResolveAll(SymbolExpression collection, out string[] missingTokens)
