@@ -2,28 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Caching;
 using NUnit.Framework;
 
 namespace Octostache.Tests
 {
     [TestFixture]
-    public class UsageFixture
+    public class UsageFixture : BaseFixture
     {
-        [SetUp]
-        public void Setup()
-        {
-            //The TemplateParser Cache is retained between tests. A little hackery to clear it.
-            var parser = typeof(VariableDictionary).Assembly.GetType("Octostache.Templates.TemplateParser");
-            var cache = (MemoryCache)parser.GetField("Cache", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
-            foreach (var item in cache)
-            {
-                cache.Remove(item.Key);
-            }
-        }
-
         [Test]
         public void HowToUseTheDictionary()
         {
@@ -63,7 +48,8 @@ namespace Octostache.Tests
         [Test]
         [TestCase("#{Foo}", "", "#{Foo}")]
         [TestCase("#{Foo}#{Jazz}", "Foo=#{Bar};Bar=Baz", "Baz#{Jazz}")]
-        [TestCase("#{each a in Action}#{a.Size}#{/each}", "Action[x].Name=Baz;Action[y].Name=Baz", "#{a.Size}#{a.Size}")]
+        [TestCase("#{each a in Action}#{a.Size}#{/each}", "Action[x].Name=Baz;Action[y].Name=Baz", "#{a.Size}#{a.Size}")
+        ]
         public void MissingTokenErrorExamples(string template, string variableDefinitions, string expectedResult)
         {
             string error;
@@ -74,7 +60,7 @@ namespace Octostache.Tests
 
         [TestCase("#{Foo", "Foo=Bar;")]
         [TestCase("#{Fo[o}", "Foo=Bar;Fo[o]=Bar")]
-        [TestCase("#{each a in Action}","Action[a]=One")]
+        [TestCase("#{each a in Action}", "Action[a]=One")]
         public void ParseErrorExamples(string template, string variableDefinitions)
         {
             string error;
@@ -95,7 +81,7 @@ namespace Octostache.Tests
 
         [Test]
         [TestCase("#{ }", "Foo=Value; =Bar", "#{ }")]
-        [TestCase("#{}","Foo=Value;=Bar", "#{}")]
+        [TestCase("#{}", "Foo=Value;=Bar", "#{}")]
         public void EmptyValuesAreEchoed(string template, string variableDefinitions, string expectedResult)
         {
             var result = ParseVariables(variableDefinitions).Evaluate(template);
@@ -107,7 +93,8 @@ namespace Octostache.Tests
         [TestCase("#{Foo}", "Foo=#{Fox};Fox=#{Fax};Fax=#{Fix};Fix=#{Foo}")]
         public void MaximumRecursionLimitException(string template, string variableDefinitions)
         {
-            var ex = Assert.Throws<InvalidOperationException>(() => ParseVariables(variableDefinitions).Evaluate(template));
+            var ex =
+                Assert.Throws<InvalidOperationException>(() => ParseVariables(variableDefinitions).Evaluate(template));
             Assert.That(ex.Message, Does.Contain("appears to have resulted in a self referencing loop"));
         }
 
@@ -126,9 +113,9 @@ namespace Octostache.Tests
 
             var result = Evaluate(input, new Dictionary<string, string>
             {
-                { "Web.Site.Url[A]", "Subbed.Web.Site.A" },
-                { "Web.Root", "Subbed.Web.Root" },
-                { "Wsf.Host", "Subbed.Wsf.Host" }
+                {"Web.Site.Url[A]", "Subbed.Web.Site.A"},
+                {"Web.Root", "Subbed.Web.Root"},
+                {"Wsf.Host", "Subbed.Wsf.Host"}
             }, haltOnError: false);
 
             const string match =
@@ -152,9 +139,9 @@ namespace Octostache.Tests
 
             var result = Evaluate(input, new Dictionary<string, string>
             {
-                { "Web.Site.Url[A]", "Subbed.Web.Site.A" },
-                { "Web.Root", "Subbed.Web.Root" },
-                { "Wsf.Host", "Subbed.Wsf.Host" }
+                {"Web.Site.Url[A]", "Subbed.Web.Site.A"},
+                {"Web.Root", "Subbed.Web.Root"},
+                {"Wsf.Host", "Subbed.Wsf.Host"}
             }, haltOnError: false);
 
             const string match =
@@ -178,7 +165,7 @@ namespace Octostache.Tests
         public void Performance()
         {
             var watch = Stopwatch.StartNew();
-            var result = Evaluate("Hello, #{Location}!", new Dictionary<string, string> { { "Location", "World" } });
+            var result = Evaluate("Hello, #{Location}!", new Dictionary<string, string> {{"Location", "World"}});
             Assert.That(result, Is.EqualTo("Hello, World!"));
 
             var iterations = 0;
@@ -199,7 +186,7 @@ namespace Octostache.Tests
         {
             var result = Evaluate("#{Octopus.Action[Package A].Name}", new Dictionary<string, string>
             {
-                { "Octopus.Action[Package A].Name", "Package A" }
+                {"Octopus.Action[Package A].Name", "Package A"}
             });
 
             Assert.AreEqual("Package A", result);
@@ -216,13 +203,14 @@ namespace Octostache.Tests
         [Test]
         public void NestedIterationIsSupported()
         {
-            var result = Evaluate("#{each a in Octopus.Action}#{each tr in a.TargetRoles}#{a.Name}#{tr}#{/each}#{/each}",
+            var result = Evaluate(
+                "#{each a in Octopus.Action}#{each tr in a.TargetRoles}#{a.Name}#{tr}#{/each}#{/each}",
                 new Dictionary<string, string>
                 {
-                    { "Octopus.Action[Package A].Name", "A" },
-                    { "Octopus.Action[Package A].TargetRoles", "a,b" },
-                    { "Octopus.Action[Package B].Name", "B" },
-                    { "Octopus.Action[Package B].TargetRoles", "c" }
+                    {"Octopus.Action[Package A].Name", "A"},
+                    {"Octopus.Action[Package A].TargetRoles", "a,b"},
+                    {"Octopus.Action[Package B].Name", "B"},
+                    {"Octopus.Action[Package B].TargetRoles", "c"}
                 });
 
             Assert.AreEqual("AaAbBc", result);
@@ -234,10 +222,10 @@ namespace Octostache.Tests
             var result = Evaluate("#{each a in Octopus.Action}#{a.Name}#{/each}",
                 new Dictionary<string, string>
                 {
-                    { "PackageA_Name", "A" },
-                    { "PackageB_Name", "B" },
-                    { "Octopus.Action[Package A].Name", "#{PackageA_Name}" },
-                    { "Octopus.Action[Package B].Name", "#{PackageB_Name}" },
+                    {"PackageA_Name", "A"},
+                    {"PackageB_Name", "B"},
+                    {"Octopus.Action[Package A].Name", "#{PackageA_Name}"},
+                    {"Octopus.Action[Package B].Name", "#{PackageB_Name}"},
                 });
 
             Assert.AreEqual("AB", result);
@@ -246,16 +234,18 @@ namespace Octostache.Tests
         [Test]
         public void ScopedSymbolIndexerInIterationIsSupported()
         {
-            var result = Evaluate("#{each action in Octopus.Action}#{if Octopus.Step[#{action.StepName}].Status != \"Skipped\"}#{Octopus.Step[#{action.StepName}].Details}#{/if}#{/each}",
-                new Dictionary<string, string>
-                {
-                    { "Octopus.Action[Action 1].StepName", "Step 1" },
-                    { "Octopus.Action[Action 2].StepName", "Step 2" },
-                    { "Octopus.Step[Step 1].Details", "Step 1 Details" },
-                    { "Octopus.Step[Step 2].Details", "Step 2 Details" },
-                    { "Octopus.Step[Step 1].Status", "Skipped" },
-                    { "Octopus.Step[Step 2].Status", "Running" },
-                });
+            var result =
+                Evaluate(
+                    "#{each action in Octopus.Action}#{if Octopus.Step[#{action.StepName}].Status != \"Skipped\"}#{Octopus.Step[#{action.StepName}].Details}#{/if}#{/each}",
+                    new Dictionary<string, string>
+                    {
+                        {"Octopus.Action[Action 1].StepName", "Step 1"},
+                        {"Octopus.Action[Action 2].StepName", "Step 2"},
+                        {"Octopus.Step[Step 1].Details", "Step 1 Details"},
+                        {"Octopus.Step[Step 2].Details", "Step 2 Details"},
+                        {"Octopus.Step[Step 1].Status", "Skipped"},
+                        {"Octopus.Step[Step 2].Status", "Running"},
+                    });
 
             Assert.AreEqual("Step 2 Details", result);
         }
@@ -263,15 +253,17 @@ namespace Octostache.Tests
         [Test]
         public void UnscopedIndexerInIterationIsSupported()
         {
-            var result = Evaluate("#{each action in Octopus.Action}#{if Octopus.Step[#{SomeOtherVariable}].Status == \"Skipped\"}#{Octopus.Step[#{SomeOtherVariable}].Details}#{/if}#{/each}",
-                new Dictionary<string, string>
-                {
-                    { "Octopus.Action[Action 1].StepName", "Step 1" },
-                    { "Octopus.Action[Action 2].StepName", "Step 2" },
-                    { "Octopus.Step[OtherVariableValue].Details", "Octopus" },
-                    { "Octopus.Step[OtherVariableValue].Status", "Skipped" },
-                    { "SomeOtherVariable", "OtherVariableValue" }
-                });
+            var result =
+                Evaluate(
+                    "#{each action in Octopus.Action}#{if Octopus.Step[#{SomeOtherVariable}].Status == \"Skipped\"}#{Octopus.Step[#{SomeOtherVariable}].Details}#{/if}#{/each}",
+                    new Dictionary<string, string>
+                    {
+                        {"Octopus.Action[Action 1].StepName", "Step 1"},
+                        {"Octopus.Action[Action 2].StepName", "Step 2"},
+                        {"Octopus.Step[OtherVariableValue].Details", "Octopus"},
+                        {"Octopus.Step[OtherVariableValue].Status", "Skipped"},
+                        {"SomeOtherVariable", "OtherVariableValue"}
+                    });
 
             Assert.AreEqual("OctopusOctopus", result);
         }
@@ -282,8 +274,8 @@ namespace Octostache.Tests
             var result = Evaluate("#{if Truthy}#{Result}#{/if}",
                 new Dictionary<string, string>
                 {
-                    { "Result", "result" },
-                    { "Truthy", "true" },
+                    {"Result", "result"},
+                    {"Truthy", "true"},
                 });
 
             Assert.AreEqual("result", result);
@@ -295,9 +287,9 @@ namespace Octostache.Tests
             var result = Evaluate("#{if Octopus == Compare}#{Result}#{/if}",
                 new Dictionary<string, string>
                 {
-                    { "Result", "result" },
-                    { "Octopus", "octopus" },
-                    { "Compare", "octopus" }
+                    {"Result", "result"},
+                    {"Octopus", "octopus"},
+                    {"Compare", "octopus"}
                 });
 
             Assert.AreEqual("result", result);
@@ -309,8 +301,8 @@ namespace Octostache.Tests
             var result = Evaluate("#{if Octopus == \"octopus\"}#{Result}#{/if}",
                 new Dictionary<string, string>
                 {
-                    { "Result", "result" },
-                    { "Octopus", "octopus" },
+                    {"Result", "result"},
+                    {"Octopus", "octopus"},
                 });
 
             Assert.AreEqual("result", result);
@@ -319,11 +311,11 @@ namespace Octostache.Tests
         [Test]
         public void IndexingWithASymbolIsSupported()
         {
-            var result = Evaluate("#{Octopus.Step[#{action.StepName}].Status.Code}",
+            var result = Evaluate("#{Step[#{action.StepName}]}",
                 new Dictionary<string, string>
                 {
-                    { "action.StepName", "Step 1" },
-                    { "Octopus.Step[Step 1].Status.Code", "Running" },
+                    {"action.StepName", "Step 1"},
+                    {"Step[Step 1]", "Running"},
                 });
 
             Assert.AreEqual("Running", result);
@@ -335,8 +327,8 @@ namespace Octostache.Tests
             var result = Evaluate("#{Octopus.Action[*].Name}",
                 new Dictionary<string, string>
                 {
-                    { "Octopus.Action[Package A].Name", "A" },
-                    { "Octopus.Action[Package B].Name", "B" }
+                    {"Octopus.Action[Package A].Name", "A"},
+                    {"Octopus.Action[Package B].Name", "B"}
                 });
 
             Assert.That(result == "A" || result == "B");
@@ -348,8 +340,8 @@ namespace Octostache.Tests
             var result = Evaluate("#{each a in Octopus.Action}#{a}|#{/each}",
                 new Dictionary<string, string>
                 {
-                    { "Octopus.Action[Package A].Name", "A" },
-                    { "Octopus.Action[Package B].Name", "B" },
+                    {"Octopus.Action[Package A].Name", "A"},
+                    {"Octopus.Action[Package B].Name", "B"},
                 });
 
             Assert.AreEqual("Package A|Package B|", result);
@@ -362,73 +354,18 @@ namespace Octostache.Tests
             Assert.AreEqual("#{foo}", result);
         }
 
-        [Test]
-        public void UnmatchedSubstitutionsAreEchoedEvenWithFiltering()
-        {
-            var result = Evaluate("#{foo | ToUpper}", new Dictionary<string, string>());
-            Assert.AreEqual("#{foo | ToUpper}", result);
-        }
-
-        [Test]
-        public void UnknownFiltersAreEchoed()
-        {
-            var result = Evaluate("#{Foo | ToBazooka}", new Dictionary<string, string> { { "Foo", "Abc" } });
-            Assert.AreEqual("#{Foo | ToBazooka}", result);
-        }
-
-        [Test]
-        public void FiltersAreApplied()
-        {
-            var result = Evaluate("#{Foo | ToUpper}", new Dictionary<string, string> { { "Foo", "Abc" } });
-            Assert.AreEqual("ABC", result);
-        }
-
-        [Test]
-        public void HtmlIsEscaped()
-        {
-            var result = Evaluate("#{Foo | HtmlEscape}", new Dictionary<string, string> { { "Foo", "A&'bc" } });
-            Assert.AreEqual("A&amp;&apos;bc", result);
-        }
-
-        [Test]
-        public void XmlIsEscaped()
-        {
-            var result = Evaluate("#{Foo | XmlEscape}", new Dictionary<string, string> { { "Foo", "A&'bc" } });
-            Assert.AreEqual("A&amp;&apos;bc", result);
-        }
-
-        [Test]
-        public void JsonIsEscaped()
-        {
-            var result = Evaluate("#{Foo | JsonEscape}", new Dictionary<string, string> { { "Foo", "A&\"bc" } });
-            Assert.AreEqual("A&\\\"bc", result);
-        }
-
-        [Test]
-        public void MarkdownIsProcessed()
-        {
-            var result = Evaluate("#{Foo | Markdown}", new Dictionary<string, string> { { "Foo", "_yeah!_" } });
-            Assert.AreEqual("<p><em>yeah!</em></p>\n", result);
-        }
-
-        [Test]
-        public void FiltersAreAppliedInOrder()
-        {
-            var result = Evaluate("#{Foo|ToUpper|ToLower}", new Dictionary<string, string> { { "Foo", "Abc" } });
-            Assert.AreEqual("abc", result);
-        }
 
         [Test]
         public void DoubleHashEscapesToken()
         {
-            var result = Evaluate("##{foo}", new Dictionary<string, string> { { "foo", "Abc" } });
+            var result = Evaluate("##{foo}", new Dictionary<string, string> {{"foo", "Abc"}});
             Assert.AreEqual("#{foo}", result);
         }
 
         [Test]
         public void TripleHashResolvesToSinglePlusToken()
         {
-            var result = Evaluate("###{foo}", new Dictionary<string, string> { { "foo", "Abc" } });
+            var result = Evaluate("###{foo}", new Dictionary<string, string> {{"foo", "Abc"}});
             Assert.AreEqual("#Abc", result);
         }
 
@@ -515,104 +452,6 @@ namespace Octostache.Tests
             variables.Set("Port", "10933");
 
             Assert.AreEqual("{\r\n  \"Name\": \"Web01\",\r\n  \"Port\": \"10933\"\r\n}", variables.SaveAsString());
-        }
-
-        [Test]
-        public void JsonDoesNotOverrideExisting()
-        {
-            var variables = new VariableDictionary
-            {
-                ["Test.Hello"] = "Go Away",                
-                ["Test"] = "{\"Hello\": \"World\", \"Foo\": \"Bar\", \"Donkey\" : {\"Kong\": 12}}",
-                ["Test[Foo]"] = "Nope",
-                ["Test.Donkey.Kong"] = "MARIO",
-            };
-
-            Assert.AreEqual("Go Away", variables.Evaluate("#{Test.Hello}"));
-            Assert.AreEqual("Nope", variables.Evaluate("#{Test[Foo]}"));
-            Assert.AreEqual("MARIO", variables.Evaluate("#{Test.Donkey.Kong}"));
-        }
-
-        [Test]
-        public void JsonSupportsVariableInVariable()
-        {
-            var variables = new VariableDictionary
-            {
-                ["Prop"] = "Foo",
-                ["Val"] = "Bar",
-                ["Test"] = "{#{Prop}: \"#{Val}\"}",
-            };
-
-            Assert.AreEqual("Bar", variables.Evaluate("#{Test[Foo]}"));
-            Assert.AreEqual("Bar", variables.Evaluate("#{Test.Foo}"));
-            Assert.AreEqual("Bar", variables.Evaluate("#{Test[#{Prop}]}"));
-        }
-
-        [Test]
-        [TestCase("{\"Hello\": \"World\"}", "#{Test[Hello]}", ExpectedResult = "World", TestName = "Simple Indexing")]
-        [TestCase("{\"Hello\": \"World\"}", "#{Test.Hello}", ExpectedResult = "World", TestName = "Simple Dot Notation")]
-        [TestCase("{\"Hello\": {\"World\": {\"Foo\": {\"Bar\": 12 }}}}", "#{Test[Hello][World][Foo][Bar]}", ExpectedResult = "12", TestName = "Deep")]
-        [TestCase("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[1].Name}", ExpectedResult = "Bread", TestName = "Arrays")]
-        [TestCase("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", ExpectedResult = "{\"Bar\":\"11\"}", TestName = "Raw JSON returned")]
-        public string JsonParsing(string json, string pattern)
-        {
-            var variables = new VariableDictionary
-            {
-                ["Test"] = json
-            };
-
-            return variables.Evaluate(pattern);
-        }
-
-        [Test]
-        public void JsonInvalidDoesNotReplace()
-        {
-            var variables = new VariableDictionary
-            {
-                ["Test"] = "{Name: NoComma}",
-            };
-
-            Assert.AreEqual("#{Test.Name}", variables.Evaluate("#{Test.Name}"));
-        }
-
-        [Test]
-        public void JsonWithSelfRefferentialVariableFails()
-        {
-            var variables = new VariableDictionary
-            {
-                ["Test"] = "{Name: \"#{Test.Value}\", Value: 12}",
-            };
-
-
-            var ex = Assert.Throws<InvalidOperationException>(() => variables.Evaluate("#{Test.Name}"));
-            Assert.That(ex.Message, Does.Contain("appears to have resulted in a self referencing loop"));
-        }
-
-        static string Evaluate(string template, IDictionary<string, string> variables, bool haltOnError = true)
-        {
-            var dictionary = new VariableDictionary();
-            foreach (var pair in variables)
-            {
-                dictionary[pair.Key] = pair.Value;
-            }
-            string error;
-            return dictionary.Evaluate(template, out error, haltOnError);
-        }
-
-        private static VariableDictionary ParseVariables(string variableDefinitions)
-        {
-            var variables = new VariableDictionary();
-
-            var items = variableDefinitions.Split(';');
-            foreach (var item in items)
-            {
-                var pair = item.Split('=');
-                var key = pair.First();
-                var value = pair.Last();
-                variables[key] = value;
-            }
-
-            return variables;
         }
     }
 }

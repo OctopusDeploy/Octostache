@@ -40,6 +40,7 @@ namespace Octostache.Templates
             }
 
             var st = token as SubstitutionToken;
+
             if (st != null)
             {
                 EvaluateSubstitutionToken(context, st);
@@ -167,17 +168,30 @@ namespace Octostache.Templates
                 throw new NotImplementedException("Unknown expression type: " + expression);
             }
 
-            var args = fx.Arguments.Select(a => Calculate(a, context)).ToArray();
-            if (args.Any(a => a == null))
-                return null; // If any argument is undefined, we fail the whole shebang
+            var argument = Calculate(fx.Argument, context);
 
-            return BuiltInFunctions.InvokeOrNull(fx.Function, args);
+            var args = fx.Options.Select(opt => Resolve(opt, context)).ToArray();
+
+            return BuiltInFunctions.InvokeOrNull(fx.Function, argument, args);
         }
+
+
+
+        string Resolve(TemplateToken token, EvaluationContext context)
+        {
+            using (var x = new StringWriter())
+            {
+                var c2 = new EvaluationContext(new Binding(), x, context);
+                Evaluate(token, c2);
+                x.Flush();
+                return x.ToString();
+            }
+        }
+        
+
 
         static bool IsTruthy(string value)
         {
-
-
             return value != "0" &&
                 value != "" &&
                 string.Compare(value, "no", StringComparison.OrdinalIgnoreCase) != 0 &&

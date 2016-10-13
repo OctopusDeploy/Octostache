@@ -51,6 +51,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseFixture.cs" />
+    <Compile Include="FiltersFixture.cs" />
+    <Compile Include="JsonFixture.cs" />
     <Compile Include="UsageFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
