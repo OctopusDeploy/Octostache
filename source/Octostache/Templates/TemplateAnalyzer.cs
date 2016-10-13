@@ -76,12 +76,9 @@ namespace Octostache.Templates
                 var fx = expression as FunctionCallExpression;
                 if (fx != null)
                 {
-                    foreach (var argument in fx.Arguments)
+                    foreach (var symbol in GetSymbols(fx.Argument))
                     {
-                        foreach (var symbol in GetSymbols(argument))
-                        {
-                            yield return symbol;
-                        }
+                        yield return symbol;
                     }
                 }
                 else

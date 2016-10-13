@@ -4,21 +4,17 @@ namespace Octostache.Templates
 {
     class TextToken : TemplateToken
     {
-        readonly IList<string> text;
+        public IEnumerable<string> Text { get;  }
 
-        public TextToken(IList<string> text)
-        {
-            this.text = text;
-        }
 
-        public IEnumerable<string> Text
+        public TextToken(params string[] text)
         {
-            get { return text; }
+            Text = text;
         }
 
         public override string ToString()
         {
-            return string.Concat(text).Replace("#{", "##{");
+            return string.Concat(Text).Replace("#{", "##{");
         }
     }
 }
