@@ -168,19 +168,15 @@ namespace Octostache.Templates
             }
 
             var argument = Calculate(fx.Argument, context);
-            if (argument == null)
-                return null; // If any argument is undefined, we fail the whole shebang
 
-            var args = fx.Options.Select(opt => opt.Text).ToList();
-            args.Insert(0, argument);
-            return BuiltInFunctions.InvokeOrNull(fx.Function, args.ToArray());
+            var args = fx.Options.Select(opt => opt.Text).ToArray();
+
+            return BuiltInFunctions.InvokeOrNull(fx.Function, argument, args);
         }
 
         
         static bool IsTruthy(string value)
         {
-
-
             return value != "0" &&
                 value != "" &&
                 string.Compare(value, "no", StringComparison.OrdinalIgnoreCase) != 0 &&

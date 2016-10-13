@@ -73,19 +73,19 @@ namespace Octostache.Templates
 
 
         // Some trickery applied here to prevent a left-recursive definition
-        private static readonly Parser<FunctionCallExpression> FilterChain1 =
-            from symbol in Symbol.Token()
+        private static readonly Parser<FunctionCallExpression> FilterChain =
+            from symbol in Symbol.Token().Optional().Select(s => s.IsDefined ? s.Get() : new SymbolExpression(new SymbolExpressionStep[0]))
             from chain in Parse.Char('|').Then(_ =>
                 from fn in IdentifierWithoutWhitespace.Named("filter").WithPosition().Token()
                 from option in Identifier.Token().Named("option").Optional()
                 select new {Function = fn.Text, arg = option}
                 ).AtLeastOnce()
             select (FunctionCallExpression)chain.Aggregate((ContentExpression)symbol, 
-                (c, id) => new FunctionCallExpression(true, id.Function, c, id.arg.IsEmpty ? new Identifier[0] : new Identifier[] { id.arg.Get() }));
+                (c, id) => new FunctionCallExpression(true, id.Function, c, id.arg.IsEmpty ? new Identifier[0] : new[] { id.arg.Get() }));
 
 
         static readonly Parser<ContentExpression> Expression =
-            FilterChain1.Select(c => (ContentExpression)c)
+            FilterChain.Select(c => (ContentExpression)c)
             .Or(Symbol);
 
         static Parser<T> FollowedBy<T>(this Parser<T> parser, string lookahead)

@@ -25,6 +25,13 @@ namespace Octostache.Tests
         }
 
         [Test]
+        public void UnknownFiltersWithOptionsAreEchoed()
+        {
+            var result = Evaluate("#{Foo | ToBazooka 6}", new Dictionary<string, string> { { "Foo", "Abc" } });
+            Assert.AreEqual("#{Foo | ToBazooka 6}", result);
+        }
+
+        [Test]
         public void FiltersAreApplied()
         {
             var result = Evaluate("#{Foo | ToUpper}", new Dictionary<string, string> { { "Foo", "Abc" } });
@@ -67,6 +74,45 @@ namespace Octostache.Tests
             var result = Evaluate("#{Foo | FormatDate HH dd-MMM-yyyy}", dict);
             Assert.AreEqual("09 22-May-2030", result);
         }
+
+        [Test]
+        public void NowDateReturnsNow()
+        {
+            var result = Evaluate("#{ | NowDate}", new Dictionary<string, string> ());
+            Assert.That(DateTime.Parse(result), Is.EqualTo(DateTime.Now).Within(1).Minutes);
+        }
+
+
+        [Test]
+        public void NowDateCanBeFormatted()
+        {
+            var result = Evaluate("#{ | NowDate yyyy}", new Dictionary<string, string>());
+            Assert.AreEqual(DateTime.Now.Year.ToString(), result);
+        }
+
+
+        [Test]
+        public void NowDateCanBeChained()
+        {
+            var result = Evaluate("#{ | NowDate | FormatDate MMM}", new Dictionary<string, string>());
+            Assert.AreEqual(DateTime.Now.ToString("MMM"), result);
+        }
+
+        [Test]
+        public void NowDateReturnsNowInUtc()
+        {
+            var result = Evaluate("#{ | NowDateUtc}", new Dictionary<string, string>());
+            Assert.That(DateTimeOffset.Parse(result), Is.EqualTo(DateTimeOffset.UtcNow).Within(1).Minutes);
+        }
+
+        [Test]
+        public void NowDateUtcCanBeChained()
+        {
+            var result = Evaluate("#{ | NowDateUtc | FormatDate yyyy}", new Dictionary<string, string>());
+            Assert.AreEqual(DateTime.Now.ToString("yyyy"), result);
+        }
+
+
 
         [Test]
         public void FiltersAreAppliedInOrder()

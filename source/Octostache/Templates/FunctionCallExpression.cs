@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Octostache.Templates
 {
@@ -25,13 +26,23 @@ namespace Octostache.Templates
 
         public ContentExpression Argument { get; }
 
+        IInputToken[] GetAllArguments()
+        {
+            var tokens = new List<IInputToken>();
+            if(Argument.InputPosition != null)
+                tokens.Add(Argument);
+
+            tokens.AddRange(Options);
+            return tokens.ToArray();
+        }
+
         public override string ToString()
         {
             if (_filterSyntax)
                 return $"{Argument} | {Function}{(Options.Any() ? " " : "")}{string.Join(" ", Options.Select(t => t.ToString()))}";
                     
 
-            return $"{Function} ({Argument}{(Options.Any() ? ", " : "")}{string.Join(", ", Options.Select(t => t.ToString()))})";
+            return $"{Function} ({string.Join(", ", GetAllArguments().Select(t => t.ToString()))})";
         }
     }
 }

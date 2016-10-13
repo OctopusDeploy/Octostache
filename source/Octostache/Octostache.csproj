@@ -57,6 +57,9 @@
     <Compile Include="Templates\DependencyWildcard.cs" />
     <Compile Include="Templates\EvaluationContext.cs" />
     <Compile Include="Templates\FunctionCallExpression.cs" />
+    <Compile Include="Templates\Functions\DateFunction.cs" />
+    <Compile Include="Templates\Functions\TextCaseFunction.cs" />
+    <Compile Include="Templates\Functions\TextEscapeFunction.cs" />
     <Compile Include="Templates\Identifier.cs" />
     <Compile Include="Templates\IInputToken.cs" />
     <Compile Include="Templates\Indexer.cs" />
