@@ -19,8 +19,6 @@ namespace Octostache.Templates
             .Select(s => new Identifier(s))
             .WithPosition();
 
-
-
         static readonly Parser<Identifier> IdentifierWithoutWhitespace = Parse
          .Char(c => char.IsLetter(c) || char.IsDigit(c) || c == '_' || c == '-' || c == ':' || c == '/' || c == '~' || c == '(' || c == ')', "identifier")
          .Except(Parse.WhiteSpace.FollowedBy("|"))
@@ -29,8 +27,6 @@ namespace Octostache.Templates
          .Text()
          .Select(s => new Identifier(s))
          .WithPosition();
-
-
 
         static readonly Parser<string> LDelim = Parse.String("#{").Except(Parse.String("#{/")).Text();
         static readonly Parser<string> RDelim = Parse.String("}").Text();
@@ -77,11 +73,18 @@ namespace Octostache.Templates
             from symbol in Symbol.Token().Optional().Select(s => s.IsDefined ? s.Get() : new SymbolExpression(new SymbolExpressionStep[0]))
             from chain in Parse.Char('|').Then(_ =>
                 from fn in IdentifierWithoutWhitespace.Named("filter").WithPosition().Token()
-                from option in Identifier.Token().Named("option").Optional()
-                select new {Function = fn.Text, arg = option}
+                from option in
+                    Conditional.Select(t => (TemplateToken)t)
+                        .Or(Repetition)
+                        .Or(Substitution)
+                        .Or(IdentifierWithoutWhitespace.Token().Select(t => t.Text)
+                            .Or(QuotedText)
+                            .Select(t => new TextToken(t)))
+                        .Named("option").Many().Optional()
+                select new {Function = fn.Text, options = option}
                 ).AtLeastOnce()
-            select (FunctionCallExpression)chain.Aggregate((ContentExpression)symbol, 
-                (c, id) => new FunctionCallExpression(true, id.Function, c, id.arg.IsEmpty ? new Identifier[0] : new[] { id.arg.Get() }));
+            select (FunctionCallExpression)chain.Aggregate((ContentExpression)symbol,
+                (leftToken, fn) => new FunctionCallExpression(true, fn.Function, leftToken, fn.options.Get().ToArray()));
 
 
         static readonly Parser<ContentExpression> Expression =
@@ -201,7 +204,7 @@ namespace Octostache.Templates
                 .Or(Parse.String("##{").Select(c => "#{"))
                 .Or(Parse.Char('#').Then(_ => Parse.CharExcept('{').Select(c => "#" + c)))
                 .AtLeastOnce()
-                .Select(s => new TextToken(s.ToList()))
+                .Select(s => new TextToken(s.ToArray()))
                 .WithPosition();
 
         public static readonly Parser<string> QuotedText =
@@ -315,7 +318,7 @@ namespace Octostache.Templates
                     else
                     {
                         var consumed = Consumed(remainder, r.Remainder);
-                        result.Add(new TextToken(new List<string> { consumed }));
+                        result.Add(new TextToken(consumed));
                     }
                     remainder = r.Remainder;
                     r = parser(remainder);

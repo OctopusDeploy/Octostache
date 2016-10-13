@@ -13,7 +13,7 @@ namespace Octostache.Templates
         
         readonly bool _filterSyntax;
 
-        public FunctionCallExpression(bool filterSyntax, string function, ContentExpression argument, params Identifier[] options)
+        public FunctionCallExpression(bool filterSyntax, string function, ContentExpression argument, params TemplateToken[] options)
         {
             Options = options;
             _filterSyntax = filterSyntax;
@@ -21,7 +21,7 @@ namespace Octostache.Templates
             Argument = argument;
         }
 
-        public Identifier[] Options { get; }
+        public TemplateToken[] Options { get; }
         public string Function { get; }
 
         public ContentExpression Argument { get; }

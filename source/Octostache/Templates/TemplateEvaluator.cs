@@ -40,6 +40,7 @@ namespace Octostache.Templates
             }
 
             var st = token as SubstitutionToken;
+
             if (st != null)
             {
                 EvaluateSubstitutionToken(context, st);
@@ -169,12 +170,26 @@ namespace Octostache.Templates
 
             var argument = Calculate(fx.Argument, context);
 
-            var args = fx.Options.Select(opt => opt.Text).ToArray();
+            var args = fx.Options.Select(opt => Resolve(opt, context)).ToArray();
 
             return BuiltInFunctions.InvokeOrNull(fx.Function, argument, args);
         }
 
+
+
+        string Resolve(TemplateToken token, EvaluationContext context)
+        {
+            using (var x = new StringWriter())
+            {
+                var c2 = new EvaluationContext(new Binding(), x, context);
+                Evaluate(token, c2);
+                x.Flush();
+                return x.ToString();
+            }
+        }
         
+
+
         static bool IsTruthy(string value)
         {
             return value != "0" &&

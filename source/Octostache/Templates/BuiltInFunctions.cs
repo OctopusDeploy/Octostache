@@ -14,9 +14,9 @@ namespace Octostache.Templates
             {"xmlescape", TextEscapeFunction.XmlEscape },
             {"jsonescape", TextEscapeFunction.JsonEscape },
             {"markdown", TextEscapeFunction.Markdown },
-            {"formatdate", DateFunction.DateTimeFormat },
             {"nowdate", DateFunction.NowDate },
-            {"nowdateutc", DateFunction.NowDateUtc }
+            {"nowdateutc", DateFunction.NowDateUtc },
+            {"format", FormatFunction.Format }
         };
  
         // Configuration shoudl be done at startup, this isn't thread-safe.
@@ -38,9 +38,5 @@ namespace Octostache.Templates
 
             return null; // Undefined, will cause source text to print
         }
-
-        
-     
-
     }
 }
