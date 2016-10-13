@@ -69,7 +69,7 @@ namespace Octostache.Tests
         [Test]
         public void DateIsFormatted()
         {
-            var dict = new Dictionary<string, string> { { "Foo", "22/05/2030 09:05:00" } };
+            var dict = new Dictionary<string, string> { { "Foo", "2030/05/22 09:05:00" } };
 
             var result = Evaluate("#{Foo | Format Date \"HH dd-MMM-yyy\"}", dict);
             Assert.AreEqual("09 22-May-2030", result);
@@ -78,7 +78,7 @@ namespace Octostache.Tests
         [Test]
         public void DateFormattingCanUseInnerVariable()
         {
-            var dict = new Dictionary<string, string> { { "Foo", "22/05/2030 09:05:00" }, { "Format", "HH dd-MMM-yyyy" } };
+            var dict = new Dictionary<string, string> { { "Foo", "2030/05/22 09:05:00" }, { "Format", "HH dd-MMM-yyyy" } };
 
             var result = Evaluate("#{Foo | Format Date #{Format}}", dict);
             Assert.AreEqual("09 22-May-2030", result);
@@ -90,13 +90,13 @@ namespace Octostache.Tests
             var dict = new Dictionary<string, string> { { "Cash", "23.4" }};
 
             var result = Evaluate("#{Cash | Format Double C}", dict);
-            Assert.AreEqual("$23.40", result);
+            Assert.AreEqual(23.4.ToString("C"), result);
         }
         
         [Test]
         public void GenericConverterAcceptsDate()
         {
-            var dict = new Dictionary<string, string> { { "MyDate", "22/05/2030 09:05:00" }, { "Format", "HH dd-MMM-yyyy" } };
+            var dict = new Dictionary<string, string> { { "MyDate", "2030/05/22 09:05:00" }, { "Format", "HH dd-MMM-yyyy" } };
             var result = Evaluate("#{MyDate | Format DateTime \"HH dd-MMM-yyyy\" }", dict);
             Assert.AreEqual("09 22-May-2030", result);
         }
@@ -107,13 +107,13 @@ namespace Octostache.Tests
             var dict = new Dictionary<string, string> { { "Cash", "23.4" } };
 
             var result = Evaluate("#{Cash | Format C}", dict);
-            Assert.AreEqual("$23.40", result);
+            Assert.AreEqual(23.4.ToString("C"), result);
         }
 
         [Test]
         public void FormatFunctionWillTryDefaultDateTimeIfNotDecimal()
         {
-            var dict = new Dictionary<string, string> { { "Date", "22/05/2030 09:05:00" } };
+            var dict = new Dictionary<string, string> { { "Date", "2030/05/22 09:05:00" } };
             var result = Evaluate("#{ Date | Format yyyy}", dict);
             Assert.AreEqual("2030", result);
         }
@@ -126,7 +126,6 @@ namespace Octostache.Tests
             var result = Evaluate("#{Invalid | Format yyyy}", dict);
             Assert.AreEqual("#{Invalid | Format yyyy}", result);
         }
-
 
         [Test]
         public void NowDateReturnsNow()
