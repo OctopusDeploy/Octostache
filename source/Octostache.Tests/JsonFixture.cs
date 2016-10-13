@@ -42,23 +42,19 @@ namespace Octostache.Tests
         }
 
         [Test]
-        [TestCase("{\"Hello\": \"World\"}", "#{Test[Hello]}", ExpectedResult = "World", TestName = "Simple Indexing")]
-        [TestCase("{\"Hello\": \"World\"}", "#{Test.Hello}", ExpectedResult = "World", TestName = "Simple Dot Notation")
-        ]
-        [TestCase("{\"Hello\": {\"World\": {\"Foo\": {\"Bar\": 12 }}}}", "#{Test[Hello][World][Foo][Bar]}",
-             ExpectedResult = "12", TestName = "Deep")]
-        [TestCase("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[1].Name}",
-             ExpectedResult = "Bread", TestName = "Arrays")]
-        [TestCase("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", ExpectedResult = "{\"Bar\":\"11\"}",
-             TestName = "Raw JSON returned")]
-        public string JsonParsing(string json, string pattern)
+        [TestCase("{\"Hello\": \"World\"}", "#{Test[Hello]}", "World", TestName = "Simple Indexing")]
+        [TestCase("{\"Hello\": \"World\"}", "#{Test.Hello}", "World", TestName = "Simple Dot Notation")]
+        [TestCase("{\"Hello\": {\"World\": {\"Foo\": {\"Bar\": 12 }}}}", "#{Test[Hello][World][Foo][Bar]}", "12", TestName = "Deep")]
+        [TestCase("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[1].Name}", "Bread", TestName = "Arrays")]
+        [TestCase("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", "{\"Bar\":\"11\"}", TestName = "Raw JSON returned")]
+        public void JsonParsing(string json, string pattern, string expectedResult)
         {
             var variables = new VariableDictionary
             {
                 ["Test"] = json
             };
 
-            return variables.Evaluate(pattern);
+            Assert.That(variables.Evaluate(pattern), Is.EqualTo(expectedResult));
         }
 
         [Test]
