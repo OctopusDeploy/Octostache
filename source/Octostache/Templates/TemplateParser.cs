@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Globalization;
 using System.Linq;
-using System.Runtime.Caching;
+using Microsoft.Extensions.Caching.Memory;
 using Sprache;
 
 namespace Octostache.Templates
@@ -198,7 +196,7 @@ namespace Octostache.Templates
                 .WithPosition();
 
         static readonly Parser<TextToken> Text =
-            Parse.CharExcept('#').Select(c => c.ToString(CultureInfo.InvariantCulture))
+            Parse.CharExcept('#').Select(c => c.ToString())
                 .Or(Parse.Char('#').End().Return("#"))
                 .Or(Parse.String("##").FollowedBy("#{").Return("#"))
                 .Or(Parse.String("##{").Select(c => "#{"))
@@ -239,22 +237,55 @@ namespace Octostache.Templates
 
         static readonly MemoryCache Cache;
 
-        static TemplateParser()
-        {
-            Cache = new MemoryCache("Octostache", new NameValueCollection() { { "CacheMemoryLimitMegabytes", (20 * 1024).ToString() } });
-        }
+
+        #if NET46
+          static TemplateParser()
+          {
+              Cache = new MemoryCache("Octostache", new NameValueCollection() { { "CacheMemoryLimitMegabytes", (20 * 1024).ToString() } });
+          }
+  		  
+        private static void AddToCache(string template, Template cached)
+         {
+             Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
+         }
+         
+         private static Template GetFromCache(string template)
+         {
+             return Cache.Get(template) as Template;
+         }
+ 
+ #else
+         static TemplateParser()
+         {
+             //todo: there is currently no support for CacheMemoryLimitMegabytes or similar
+             //todo: there is currently no support for naming the cache
+             Cache = new MemoryCache(new MemoryCacheOptions());
+         }
+ 
+         private static void AddToCache(string template, Template cached)
+         {
+             Cache.Set(template, cached, new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(10) });
+         }
+         private static Template GetFromCache(string template)
+         {
+             return Cache.Get(template) as Template;
+         }
+ #endif
+
+       
 
         public static Template ParseTemplate(string template)
         {
-            var cached = Cache.Get(template) as Template;
+            var cached = GetFromCache(template);
             if (cached == null)
             {
                 cached = new Template(Template.End().Parse(template));
-                Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
+                AddToCache(template, cached);
             }
 
             return cached;
         }
+
 
         public static bool TryParseTemplate(string template, out Template result, out string error, bool haltOnError = true)
         {
@@ -269,7 +300,7 @@ namespace Octostache.Templates
                     result = new Template(tokens.Value);
                     error = null;
                     cached = new Template(parser.End().Parse(template));
-                    Cache.Set(template, cached, new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10) });
+                    AddToCache(template, cached);
                     return true;
                 }
                 result = null;

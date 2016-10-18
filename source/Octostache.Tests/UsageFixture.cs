@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 
 namespace Octostache.Tests
@@ -172,7 +173,7 @@ namespace Octostache.Tests
 
             while (watch.ElapsedMilliseconds < 5000)
             {
-                result = Evaluate("Hello, #{Location}!", new Dictionary<string, string> {{"Location", "World"}});
+                result = Evaluate("Hello, #{Location}!", new Dictionary<string, string> { { "Location", "World" } });
                 Assert.That(result, Is.EqualTo("Hello, World!"));
                 iterations++;
             }
@@ -451,7 +452,10 @@ namespace Octostache.Tests
             variables.Set("Name", "Web01");
             variables.Set("Port", "10933");
 
-            Assert.AreEqual("{\r\n  \"Name\": \"Web01\",\r\n  \"Port\": \"10933\"\r\n}", variables.SaveAsString());
+            Assert.AreEqual("{" + Environment.NewLine +
+                            "  \"Name\": \"Web01\"," + Environment.NewLine +
+                            "  \"Port\": \"10933\"" + Environment.NewLine +
+                            "}", variables.SaveAsString());
         }
     }
 }

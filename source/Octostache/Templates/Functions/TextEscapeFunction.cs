@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using MarkdownSharp;
+using HeyRed.MarkdownSharp;
 
 namespace Octostache.Templates.Functions
 {
@@ -41,7 +41,7 @@ namespace Octostache.Templates.Functions
             {
                 AutoHyperlink = true,
                 LinkEmails = true
-            }).Transform(argument.Trim());
+            }).Transform(argument.Trim()) + '\n';
         }
 
         static string Escape(string raw, IDictionary<char, string> entities)
@@ -51,7 +51,7 @@ namespace Octostache.Templates.Functions
                 string entity;
                 if (entities.TryGetValue(c, out entity))
                     return entity;
-                return c.ToString(CultureInfo.InvariantCulture);
+                return c.ToString();
             }));
         }
 
