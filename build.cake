@@ -13,7 +13,7 @@ var configuration = Argument("configuration", "Release");
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL VARIABLES
 ///////////////////////////////////////////////////////////////////////////////
-var artifactsDir = "./artifacts";
+var artifactsDir = "./artifacts/";
 var globalAssemblyFile = "./source/Octostache/Properties/AssemblyInfo.cs";
 var projectToPackage = "./source/Octostache";
 
@@ -120,6 +120,7 @@ Task("__Pack")
         OutputDirectory = artifactsDir,
         NoBuild = true
     });
+   DeleteFiles(artifactsDir + "*symbols*");
 });
 
 Task("__Publish")
