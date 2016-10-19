@@ -49,8 +49,7 @@ Task("__Default")
     .IsDependentOn("__Build")
     .IsDependentOn("__Test")
     .IsDependentOn("__UpdateProjectJsonVersion")
-    .IsDependentOn("__Pack")
-    .IsDependentOn("__Publish");
+    .IsDependentOn("__Pack");
 
 Task("__Clean")
     .Does(() =>
@@ -161,7 +160,7 @@ Task("__Publish")
 //////////////////////////////////////////////////////////////////////
 Task("Default")
     .IsDependentOn("__Default");
-
+	
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
 //////////////////////////////////////////////////////////////////////

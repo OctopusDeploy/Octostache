@@ -12,5 +12,20 @@
         "Microsoft.Extensions.Caching.Memory": "1.0.0"
       }
     }
-  }
+  },
+  
+  
+  
+  "name": "Octostache",
+    
+    "authors": [ "Octopus Deploy" ],
+    "description": "Variable substitution syntax used in Octopus Deploy.",
+    "language": "en-US",
+  
+    "packOptions": {
+        "projectUrl": "https://github.com/OctopusDeploy/Octostache/",
+        "licenseUrl": "https://github.com/OctopusDeploy/Octostache/blob/master/LICENSE",
+		"iconUrl": "http://i.octopusdeploy.com/resources/Avatar3-32x32.png"
+    }
+	
 }
