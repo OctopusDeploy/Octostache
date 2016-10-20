@@ -296,7 +296,7 @@ namespace Octostache.Templates
         {
             var parser = haltOnError ? Template : ContinueOnErrorsTemplate;
 
-            var cached = Cache.Get(template) as Template;
+            var cached = GetFromCache(template);
             if (cached == null)
             {
                 var tokens = parser.End().TryParse(template);

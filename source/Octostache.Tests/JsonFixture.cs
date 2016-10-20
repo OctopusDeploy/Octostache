@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Octostache.Tests
@@ -9,7 +10,6 @@ namespace Octostache.Tests
     [TestFixture]
     public class JsonFixture :BaseFixture
     {
-
         [Test]
         public void JsonDoesNotOverrideExisting()
         {

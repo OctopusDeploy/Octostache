@@ -252,6 +252,21 @@ namespace Octostache.Tests
         }
 
         [Test]
+        public void IndexWithUnkownVariableDoesntFail()
+        {
+            var pattern = "#{Location[#{Continent}]}";
+
+            var variables = new VariableDictionary();            
+            Assert.AreEqual(pattern, variables.Evaluate(pattern));
+            
+            variables.Set("Location[Europe]", "Madrid");
+            Assert.AreEqual(pattern, variables.Evaluate(pattern));
+         
+            variables.Set("Continent", "Europe");
+            Assert.AreEqual("Madrid", variables.Evaluate(pattern));
+        }
+
+        [Test]
         public void UnscopedIndexerInIterationIsSupported()
         {
             var result =

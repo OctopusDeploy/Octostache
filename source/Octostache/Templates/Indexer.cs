@@ -10,7 +10,6 @@
         public Indexer(SymbolExpression expression)
         {
             Symbol = expression;
-            
         }
 
         public string Index { get; }
@@ -21,7 +20,7 @@
 
         public override string ToString()
         {
-            return "[" + (IsSymbol ? Symbol.ToString() : Index) + "]";
+            return "[" + (IsSymbol ? "#{"+ Symbol +"}" : Index) + "]";
         }
     }
 }

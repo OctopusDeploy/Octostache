@@ -92,8 +92,15 @@ namespace Octostache.Templates
                     else
                     {
                         var ix = step as Indexer;
-                        if (ix != null && !ix.IsSymbol)
+                        if (ix != null)
                         {
+                            if (ix.IsSymbol)
+                            {
+                                // Substitution should have taken place in previous CopyExpression above. 
+                                // If not then it must not be found.
+                                return null;
+                            }
+
                             if (ix.Index == "*" && val.Indexable.Count > 0)
                             {
                                 val = val.Indexable.First().Value;
@@ -156,8 +163,6 @@ namespace Octostache.Templates
             return b;
         }
 
-
-
         bool TryCustomParsers(Binding parentBinding, string property, out Binding subBinding)
         {
 
@@ -176,8 +181,6 @@ namespace Octostache.Templates
             return JsonParser.TryParse(parentBinding, property, out subBinding);
         }
 
-        
-
         private SymbolExpression CopyExpression(SymbolExpression expression)
         {
             //any indexers that are lookups, do them now so we are in the right context
@@ -189,7 +192,10 @@ namespace Octostache.Templates
                 {
                     string[] missing;
                     var index = WalkTo(indexer.Symbol, out missing);
-                    return new Indexer(index.Item);
+                    
+                    return index == null
+                        ? new Indexer(CopyExpression(indexer.Symbol))
+                        : new Indexer(index.Item);
                 }
                 return s;
             }));
