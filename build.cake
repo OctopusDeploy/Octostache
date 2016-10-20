@@ -128,26 +128,19 @@ Task("__Pack")
 });
 
 Task("__Publish")
-    .WithCriteria(isContinuousIntegrationBuild)
+    .WithCriteria(BuildSystem.IsRunningOnTeamCity)
     .Does(() =>
 {
-    var isPullRequest = !String.IsNullOrEmpty(EnvironmentVariable("APPVEYOR_PULL_REQUEST_NUMBER"));
-    var isMasterBranch = EnvironmentVariable("APPVEYOR_REPO_BRANCH") == "master" && !isPullRequest;
-    var shouldPushToMyGet = !BuildSystem.IsLocalBuild;
-    var shouldPushToNuGet = !BuildSystem.IsLocalBuild && isMasterBranch;
+    NuGetPush("artifacts/Octostache." + nugetVersion + ".nupkg", new NuGetPushSettings {
+        Source = "https://octopus.myget.org/F/octopus-dependencies/api/v3/index.json",
+        ApiKey = EnvironmentVariable("MyGetApiKey")
+    });
+    NuGetPush("artifacts/Octostache." + nugetVersion + ".symbols.nupkg", new NuGetPushSettings {
+        Source = "https://octopus.myget.org/F/octopus-dependencies/api/v3/index.json",
+        ApiKey = EnvironmentVariable("MyGetApiKey")
+    });
 
-    if (shouldPushToMyGet)
-    {
-        NuGetPush("artifacts/Octostache." + nugetVersion + ".nupkg", new NuGetPushSettings {
-            Source = "https://octopus.myget.org/F/octopus-dependencies/api/v3/index.json",
-            ApiKey = EnvironmentVariable("MyGetApiKey")
-        });
-        NuGetPush("artifacts/Octostache." + nugetVersion + ".symbols.nupkg", new NuGetPushSettings {
-            Source = "https://octopus.myget.org/F/octopus-dependencies/api/v3/index.json",
-            ApiKey = EnvironmentVariable("MyGetApiKey")
-        });
-    }
-    if (shouldPushToNuGet)
+    if (gitVersionInfo.PreReleaseTag == "")
     {
         NuGetPush("artifacts/Octostache." + nugetVersion + ".nupkg", new NuGetPushSettings {
             Source = "https://www.nuget.org/api/v2/package",
