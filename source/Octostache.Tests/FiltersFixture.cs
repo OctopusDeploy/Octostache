@@ -63,7 +63,7 @@ namespace Octostache.Tests
         public void MarkdownIsProcessed()
         {
             var result = Evaluate("#{Foo | Markdown}", new Dictionary<string, string> { { "Foo", "_yeah!_" } });
-            Assert.AreEqual("<p><em>yeah!</em></p>\n", result);
+            Assert.AreEqual("<p><em>yeah!</em></p>", result.Trim());
         }
 
         [Test]
