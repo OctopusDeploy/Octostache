@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+#if NET40
+using System.Runtime.Caching;
+#else
 using Microsoft.Extensions.Caching.Memory;
+#endif
 using Sprache;
 
 namespace Octostache.Templates
@@ -79,7 +84,7 @@ namespace Octostache.Templates
                             .Or(QuotedText)
                             .Select(t => new TextToken(t)))
                         .Named("option").Many().Optional()
-                select new {Function = fn.Text, options = option}
+                select new { Function = fn.Text, options = option }
                 ).AtLeastOnce()
             select (FunctionCallExpression)chain.Aggregate((ContentExpression)symbol,
                 (leftToken, fn) => new FunctionCallExpression(true, fn.Function, leftToken, fn.options.Get().ToArray()));
@@ -238,23 +243,23 @@ namespace Octostache.Templates
         static readonly MemoryCache Cache;
 
 
-        #if NET46
-          static TemplateParser()
-          {
-              Cache = new MemoryCache("Octostache", new NameValueCollection() { { "CacheMemoryLimitMegabytes", (20 * 1024).ToString() } });
-          }
-  		  
+#if NET40
+        static TemplateParser()
+        {
+            Cache = new MemoryCache("Octostache", new NameValueCollection() { { "CacheMemoryLimitMegabytes", (20 * 1024).ToString() } });
+        }
+
         private static void AddToCache(string template, Template cached)
-         {
-             Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
-         }
-         
-         private static Template GetFromCache(string template)
-         {
-             return Cache.Get(template) as Template;
-         }
- 
- #else
+        {
+            Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
+        }
+
+        private static Template GetFromCache(string template)
+        {
+            return Cache.Get(template) as Template;
+        }
+
+#else
          static TemplateParser()
          {
              //todo: there is currently no support for CacheMemoryLimitMegabytes or similar
@@ -270,9 +275,9 @@ namespace Octostache.Templates
          {
              return Cache.Get(template) as Template;
          }
- #endif
+#endif
 
-       
+
 
         public static Template ParseTemplate(string template)
         {

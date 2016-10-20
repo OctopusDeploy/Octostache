@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+#if NET40
+using MarkdownSharp;
+#else
 using HeyRed.MarkdownSharp;
-
+#endif
 namespace Octostache.Templates.Functions
 {
     internal class TextEscapeFunction
