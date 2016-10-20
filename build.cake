@@ -125,7 +125,6 @@ Task("__Pack")
         OutputDirectory = artifactsDir,
         NoBuild = true
     });
-   DeleteFiles(artifactsDir + "*symbols*");
 });
 
 Task("__Publish")
