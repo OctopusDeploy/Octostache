@@ -285,46 +285,6 @@ namespace Octostache.Tests
         }
 
         [Test]
-        public void ConditionalIsSupported()
-        {
-            var result = Evaluate("#{if Truthy}#{Result}#{/if}",
-                new Dictionary<string, string>
-                {
-                    {"Result", "result"},
-                    {"Truthy", "true"},
-                });
-
-            Assert.AreEqual("result", result);
-        }
-
-        [Test]
-        public void ConditionalToOtherDictValueIsSupported()
-        {
-            var result = Evaluate("#{if Octopus == Compare}#{Result}#{/if}",
-                new Dictionary<string, string>
-                {
-                    {"Result", "result"},
-                    {"Octopus", "octopus"},
-                    {"Compare", "octopus"}
-                });
-
-            Assert.AreEqual("result", result);
-        }
-
-        [Test]
-        public void ConditionalToStringIsSupported()
-        {
-            var result = Evaluate("#{if Octopus == \"octopus\"}#{Result}#{/if}",
-                new Dictionary<string, string>
-                {
-                    {"Result", "result"},
-                    {"Octopus", "octopus"},
-                });
-
-            Assert.AreEqual("result", result);
-        }
-
-        [Test]
         public void IndexingWithASymbolIsSupported()
         {
             var result = Evaluate("#{Step[#{action.StepName}]}",
