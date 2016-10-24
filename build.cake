@@ -142,11 +142,8 @@ Task("__Publish")
 
     if (gitVersionInfo.PreReleaseTag == "")
     {
+        // Also pushes the symbols
         NuGetPush("artifacts/Octostache." + nugetVersion + ".nupkg", new NuGetPushSettings {
-            Source = "https://www.nuget.org/api/v2/package",
-            ApiKey = EnvironmentVariable("NuGetApiKey")
-        });
-        NuGetPush("artifacts/Octostache." + nugetVersion + ".symbols.nupkg", new NuGetPushSettings {
             Source = "https://www.nuget.org/api/v2/package",
             ApiKey = EnvironmentVariable("NuGetApiKey")
         });
