@@ -187,10 +187,33 @@ namespace Octostache.Tests
         {
             var result = Evaluate("#{Octopus.Action[Package A].Name}", new Dictionary<string, string>
             {
-                {"Octopus.Action[Package A].Name", "Package A"}
+                { "Octopus.Action[Package A].Name", "MyPackage" }
             });
 
-            Assert.AreEqual("Package A", result);
+            Assert.AreEqual("MyPackage", result);
+        }
+
+        [Test]
+        public void VariableIndexersAreSupported()
+        {
+            var result = Evaluate("#{Octopus.Action[#{Package}].Name}", new Dictionary<string, string>
+            {
+                { "Package", "Package A" },
+                { "Octopus.Action[Package A].Name", "MyPackage" },
+            });
+
+            Assert.AreEqual("MyPackage", result);
+        }
+
+        [Test]
+        public void MissingVariableIndexersFailToEvaluateGracefully()
+        {
+            var result = Evaluate("#{Octopus.Action[#{Package}].Name}", new Dictionary<string, string>
+            {
+                { "Octopus.Action[Package A].Name", "MyPackage" },
+            });
+
+            Assert.AreEqual("#{Octopus.Action[#{Package}].Name}", result);
         }
 
         [Test]
