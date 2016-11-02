@@ -74,13 +74,13 @@ namespace Octostache.Templates
             {
                 var item = items[i];
 
-                var specials = new Dictionary<string, string>();
+                var specials = new Dictionary<string, string>
+                {
+                    {Constants.Each.Index, i.ToString()},
+                    {Constants.Each.First, i == 0 ? "True" : "False"},
+                    {Constants.Each.Last, i == items.Length - 1 ? "True" : "False"}
+                };
 
-                if (i == 0)
-                    specials.Add(Constants.Each.First, "True");
-
-                if (i == items.Length - 1)
-                    specials.Add(Constants.Each.Last, "True");
 
                 var locals = PropertyListBinder.CreateFrom(specials);
 
@@ -175,8 +175,6 @@ namespace Octostache.Templates
             return BuiltInFunctions.InvokeOrNull(fx.Function, argument, args);
         }
 
-
-
         string Resolve(TemplateToken token, EvaluationContext context)
         {
             using (var x = new StringWriter())
@@ -187,8 +185,6 @@ namespace Octostache.Templates
                 return x.ToString();
             }
         }
-        
-
 
         static bool IsTruthy(string value)
         {

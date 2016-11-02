@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Linq;
+using System.Net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Octostache.Templates;
 
@@ -17,19 +19,19 @@ namespace Octostache.CustomStringParsers
                 var jvalue = obj as JValue;
                 if (jvalue != null)
                 {
-                    return ParseJValue(jvalue, out subBinding);
+                    return TryParseJValue(jvalue, out subBinding);
                 }
 
                 var jarray = obj as JArray;
                 if (jarray != null)
                 {
-                    return ParseJArray(jarray, property, out subBinding);
+                    return TryParseJArray(jarray, property, out subBinding);
                 }
 
                 var jobj = obj as JObject;
                 if (jobj != null)
                 {
-                    return ParseJObject(jobj, property, out subBinding);
+                    return TryParseJObject(jobj, property, out subBinding);
                 }
             }
             catch (JsonException)
@@ -39,28 +41,66 @@ namespace Octostache.CustomStringParsers
             return false;
         }
 
-        private static bool ParseJValue(JValue jvalue, out Binding subBinding)
+        internal static bool TryParse(Binding binding, out Binding[] subBindings)
+        {
+            subBindings = new Binding[0];
+
+            try
+            {
+                var obj = JsonConvert.DeserializeObject(binding.Item);
+
+                var jarray = obj as JArray;
+                if (jarray != null)
+                {
+                    return TryParseJArray(jarray, out subBindings);
+                }
+
+                var jobj = obj as JObject;
+                if (jobj != null)
+                {
+                    return TryParseJObject(jobj, out subBindings);
+                }
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+            return false;
+        }
+
+        static bool TryParseJObject(JObject jobj, out Binding[] subBindings)
+        {
+            subBindings = jobj.Properties().Select(p =>
+            {
+                var b = new Binding(p.Name)
+                        {
+                            { "Key", new Binding(p.Name)},
+                            { "Value", ConvertJTokenToBinding(p.Value)}
+                        };
+                return b;
+            }).ToArray();
+            return true;
+        }
+
+        static bool TryParseJArray(JArray jArray, out Binding[] subBindings)
+        {
+            subBindings = jArray.Select(ConvertJTokenToBinding).ToArray();
+            return true;
+        }
+
+        private static bool TryParseJValue(JValue jvalue, out Binding subBinding)
         {
             subBinding = new Binding(jvalue.Value<string>());
             return true;
         }
 
-        private static bool ParseJObject(JObject jobj, string property, out Binding subBinding)
+        private static bool TryParseJObject(JObject jobj, string property, out Binding subBinding)
         {
-            var subProperty = jobj[property];
-            if (subProperty is JValue)
-            {
-                subBinding = new Binding(subProperty.Value<string>());
-            }
-            else
-            {
-                subBinding = new Binding(JsonConvert.SerializeObject(subProperty));
-            }
-
+            subBinding = ConvertJTokenToBinding(jobj[property]);
             return true;
         }
 
-        private static bool ParseJArray(JArray jarray, string property, out Binding subBinding)
+        private static bool TryParseJArray(JArray jarray, string property, out Binding subBinding)
         {
             int index;
             subBinding = null;
@@ -68,17 +108,17 @@ namespace Octostache.CustomStringParsers
             if (!int.TryParse(property, out index))
                 return false;
 
-            var subProperty = jarray[index];
-            if (subProperty is JValue)
-            {
-                subBinding = new Binding(subProperty.Value<string>());
-            }
-            else
-            {
-                subBinding = new Binding(JsonConvert.SerializeObject(subProperty));
-            }
-
+            subBinding = ConvertJTokenToBinding(jarray[index]);
             return true;
+        }
+
+        static Binding ConvertJTokenToBinding(JToken token)
+        {
+            if (token is JValue)
+            {
+                return new Binding(token.Value<string>());
+            }
+            return new Binding(JsonConvert.SerializeObject(token));
         }
     }
 }

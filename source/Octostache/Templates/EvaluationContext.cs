@@ -209,6 +209,13 @@ namespace Octostache.Templates
             if (val.Indexable.Count != 0)
                 return val.Indexable.Select(c => c.Value);
 
+            Binding[] bindings;
+            if (JsonParser.TryParse(new Binding(val.Item), out bindings))
+            {
+                return bindings;
+            }
+
+
             if (val.Item != null)
                 return val.Item.Split(',').Select(s => new Binding(s));
 
@@ -219,5 +226,8 @@ namespace Octostache.Templates
         {
             return new EvaluationContext(locals, Output, this);
         }
+
+
+        
     }
 }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Octostache.Tests
@@ -81,5 +77,43 @@ namespace Octostache.Tests
             Assert.That(ex.Message, Does.Contain("appears to have resulted in a self referencing loop"));
         }
 
+        [Test]
+        public void JsonArraySupportsIterator()
+        {
+            var variables = new VariableDictionary
+            {
+                ["Test"] = "[2,3,5,8]",
+            };
+
+            var pattern = "#{each number in Test}#{number}#{if Octopus.Template.Each.Last == \"False\"}-#{/if}#{/each}";
+
+            Assert.AreEqual("2-3-5-8", variables.Evaluate(pattern));
+        }
+
+        [Test]
+        public void JsonObjectSupportsIterator()
+        {
+            var variables = new VariableDictionary
+            {
+                ["Octopus.Sizes"] = "{\"Small\": \"11.5\",  Large: 15.21}",
+            };
+
+            var pattern = @"#{each size in Octopus.Sizes}#{size}:#{size.Value},#{/each}";
+
+            Assert.AreEqual("Small:11.5,Large:15.21,", variables.Evaluate(pattern));
+        }
+
+        [Test]
+        public void JsonObjectSupportsIteratorWithInnerSelection()
+        {
+            var variables = new VariableDictionary
+            {
+                ["Octopus.Sizes"] = "{\"X-Large\": {\"Error\": \"Not Stocked\"}}",
+            };
+
+            var pattern = @"#{each size in Octopus.Sizes}#{size.Key} - #{size.Value.Error}#{/each}";
+
+            Assert.AreEqual("X-Large - Not Stocked", variables.Evaluate(pattern));
+        }
     }
 }
