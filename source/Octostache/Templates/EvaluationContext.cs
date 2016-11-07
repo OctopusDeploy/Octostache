@@ -180,7 +180,8 @@ namespace Octostache.Templates
                 }
                 catch (InvalidOperationException ex)
                 {
-                    return false;
+                    if(ex.Message.Contains("self referencing loop"))
+                        return false;
                 }
             }
 
