@@ -455,5 +455,21 @@ namespace Octostache.Tests
                             "  \"Port\": \"10933\"" + Environment.NewLine +
                             "}", variables.SaveAsString());
         }
+
+        [Test]
+        [TestCase("{Sizes: {Small: \"#{Test.Sizes.Large.Price}\", Large: \"15\"}}\", Desc: \"Monkey\", Value: 12}", "#{Test.Sizes.Small.Price}", "#{Test.Sizes.Small.Price}", TestName = "Direct inner JSON")]
+        [TestCase("#{Test.Something}", "#{Test}", "#{Test.Something}", TestName = "Missing replacement")]
+
+        public void VariablesThatResolveToUnresolvableReturnError(string variable, string pattern, string expectedResult)
+        {
+            var variables = new VariableDictionary
+            {
+                ["Test"] = variable
+            };
+
+            string err;
+            Assert.That(variables.Evaluate(pattern, out err), Is.EqualTo(expectedResult));
+            Assert.That(err, Is.EqualTo($"The following tokens were unable to be evaluated: '{expectedResult}'"));
+        }
     }
 }

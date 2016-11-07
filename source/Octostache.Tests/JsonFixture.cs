@@ -43,7 +43,8 @@ namespace Octostache.Tests
         [TestCase("{\"Hello\": {\"World\": {\"Foo\": {\"Bar\": 12 }}}}", "#{Test[Hello][World][Foo][Bar]}", "12", TestName = "Deep")]
         [TestCase("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[1].Name}", "Bread", TestName = "Arrays")]
         [TestCase("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", "{\"Bar\":\"11\"}", TestName = "Raw JSON returned")]
-        public void JsonParsing(string json, string pattern, string expectedResult)
+        [TestCase("{Name: \"#{Test.Value}\", Desc: \"Monkey\", Value: 12}", "#{Test.Name}", "12", TestName = "Non-Direct inner JSON", Description = "Non -Direct inner JSON reference can resolve if quoted.")]
+        public void SuccessfulJsonParsing(string json, string pattern, string expectedResult)
         {
             var variables = new VariableDictionary
             {
@@ -62,19 +63,6 @@ namespace Octostache.Tests
             };
 
             Assert.AreEqual("#{Test.Name}", variables.Evaluate("#{Test.Name}"));
-        }
-
-        [Test]
-        public void JsonWithSelfRefferentialVariableFails()
-        {
-            var variables = new VariableDictionary
-            {
-                ["Test"] = "{Name: \"#{Test.Value}\", Value: 12}",
-            };
-
-
-            var ex = Assert.Throws<InvalidOperationException>(() => variables.Evaluate("#{Test.Name}"));
-            Assert.That(ex.Message, Does.Contain("appears to have resulted in a self referencing loop"));
         }
 
         [Test]

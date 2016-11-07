@@ -170,11 +170,18 @@ namespace Octostache.Templates
             if (string.IsNullOrEmpty(parentBinding.Item) || string.IsNullOrEmpty(property))
                 return false;
 
-            
+
             if (parentBinding.Item.Contains("#{")) //Shortcut the inner variable replacement if no templates are detected
             {
-                string[] missingTokens;
-                parentBinding = ParseTemplate(parentBinding, out missingTokens);
+                try
+                {
+                    string[] missingTokens;
+                    parentBinding = ParseTemplate(parentBinding, out missingTokens);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return false;
+                }
             }
 
 
