@@ -79,6 +79,19 @@ namespace Octostache.Tests
         }
 
         [Test]
+        public void JsonArraySafeguardedFromNullValues()
+        {
+            var variables = new VariableDictionary
+            {
+                ["Test"] = "{Blah: null}",
+            };
+
+            var pattern = "Before:#{each number in Test.Blah}#{number}#{/each}:After";
+
+            Assert.AreEqual("Before::After", variables.Evaluate(pattern));
+        }
+
+        [Test]
         public void JsonObjectSupportsIterator()
         {
             var variables = new VariableDictionary

@@ -213,10 +213,14 @@ namespace Octostache.Templates
         public IEnumerable<Binding> ResolveAll(SymbolExpression collection, out string[] missingTokens)
         {
             var val = WalkTo(collection, out missingTokens);
-            if (val == null) return Enumerable.Empty<Binding>();
+            if (val == null)
+                return Enumerable.Empty<Binding>();
 
             if (val.Indexable.Count != 0)
                 return val.Indexable.Select(c => c.Value);
+
+            if (val.Item == null)
+                return Enumerable.Empty<Binding>();
 
             Binding[] bindings;
             if (JsonParser.TryParse(new Binding(val.Item), out bindings))
@@ -224,19 +228,12 @@ namespace Octostache.Templates
                 return bindings;
             }
 
-
-            if (val.Item != null)
-                return val.Item.Split(',').Select(s => new Binding(s));
-
-            return Enumerable.Empty<Binding>();
+            return val.Item.Split(',').Select(s => new Binding(s));
         }
 
         public EvaluationContext BeginChild(Binding locals)
         {
             return new EvaluationContext(locals, Output, this);
         }
-
-
-        
     }
 }
