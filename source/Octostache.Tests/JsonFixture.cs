@@ -116,5 +116,18 @@ namespace Octostache.Tests
 
             Assert.AreEqual("X-Large - Not Stocked", variables.Evaluate(pattern));
         }
+
+        [Test]
+        public void NullJsonPropertyTreatedAsEmptyString()
+        {
+            var variables = new VariableDictionary
+            {
+                ["Foo"] = "{Bar: null}",
+            };
+
+            var pattern = @"Alpha#{Foo.Bar}bet";
+
+            Assert.AreEqual("Alphabet", variables.Evaluate(pattern));
+        }
     }
 }

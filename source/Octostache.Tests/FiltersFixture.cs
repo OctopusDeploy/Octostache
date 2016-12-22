@@ -9,12 +9,15 @@ namespace Octostache.Tests
     [TestFixture]
     public class FiltersFixture : BaseFixture
     {
-
-        [Test]
-        public void UnmatchedSubstitutionsAreEchoedEvenWithFiltering()
+        [TestCase("#{foo | ToUpper}")]
+        [TestCase("#{Foo.Bar | HtmlEscape}")]
+        [TestCase("#{Foo.Bar | ToUpper}")]   
+        public void UnmatchedSubstitutionsAreEchoed(string template)
         {
-            var result = Evaluate("#{foo | ToUpper}", new Dictionary<string, string>());
-            Assert.AreEqual("#{foo | ToUpper}", result);
+            string error;
+            var result = new VariableDictionary().Evaluate(template, out error);
+            Assert.That(result, Is.EqualTo(template));
+            Assert.That(error, Is.EqualTo($"The following tokens were unable to be evaluated: '{template}'"));
         }
 
         [Test]
@@ -142,6 +145,12 @@ namespace Octostache.Tests
             Assert.AreEqual(DateTime.Now.Year.ToString(), result);
         }
 
+        [Test]
+        public void NullJsonPropertyTreatedAsEmptyString()
+        {
+            var result = Evaluate("Alpha#{Foo.Bar | ToUpper}bet", new Dictionary<string, string> { { "Foo", "{Bar: null}" } });
+            Assert.AreEqual("Alphabet", result);
+        }
 
         [Test]
         public void NowDateCanBeChained()

@@ -49,6 +49,9 @@ namespace Octostache.Templates.Functions
 
         static string Escape(string raw, IDictionary<char, string> entities)
         {
+            if (raw == null)
+                return null;
+
             return string.Join("", raw.Select(c =>
             {
                 string entity;

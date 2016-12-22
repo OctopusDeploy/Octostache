@@ -116,7 +116,7 @@ namespace Octostache.CustomStringParsers
         {
             if (token is JValue)
             {
-                return new Binding(token.Value<string>());
+                return new Binding(token.Value<string>() ?? string.Empty);
             }
             return new Binding(JsonConvert.SerializeObject(token));
         }
