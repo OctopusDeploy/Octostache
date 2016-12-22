@@ -11,7 +11,8 @@ namespace Octostache.Tests
     {
         [TestCase("#{foo | ToUpper}")]
         [TestCase("#{Foo.Bar | HtmlEscape}")]
-        [TestCase("#{Foo.Bar | ToUpper}")]   
+        [TestCase("#{Foo.Bar | ToUpper}")]
+        [TestCase("#{Foo.Bar | Markdown}")]
         public void UnmatchedSubstitutionsAreEchoed(string template)
         {
             string error;

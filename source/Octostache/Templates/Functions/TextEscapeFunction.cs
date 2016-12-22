@@ -37,7 +37,7 @@ namespace Octostache.Templates.Functions
 
         public static string Markdown(string argument, string[] options)
         {
-            if (options.Any())
+            if (argument == null || options.Any())
                 return null;
 
             return new Markdown(new MarkdownOptions
