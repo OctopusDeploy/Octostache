@@ -24,6 +24,63 @@ namespace Octostache.Tests
         }
 
         [Test]
+        public void ConditionalIsSupportedWithLeadingWhitespace()
+        {
+            var result = Evaluate("#{ if Truthy}#{Result}#{/if}",
+                new Dictionary<string, string>
+                {
+                    {"Result", "result"},
+                    {"Truthy", "true"},
+                });
+
+            Assert.AreEqual("result", result);
+
+            result = Evaluate("#{  if Truthy}#{Result}#{/if}",
+                            new Dictionary<string, string>
+                            {
+                    {"Result", "result"},
+                    {"Truthy", "true"},
+                            });
+
+            Assert.AreEqual("result", result);
+        }
+
+        [Test]
+        public void ConditionalIsSupportedWithTrailingWhitespace()
+        {
+            var result = Evaluate("#{if Truthy }#{Result}#{/if}",
+                new Dictionary<string, string>
+                {
+                    {"Result", "result"},
+                    {"Truthy", "true"},
+                });
+
+            Assert.AreEqual("result", result);
+
+            result = Evaluate("#{if Truthy  }#{Result}#{/if}",
+                            new Dictionary<string, string>
+                            {
+                    {"Result", "result"},
+                    {"Truthy", "true"},
+                            });
+
+            Assert.AreEqual("result", result);
+        }
+
+        [Test]
+        public void ConditionalUnlessIsSupported()
+        {
+            var result = Evaluate("#{unless Truthy}#{Result}#{/unless}",
+                new Dictionary<string, string>
+                {
+                    {"Result", "result"},
+                    {"Truthy", "false"},
+                });
+
+            Assert.AreEqual("result", result);
+        }
+
+        [Test]
         public void ConditionalToOtherDictValueIsSupported()
         {
             var result = Evaluate("#{if Octopus == Compare}#{Result}#{/if}",

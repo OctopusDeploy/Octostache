@@ -16,6 +16,7 @@ namespace Octostache.Templates
         static readonly Parser<Identifier> Identifier = Parse
             .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':' || c == '/' || c == '~' || c == '(' || c == ')', "identifier")
             .Except(Parse.WhiteSpace.FollowedBy("|"))
+            .Except(Parse.WhiteSpace.Many().FollowedBy("}"))
             .ExceptWhiteSpaceBeforeKeyword()
             .AtLeastOnce()
             .Text()
@@ -25,6 +26,7 @@ namespace Octostache.Templates
         static readonly Parser<Identifier> IdentifierWithoutWhitespace = Parse
          .Char(c => char.IsLetter(c) || char.IsDigit(c) || c == '_' || c == '-' || c == ':' || c == '/' || c == '~' || c == '(' || c == ')', "identifier")
          .Except(Parse.WhiteSpace.FollowedBy("|"))
+         .Except(Parse.WhiteSpace.Many().FollowedBy("}"))
          .ExceptWhiteSpaceBeforeKeyword()
          .AtLeastOnce()
          .Text()
@@ -67,6 +69,7 @@ namespace Octostache.Templates
         static readonly Parser<SymbolExpression> Symbol =
             (from first in Identifier
              from rest in TrailingStep.Many()
+             
              select new SymbolExpression(new[] { first }.Concat(rest)))
                 .WithPosition();
 
@@ -155,9 +158,11 @@ namespace Octostache.Templates
 
         static readonly Parser<ConditionalToken> Conditional =
             (from ldelim in LDelim
+             from sp1 in Parse.WhiteSpace.Many()
              from kw in Keyword("if").Or(Keyword("unless"))
              from sp in Parse.WhiteSpace.AtLeastOnce()
              from expression in TokenMatch.Token().Or(StringMatch.Token()).Or(TruthyMatch.Token())
+             from sp2 in Parse.WhiteSpace.Many()
              from rdelim in RDelim
              from truthy in Parse.Ref(() => Template)
              from end in Parse.String("#{/" + kw + "}")
