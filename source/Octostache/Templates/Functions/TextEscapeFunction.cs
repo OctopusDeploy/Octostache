@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-#if NET40
-using MarkdownSharp;
-#else
-using HeyRed.MarkdownSharp;
-#endif
+using Markdig;
+
 namespace Octostache.Templates.Functions
 {
     internal class TextEscapeFunction
@@ -40,11 +37,12 @@ namespace Octostache.Templates.Functions
             if (argument == null || options.Any())
                 return null;
 
-            return new Markdown(new MarkdownOptions
-            {
-                AutoHyperlink = true,
-                LinkEmails = true
-            }).Transform(argument.Trim()) + '\n';
+            var pipeline = new MarkdownPipelineBuilder()
+                .UsePipeTables()
+                .UseEmphasisExtras() //strike through, subscript, superscript
+                .UseAutoLinks()      //make links for http:// etc
+                .Build();
+            return Markdig.Markdown.ToHtml(argument.Trim(), pipeline) + '\n';
         }
 
         static string Escape(string raw, IDictionary<char, string> entities)

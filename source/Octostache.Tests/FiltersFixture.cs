@@ -71,6 +71,24 @@ namespace Octostache.Tests
         }
 
         [Test]
+        public void MarkdownHttpLinkIsProcessed()
+        {
+            var result = Evaluate("#{Foo | Markdown}", new Dictionary<string, string> { { "Foo", "http://octopus.com" } });
+            Assert.AreEqual("<p><a href=\"http://octopus.com\">http://octopus.com</a></p>", result.Trim());
+        }
+
+        [Test]
+        public void MarkdownTablesAreProcessed()
+        {
+            var dictionary = new Dictionary<string, string> { {"Foo", 
+@"|Header1|Header2|
+|-|-|
+|Cell1|Cell2|" }};
+            var result = Evaluate("#{Foo | Markdown}", dictionary);
+            Assert.AreEqual("<table>\n<thead>\n<tr>\n<th>Header1</th>\n<th>Header2</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Cell1</td>\n<td>Cell2</td>\n</tr>\n</tbody>\n</table>", result.Trim());
+        }
+
+        [Test]
         public void DateIsFormatted()
         {
             var dict = new Dictionary<string, string> { { "Foo", "2030/05/22 09:05:00" } };

@@ -11,20 +11,17 @@
   },
   "dependencies": {
     "Newtonsoft.Json": "9.0.1",
-    "Sprache": "2.1.0"
+    "Sprache": "2.1.0",
+    "Markdig": "0.10.4"
   },
   "frameworks": {
     "netstandard1.3": {
       "dependencies": {
         "System.IO.FileSystem":  "4.0.1",
-        "Markdown": "2.1.0",
         "Microsoft.Extensions.Caching.Memory": "1.0.0"
       }
     },
     "net40": {
-      "dependencies": {
-        "MarkdownSharp": "1.13.0"
-      },
       "frameworkAssemblies": {
         "System.Runtime.Caching": "*"
       }
