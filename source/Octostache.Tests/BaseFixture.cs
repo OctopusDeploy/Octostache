@@ -41,6 +41,17 @@ namespace Octostache.Tests
             return dictionary.Evaluate(template, out error, haltOnError);
         }
 
+        protected bool EvaluateTruthy(string template, IDictionary<string, string> variables)
+        {
+            var dictionary = new VariableDictionary();
+            foreach (var pair in variables)
+            {
+                dictionary[pair.Key] = pair.Value;
+            }
+            string error;
+            return dictionary.EvaluateTruthy(template);
+        }
+
         protected VariableDictionary ParseVariables(string variableDefinitions)
         {
             var variables = new VariableDictionary();

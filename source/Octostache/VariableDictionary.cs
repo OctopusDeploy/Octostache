@@ -187,6 +187,18 @@ namespace Octostache
         }
 
         /// <summary>
+        /// Evaluates a given expression for truthiness.
+        /// </summary>
+        /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>
+        /// <returns>Whether the expression evaluates with no errors and the result is truthy (Not empty, 0 or false).</returns>
+        public bool EvaluateTruthy(string expressionOrVariableOrText)
+        {
+            string error;
+            var result = Evaluate(expressionOrVariableOrText, out error);
+            return string.IsNullOrWhiteSpace(error) && result != null && TemplateEvaluator.IsTruthy(result);
+        }
+
+        /// <summary>
         /// Evaluates a given expression as if it were the value of a variable.
         /// </summary>
         /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>

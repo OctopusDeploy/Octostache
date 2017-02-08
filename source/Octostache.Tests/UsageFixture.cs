@@ -471,5 +471,53 @@ namespace Octostache.Tests
             Assert.That(variables.Evaluate(pattern, out err), Is.EqualTo(expectedResult));
             Assert.That(err, Is.EqualTo($"The following tokens were unable to be evaluated: '{expectedResult}'"));
         }
+
+        [Test]
+        public void ShouldEvaluateTrueToTrue()
+        {
+            var result = EvaluateTruthy("#{truthy}",
+               new Dictionary<string, string>
+               {
+                    {"truthy", "true"}
+               });
+
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        public void ShouldEvaluateFalseToFalse()
+        {
+            var result = EvaluateTruthy("#{falsey}",
+               new Dictionary<string, string>
+               {
+                    {"falsey", "false"}
+               });
+
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void ShouldEvaluateMissingToFalse()
+        {
+            var result = EvaluateTruthy("#{missing}",
+               new Dictionary<string, string>
+               {
+                    {"truthy", "true"}
+               });
+
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void ShouldEvaluateExistsToTrue()
+        {
+            var result = EvaluateTruthy("#{exists}",
+               new Dictionary<string, string>
+               {
+                    {"exists", "exists"}
+               });
+
+            Assert.IsTrue(result);
+        }
     }
 }

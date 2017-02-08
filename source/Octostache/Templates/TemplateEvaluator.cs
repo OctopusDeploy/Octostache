@@ -186,7 +186,7 @@ namespace Octostache.Templates
             }
         }
 
-        static bool IsTruthy(string value)
+        internal static bool IsTruthy(string value)
         {
             return value != "0" &&
                 value != "" &&
