@@ -2,7 +2,7 @@
 // TOOLS
 //////////////////////////////////////////////////////////////////////
 #tool "nuget:?package=GitVersion.CommandLine&version=4.0.0-beta0007"
-#addin "MagicChunks"
+#addin "Cake.FileHelpers"
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -14,23 +14,28 @@ var configuration = Argument("configuration", "Release");
 // GLOBAL VARIABLES
 ///////////////////////////////////////////////////////////////////////////////
 var artifactsDir = "./artifacts/";
-var globalAssemblyFile = "./source/Octostache/Properties/AssemblyInfo.cs";
-var projectToPackage = "./source/Octostache";
+var localPackagesDir = "../LocalPackages";
 
-var isContinuousIntegrationBuild = !BuildSystem.IsLocalBuild;
+GitVersion gitVersionInfo;
+string nugetVersion;
 
-var gitVersionInfo = GitVersion(new GitVersionSettings {
-    OutputType = GitVersionOutput.Json
-});
-
-var nugetVersion = gitVersionInfo.NuGetVersion;
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
 ///////////////////////////////////////////////////////////////////////////////
 Setup(context =>
 {
+    gitVersionInfo = GitVersion(new GitVersionSettings {
+        OutputType = GitVersionOutput.Json
+    });
+
+    if(BuildSystem.IsRunningOnTeamCity)
+        BuildSystem.TeamCity.SetBuildNumber(gitVersionInfo.NuGetVersion);
+
+    nugetVersion = gitVersionInfo.NuGetVersion;
+
     Information("Building Octostache v{0}", nugetVersion);
+    Information("Informational Version {0}", gitVersionInfo.InformationalVersion);
 });
 
 Teardown(context =>
@@ -42,120 +47,73 @@ Teardown(context =>
 //  PRIVATE TASKS
 //////////////////////////////////////////////////////////////////////
 
-Task("__Default")
-    .IsDependentOn("__Clean")
-    .IsDependentOn("__Restore")
-    .IsDependentOn("__UpdateAssemblyVersionInformation")
-    .IsDependentOn("__Build")
-    .IsDependentOn("__Test")
-    .IsDependentOn("__UpdateProjectJsonVersion")
-    .IsDependentOn("__Pack")
-    .IsDependentOn("__Publish");
-
-Task("__Clean")
+Task("Clean")
     .Does(() =>
 {
     CleanDirectory(artifactsDir);
     CleanDirectories("./source/**/bin");
     CleanDirectories("./source/**/obj");
+    CleanDirectories("./source/**/TestResults");
 });
 
-Task("__Restore")
-    .Does(() => DotNetCoreRestore());
-
-Task("__UpdateAssemblyVersionInformation")
-    .WithCriteria(isContinuousIntegrationBuild)
-    .Does(() =>
-{
-     GitVersion(new GitVersionSettings {
-        UpdateAssemblyInfo = true,
-        UpdateAssemblyInfoFilePath = globalAssemblyFile
+Task("Restore")
+    .IsDependentOn("Clean")
+    .Does(() => {
+        DotNetCoreRestore("source");
     });
 
-    Information("AssemblyVersion -> {0}", gitVersionInfo.AssemblySemVer);
-    Information("AssemblyFileVersion -> {0}", $"{gitVersionInfo.MajorMinorPatch}.0");
-    Information("AssemblyInformationalVersion -> {0}", gitVersionInfo.InformationalVersion);
-    if(BuildSystem.IsRunningOnTeamCity)
-        BuildSystem.TeamCity.SetBuildNumber(gitVersionInfo.NuGetVersion);
-    if(BuildSystem.IsRunningOnAppVeyor)
-        AppVeyor.UpdateBuildVersion(gitVersionInfo.NuGetVersion);
-});
 
-Task("__Build")
+Task("Build")
+    .IsDependentOn("Restore")
+    .IsDependentOn("Clean")
     .Does(() =>
 {
-    DotNetCoreBuild("**/project.json", new DotNetCoreBuildSettings
+    DotNetCoreBuild("./source", new DotNetCoreBuildSettings
     {
-        Configuration = configuration
+        Configuration = configuration,
+        ArgumentCustomization = args => args.Append($"/p:Version={nugetVersion}")
     });
 });
 
-Task("__Test")
+Task("Test")
+    .IsDependentOn("Build")
     .Does(() =>
 {
-    GetFiles("**/*Tests/project.json")
-        .ToList()
-        .ForEach(testProjectFile => 
-        {
-            DotNetCoreTest(testProjectFile.ToString(), new DotNetCoreTestSettings
-            {
-                Configuration = configuration
-            });
-        });
-});
-
-Task("__UpdateProjectJsonVersion")
-    .WithCriteria(isContinuousIntegrationBuild)
-    .Does(() =>
-{
-    var projectToPackagePackageJson = $"{projectToPackage}/project.json";
-    Information("Updating {0} version -> {1}", projectToPackagePackageJson, nugetVersion);
-
-    TransformConfig(projectToPackagePackageJson, projectToPackagePackageJson, new TransformationCollection {
-        { "version", nugetVersion }
+    DotNetCoreTest("./source/Octostache.Tests/Octostache.Tests.csproj", new DotNetCoreTestSettings
+    {
+        Configuration = configuration,
+        NoBuild = true,
+        ArgumentCustomization = args => args.Append("-l trx")
     });
 });
 
-Task("__Pack")
+Task("Pack")
+    .IsDependentOn("Test")
     .Does(() =>
 {
-    DotNetCorePack(projectToPackage, new DotNetCorePackSettings
+    DotNetCorePack("./source/Octostache", new DotNetCorePackSettings
     {
         Configuration = configuration,
         OutputDirectory = artifactsDir,
-        NoBuild = true
+        NoBuild = true,
+        ArgumentCustomization = args => args.Append($"/p:Version={nugetVersion}")
     });
+
+    DeleteFiles(artifactsDir + "*symbols*");
 });
 
-Task("__Publish")
-    .WithCriteria(BuildSystem.IsRunningOnTeamCity)
+Task("CopyToLocalPackages")
+    .IsDependentOn("Pack")
+    .WithCriteria(BuildSystem.IsLocalBuild)
     .Does(() =>
 {
-    NuGetPush("artifacts/Octostache." + nugetVersion + ".nupkg", new NuGetPushSettings {
-        Source = EnvironmentVariable("OctopusDependeciesFeedUrl"),
-        ApiKey = EnvironmentVariable("MyGetApiKey")
-    });
-    NuGetPush("artifacts/Octostache." + nugetVersion + ".symbols.nupkg", new NuGetPushSettings {
-        Source = EnvironmentVariable("OctopusDependeciesFeedUrl"),
-        ApiKey = EnvironmentVariable("MyGetApiKey")
-    });
-
-    if (gitVersionInfo.PreReleaseTag == "")
-    {
-        // Also pushes the symbols
-        NuGetPush("artifacts/Octostache." + nugetVersion + ".nupkg", new NuGetPushSettings {
-            Source = "https://www.nuget.org/api/v2/package",
-            ApiKey = EnvironmentVariable("NuGetApiKey")
-        });
-    }
+    CreateDirectory(localPackagesDir);
+    CopyFileToDirectory($"{artifactsDir}/Octostache.{nugetVersion}.nupkg", localPackagesDir);
 });
 
-//////////////////////////////////////////////////////////////////////
-// TASKS
-//////////////////////////////////////////////////////////////////////
 Task("Default")
-    .IsDependentOn("__Default");
-	
+    .IsDependentOn("CopyToLocalPackages");
+
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
 //////////////////////////////////////////////////////////////////////

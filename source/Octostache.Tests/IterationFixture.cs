@@ -1,20 +1,20 @@
 ﻿using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
+using FluentAssertions;
 
 namespace Octostache.Tests
 {
-    [TestFixture]
     public class IterationFixture : BaseFixture
     {
-        [Test]
+        [Fact]
         public void IterationOverAnEmptyCollectionIsFine()
         {
             var result = Evaluate("Ok#{each nothing in missing}#{nothing}#{/each}", new Dictionary<string, string>());
 
-            Assert.AreEqual("Ok", result);
+            result.Should().Be("Ok");
         }
 
-        [Test]
+        [Fact]
         public void SimpleIterationIsSupported()
         {
             var result = Evaluate(
@@ -25,10 +25,10 @@ namespace Octostache.Tests
                     {"Octopus.Action[Package B].Name", "B"},
                 });
 
-            Assert.AreEqual("Package A-APackage B-B", result);
+            result.Should().Be("Package A-APackage B-B");
         }
 
-        [Test]
+        [Fact]
         public void NestedIterationIsSupported()
         {
             var result = Evaluate(
@@ -41,10 +41,10 @@ namespace Octostache.Tests
                     {"Octopus.Action[Package B].TargetRoles", "c"}
                 });
 
-            Assert.AreEqual("AaAbBc", result);
+            result.Should().Be("AaAbBc");
         }
 
-        [Test]
+        [Fact]
         public void RecursiveIterationIsSupported()
         {
             var result = Evaluate("#{each a in Octopus.Action}#{a.Name}#{/each}",
@@ -56,10 +56,10 @@ namespace Octostache.Tests
                     {"Octopus.Action[Package B].Name", "#{PackageB_Name}"},
                 });
 
-            Assert.AreEqual("AB", result);
+            result.Should().Be("AB");
         }
 
-        [Test]
+        [Fact]
         public void ScopedSymbolIndexerInIterationIsSupported()
         {
             var result =
@@ -75,10 +75,10 @@ namespace Octostache.Tests
                         {"Octopus.Step[Step 2].Status", "Running"},
                     });
 
-            Assert.AreEqual("Step 2 Details", result);
+            result.Should().Be("Step 2 Details");
         }
 
-        [Test]
+        [Fact]
         public void IterationSpecialVariablesAreSupported()
         {
             var result = Evaluate(@"#{each a in Numbers}#{a} First:#{Octopus.Template.Each.First} Last:#{Octopus.Template.Each.Last} Index:#{Octopus.Template.Each.Index}, #{/each}",
@@ -87,7 +87,7 @@ namespace Octostache.Tests
                     {"Numbers", "A,B,C"},
                 });
 
-            Assert.AreEqual("A First:True Last:False Index:0, B First:False Last:False Index:1, C First:False Last:True Index:2, ", result);
+            result.Should().Be("A First:True Last:False Index:0, B First:False Last:False Index:1, C First:False Last:True Index:2, ");
         }
     }
 }

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
+using FluentAssertions;
 
 namespace Octostache.Tests
 {
-    [TestFixture]
     public class UsageFixture : BaseFixture
     {
-        [Test]
+        [Fact]
         public void HowToUseTheDictionary()
         {
             var variables = new VariableDictionary();
@@ -20,87 +20,87 @@ namespace Octostache.Tests
             variables.Set("InstallPath", "C:\\#{Directory}");
             variables.Set("Directory", "MyDirectory");
 
-            Assert.That(variables.Get("InstallPath"), Is.EqualTo("C:\\MyDirectory"));
-            Assert.That(variables.GetRaw("InstallPath"), Is.EqualTo("C:\\#{Directory}"));
-            Assert.That(variables.GetFlag("IsFamous"), Is.EqualTo(true));
-            Assert.That(variables.GetFlag("IsInfamous"), Is.EqualTo(false));
-            Assert.That(variables.GetFlag("IsInfamous", true), Is.EqualTo(true));
-            Assert.That(variables.GetInt32("FriendCount"), Is.EqualTo(99));
-            Assert.That(variables.GetInt32("FollowerCount"), Is.EqualTo(null));
+            variables.Get("InstallPath").Should().Be("C:\\MyDirectory");
+            variables.GetRaw("InstallPath").Should().Be("C:\\#{Directory}");
+            variables.GetFlag("IsFamous").Should().Be(true);
+            variables.GetFlag("IsInfamous").Should().Be(false);
+            variables.GetFlag("IsInfamous", true).Should().Be(true);
+            variables.GetInt32("FriendCount").Should().Be(99);
+            variables.GetInt32("FollowerCount").Should().Be(null);
         }
 
-        [Test]
-        [TestCase("#{Foo}", "Foo=Bar", "Bar")]
-        [TestCase("#{Foo}", "foo=Bar", "Bar")]
-        [TestCase("#{Foo}", "Foo=#{Bar};Bar=Baz", "Baz")]
-        [TestCase("#{Foo}", "Foo=#{Bar | ToLower};Bar=Baz", "baz")]
-        [TestCase("#{Foo Bar Jazz}", "Foo Bar Jazz=Bar", "Bar")]
-        [TestCase("#{Foo|ToUpper}", "Foo=#{Bar | ToLower};Bar=Baz", "BAZ")]
-        [TestCase("#{Foo | ToUpper}", "Foo=baz", "BAZ")]
-        [TestCase("##{Foo}", "foo=Bar", "#{Foo}")]
+        [Theory]
+        [InlineData("#{Foo}", "Foo=Bar", "Bar")]
+        [InlineData("#{Foo}", "foo=Bar", "Bar")]
+        [InlineData("#{Foo}", "Foo=#{Bar};Bar=Baz", "Baz")]
+        [InlineData("#{Foo}", "Foo=#{Bar | ToLower};Bar=Baz", "baz")]
+        [InlineData("#{Foo Bar Jazz}", "Foo Bar Jazz=Bar", "Bar")]
+        [InlineData("#{Foo|ToUpper}", "Foo=#{Bar | ToLower};Bar=Baz", "BAZ")]
+        [InlineData("#{Foo | ToUpper}", "Foo=baz", "BAZ")]
+        [InlineData("##{Foo}", "foo=Bar", "#{Foo}")]
         public void BasicExamples(string template, string variableDefinitions, string expectedResult)
         {
             string error;
             var result = ParseVariables(variableDefinitions).Evaluate(template, out error);
-            Assert.That(result, Is.EqualTo(expectedResult));
-            Assert.IsNull(error);
+            result.Should().Be(expectedResult);
+            error.Should().BeNull();
         }
 
-        [Test]
-        [TestCase("#{Foo}", "", "#{Foo}")]
-        [TestCase("#{Foo}#{Jazz}", "Foo=#{Bar};Bar=Baz", "Baz#{Jazz}")]
-        [TestCase("#{each a in Action}#{a.Size}#{/each}", "Action[x].Name=Baz;Action[y].Name=Baz", "#{a.Size}#{a.Size}")
+        [Theory]
+        [InlineData("#{Foo}", "", "#{Foo}")]
+        [InlineData("#{Foo}#{Jazz}", "Foo=#{Bar};Bar=Baz", "Baz#{Jazz}")]
+        [InlineData("#{each a in Action}#{a.Size}#{/each}", "Action[x].Name=Baz;Action[y].Name=Baz", "#{a.Size}#{a.Size}")
         ]
         public void MissingTokenErrorExamples(string template, string variableDefinitions, string expectedResult)
         {
             string error;
             var result = ParseVariables(variableDefinitions).Evaluate(template, out error);
-            Assert.That(result, Is.EqualTo(expectedResult));
-            Assert.IsNotNull(error);
+            result.Should().Be(expectedResult);
+            error.Should().NotBeNull();
         }
 
-        [TestCase("#{Foo", "Foo=Bar;")]
-        [TestCase("#{Fo[o}", "Foo=Bar;Fo[o]=Bar")]
-        [TestCase("#{each a in Action}", "Action[a]=One")]
+        [Theory]
+        [InlineData("#{Foo", "Foo=Bar;")]
+        [InlineData("#{Fo[o}", "Foo=Bar;Fo[o]=Bar")]
+        [InlineData("#{each a in Action}", "Action[a]=One")]
         public void ParseErrorExamples(string template, string variableDefinitions)
         {
             string error;
             var result = ParseVariables(variableDefinitions).Evaluate(template, out error);
-            Assert.That(result, Is.EqualTo(template));
-            Assert.IsNotNull(error);
+            result.Should().Be(template);
+            error.Should().NotBeNull();
         }
 
-        [Test]
-        [TestCase("#{a/b}", "a/b=Foo", "Foo")]
-        [TestCase("#{a~b}", "a~b=Foo", "Foo")]
-        [TestCase("#{(abc)}", "(abc)=Foo", "Foo")]
+        [Theory]
+        [InlineData("#{a/b}", "a/b=Foo", "Foo")]
+        [InlineData("#{a~b}", "a~b=Foo", "Foo")]
+        [InlineData("#{(abc)}", "(abc)=Foo", "Foo")]
         public void AwkwardCharacters(string template, string variableDefinitions, string expectedResult)
         {
             var result = ParseVariables(variableDefinitions).Evaluate(template);
-            Assert.That(result, Is.EqualTo(expectedResult));
+            result.Should().Be(expectedResult);
         }
 
-        [Test]
-        [TestCase("#{ }", "Foo=Value; =Bar", "#{ }")]
-        [TestCase("#{}", "Foo=Value;=Bar", "#{}")]
+        [Theory]
+        [InlineData("#{ }", "Foo=Value; =Bar", "#{ }")]
+        [InlineData("#{}", "Foo=Value;=Bar", "#{}")]
         public void EmptyValuesAreEchoed(string template, string variableDefinitions, string expectedResult)
         {
             var result = ParseVariables(variableDefinitions).Evaluate(template);
-            Assert.That(result, Is.EqualTo(expectedResult));
+            result.Should().Be(expectedResult);
         }
 
-        [Test]
-        [TestCase("#{Foo}", "Foo=#{Foo}")]
-        [TestCase("#{Foo}", "Foo=#{Fox};Fox=#{Fax};Fax=#{Fix};Fix=#{Foo}")]
+        [Theory]
+        [InlineData("#{Foo}", "Foo=#{Foo}")]
+        [InlineData("#{Foo}", "Foo=#{Fox};Fox=#{Fax};Fax=#{Fix};Fix=#{Foo}")]
         public void MaximumRecursionLimitException(string template, string variableDefinitions)
         {
             var ex =
                 Assert.Throws<InvalidOperationException>(() => ParseVariables(variableDefinitions).Evaluate(template));
-            Assert.That(ex.Message, Does.Contain("appears to have resulted in a self referencing loop"));
+            ex.Message.Should().Contain("appears to have resulted in a self referencing loop");
         }
 
-
-        [Test]
+        [Fact]
         public void AbleToContinueWhenAParsingErrorIsHit()
         {
             const string input =
@@ -128,10 +128,10 @@ namespace Octostache.Tests
                   function(e,n,o){""use strict"";var t=o(139),s=function(e){var n=function(e){e.withCredentials=!0;var n=t.getHeaders(new Headers);
                   n.forEach(function(n,o){e.setRequestHeader(o,n)})";
 
-            Assert.AreEqual(match, result);
+            result.Should().Be(match);
         }
 
-        [Test]
+        [Fact]
         public void AbleToContinueWhenAParsingErrorIsHitAtEndOfString()
         {
             const string input =
@@ -149,40 +149,40 @@ namespace Octostache.Tests
                 @"i=""Subbed.Web.Root"";console.log(i);var l=""Subbed.Wsf.Host""
                   ;a=function(e){return""#{";
 
-            Assert.AreEqual(match, result);
+            result.Should().Be(match);
         }
 
 
-        [Test]
+        [Fact]
         public void Required()
         {
             var variables = new VariableDictionary();
             variables.Set("FirstName", "Paul");
-            Assert.That(variables.Get("FirstName"), Is.EqualTo("Paul"));
+            variables.Get("FirstName").Should().Be("Paul");
             Assert.Throws<ArgumentOutOfRangeException>(() => variables.Require("LastName"));
         }
 
-        [Test]
+        [Fact]
         public void Performance()
         {
             var watch = Stopwatch.StartNew();
             var result = Evaluate("Hello, #{Location}!", new Dictionary<string, string> {{"Location", "World"}});
-            Assert.That(result, Is.EqualTo("Hello, World!"));
+            result.Should().Be("Hello, World!");
 
             var iterations = 0;
 
             while (watch.ElapsedMilliseconds < 5000)
             {
                 result = Evaluate("Hello, #{Location}!", new Dictionary<string, string> { { "Location", "World" } });
-                Assert.That(result, Is.EqualTo("Hello, World!"));
+                result.Should().Be("Hello, World!");
                 iterations++;
             }
 
             Console.WriteLine(iterations);
-            Assert.That(iterations, Is.GreaterThan(10000));
+            iterations.Should().BeGreaterThan(10000);
         }
 
-        [Test]
+        [Fact]
         public void NamedIndexersAreSupported()
         {
             var result = Evaluate("#{Octopus.Action[Package A].Name}", new Dictionary<string, string>
@@ -190,10 +190,10 @@ namespace Octostache.Tests
                 { "Octopus.Action[Package A].Name", "MyPackage" }
             });
 
-            Assert.AreEqual("MyPackage", result);
+            result.Should().Be("MyPackage");
         }
 
-        [Test]
+        [Fact]
         public void VariableIndexersAreSupported()
         {
             var result = Evaluate("#{Octopus.Action[#{Package}].Name}", new Dictionary<string, string>
@@ -202,10 +202,10 @@ namespace Octostache.Tests
                 { "Octopus.Action[Package A].Name", "MyPackage" },
             });
 
-            Assert.AreEqual("MyPackage", result);
+            result.Should().Be("MyPackage");
         }
 
-        [Test]
+        [Fact]
         public void MissingVariableIndexersFailToEvaluateGracefully()
         {
             var result = Evaluate("#{Octopus.Action[#{Package}].Name}", new Dictionary<string, string>
@@ -213,18 +213,18 @@ namespace Octostache.Tests
                 { "Octopus.Action[Package A].Name", "MyPackage" },
             });
 
-            Assert.AreEqual("#{Octopus.Action[#{Package}].Name}", result);
+            result.Should().Be("#{Octopus.Action[#{Package}].Name}");
         }
 
-        [Test]
+        [Fact]
         public void IterationOverAnEmptyCollectionIsFine()
         {
             var result = Evaluate("Ok#{each nothing in missing}#{nothing}#{/each}", new Dictionary<string, string>());
 
-            Assert.AreEqual("Ok", result);
+            result.Should().Be("Ok");
         }
 
-        [Test]
+        [Fact]
         public void NestedIterationIsSupported()
         {
             var result = Evaluate(
@@ -237,10 +237,10 @@ namespace Octostache.Tests
                     {"Octopus.Action[Package B].TargetRoles", "c"}
                 });
 
-            Assert.AreEqual("AaAbBc", result);
+            result.Should().Be("AaAbBc");
         }
 
-        [Test]
+        [Fact]
         public void RecursiveIterationIsSupported()
         {
             var result = Evaluate("#{each a in Octopus.Action}#{a.Name}#{/each}",
@@ -252,10 +252,10 @@ namespace Octostache.Tests
                     {"Octopus.Action[Package B].Name", "#{PackageB_Name}"},
                 });
 
-            Assert.AreEqual("AB", result);
+            result.Should().Be("AB");
         }
 
-        [Test]
+        [Fact]
         public void ScopedSymbolIndexerInIterationIsSupported()
         {
             var result =
@@ -271,25 +271,25 @@ namespace Octostache.Tests
                         {"Octopus.Step[Step 2].Status", "Running"},
                     });
 
-            Assert.AreEqual("Step 2 Details", result);
+            result.Should().Be("Step 2 Details");
         }
 
-        [Test]
+        [Fact]
         public void IndexWithUnkownVariableDoesntFail()
         {
             var pattern = "#{Location[#{Continent}]}";
 
             var variables = new VariableDictionary();            
-            Assert.AreEqual(pattern, variables.Evaluate(pattern));
+            variables.Evaluate(pattern).Should().Be(pattern);
             
             variables.Set("Location[Europe]", "Madrid");
-            Assert.AreEqual(pattern, variables.Evaluate(pattern));
+            variables.Evaluate(pattern).Should().Be(pattern);
          
             variables.Set("Continent", "Europe");
-            Assert.AreEqual("Madrid", variables.Evaluate(pattern));
+            variables.Evaluate(pattern).Should().Be("Madrid");
         }
 
-        [Test]
+        [Fact]
         public void UnscopedIndexerInIterationIsSupported()
         {
             var result =
@@ -304,10 +304,10 @@ namespace Octostache.Tests
                         {"SomeOtherVariable", "OtherVariableValue"}
                     });
 
-            Assert.AreEqual("OctopusOctopus", result);
+            result.Should().Be("OctopusOctopus");
         }
 
-        [Test]
+        [Fact]
         public void IndexingWithASymbolIsSupported()
         {
             var result = Evaluate("#{Step[#{action.StepName}]}",
@@ -317,10 +317,10 @@ namespace Octostache.Tests
                     {"Step[Step 1]", "Running"},
                 });
 
-            Assert.AreEqual("Running", result);
+            result.Should().Be("Running");
         }
 
-        [Test]
+        [Fact]
         public void IndexingIsSupportedWithWildcards()
         {
             var result = Evaluate("#{Octopus.Action[*].Name}",
@@ -330,10 +330,10 @@ namespace Octostache.Tests
                     {"Octopus.Action[Package B].Name", "B"}
                 });
 
-            Assert.That(result == "A" || result == "B");
+            result.Should().BeOneOf("A", "B");
         }
 
-        [Test]
+        [Fact]
         public void IteratorsResolveToTheIndexedExpression()
         {
             var result = Evaluate("#{each a in Octopus.Action}#{a}|#{/each}",
@@ -343,53 +343,53 @@ namespace Octostache.Tests
                     {"Octopus.Action[Package B].Name", "B"},
                 });
 
-            Assert.AreEqual("Package A|Package B|", result);
+            result.Should().Be("Package A|Package B|");
         }
 
-        [Test]
+        [Fact]
         public void UnmatchedSubstitutionsAreEchoed()
         {
             var result = Evaluate("#{foo}", new Dictionary<string, string>());
-            Assert.AreEqual("#{foo}", result);
+            result.Should().Be("#{foo}");
         }
 
 
-        [Test]
+        [Fact]
         public void DoubleHashEscapesToken()
         {
             var result = Evaluate("##{foo}", new Dictionary<string, string> {{"foo", "Abc"}});
-            Assert.AreEqual("#{foo}", result);
+            result.Should().Be("#{foo}");
         }
 
-        [Test]
+        [Fact]
         public void TripleHashResolvesToSinglePlusToken()
         {
             var result = Evaluate("###{foo}", new Dictionary<string, string> {{"foo", "Abc"}});
-            Assert.AreEqual("#Abc", result);
+            result.Should().Be("#Abc");
         }
 
-        [Test]
+        [Fact]
         public void StandaloneHashesAreText()
         {
             var result = Evaluate("# ## ###", new Dictionary<string, string>());
-            Assert.AreEqual("# ## ###", result);
+            result.Should().Be("# ## ###");
         }
 
-        [Test]
+        [Fact]
         public void EvenBlockHashesAreText()
         {
             var result = Evaluate("###### hello", new Dictionary<string, string>());
-            Assert.AreEqual("###### hello", result);
+            result.Should().Be("###### hello");
         }
 
-        [Test]
+        [Fact]
         public void OddBlockHashesAreText()
         {
             var result = Evaluate("####### world", new Dictionary<string, string>());
-            Assert.AreEqual("####### world", result);
+            result.Should().Be("####### world");
         }
 
-        [Test]
+        [Fact]
         public void DocumentationIntroduction()
         {
             var variables = new VariableDictionary();
@@ -405,13 +405,13 @@ namespace Octostache.Tests
             string error;
             variables.Get("Protocol", out error);
 
-            Assert.AreEqual("http://web01:10933", url);
-            Assert.AreEqual("http://#{Server | ToLower}:#{Port}", raw);
-            Assert.AreEqual("http://web01:10933/foo", eval);
-            Assert.IsNotNull(error);
+            url.Should().Be("http://web01:10933");
+            raw.Should().Be("http://#{Server | ToLower}:#{Port}");
+            eval.Should().Be("http://web01:10933/foo");
+            error.Should().NotBeNull();
         }
 
-        [Test]
+        [Fact]
         public void ShouldSupportRoundTripping()
         {
             var temp = Path.GetTempFileName();
@@ -424,43 +424,43 @@ namespace Octostache.Tests
             parent.Save(temp);
 
             var child = new VariableDictionary(temp);
-            Assert.That(child["Name"], Is.EqualTo("Web01"));
-            Assert.That(child["Port"], Is.EqualTo("10933"));
-            Assert.That(child["Hello world"], Is.EqualTo("This is a \"string\"!@#$"));
+            child["Name"].Should().Be("Web01");
+            child["Port"].Should().Be("10933");
+            child["Hello world"].Should().Be("This is a \"string\"!@#$");
 
             // Since this variable dictionary was loaded from disk, setting variables
             // will automatically persist the change
             child["SomeVariable"] = "Hello";
 
-            Assert.That(parent["SomeVariable"], Is.Null);
+            parent["SomeVariable"].Should().BeNull();
 
             // If one process calls another (using the same variables file), the parent process should 
             // reload its variables once the child finishes.
             parent.Reload();
 
-            Assert.That(parent["SomeVariable"], Is.EqualTo("Hello"));
+            parent["SomeVariable"].Should().Be("Hello");
 
             File.Delete(temp);
         }
 
-        [Test]
+        [Fact]
         public void ShouldSaveAsString()
         {
             var variables = new VariableDictionary();
             variables.Set("Name", "Web01");
             variables.Set("Port", "10933");
 
-            Assert.AreEqual("{" + Environment.NewLine +
+            variables.SaveAsString().Should().Be("{" + Environment.NewLine +
                             "  \"Name\": \"Web01\"," + Environment.NewLine +
                             "  \"Port\": \"10933\"" + Environment.NewLine +
-                            "}", variables.SaveAsString());
+                            "}");
         }
 
-        [Test]
-        [TestCase("{Sizes: {Small: \"#{Test.Sizes.Large.Price}\", Large: \"15\"}}\", Desc: \"Monkey\", Value: 12}", "#{Test.Sizes.Small.Price}", "#{Test.Sizes.Small.Price}", TestName = "Direct inner JSON")]
-        [TestCase("#{Test.Something}", "#{Test}", "#{Test.Something}", TestName = "Missing replacement")]
+        [Theory]
+        [InlineData("{Sizes: {Small: \"#{Test.Sizes.Large.Price}\", Large: \"15\"}}\", Desc: \"Monkey\", Value: 12}", "#{Test.Sizes.Small.Price}", "#{Test.Sizes.Small.Price}", "Direct inner JSON")]
+        [InlineData("#{Test.Something}", "#{Test}", "#{Test.Something}", "Missing replacement")]
 
-        public void VariablesThatResolveToUnresolvableReturnError(string variable, string pattern, string expectedResult)
+        public void VariablesThatResolveToUnresolvableReturnError(string variable, string pattern, string expectedResult, string testName)
         {
             var variables = new VariableDictionary
             {
@@ -468,11 +468,11 @@ namespace Octostache.Tests
             };
 
             string err;
-            Assert.That(variables.Evaluate(pattern, out err), Is.EqualTo(expectedResult));
-            Assert.That(err, Is.EqualTo($"The following tokens were unable to be evaluated: '{expectedResult}'"));
+            variables.Evaluate(pattern, out err).Should().Be(expectedResult);
+            err.Should().Be($"The following tokens were unable to be evaluated: '{expectedResult}'");
         }
 
-        [Test]
+        [Fact]
         public void ShouldEvaluateTrueToTrue()
         {
             var result = EvaluateTruthy("#{truthy}",
@@ -481,10 +481,10 @@ namespace Octostache.Tests
                     {"truthy", "true"}
                });
 
-            Assert.IsTrue(result);
+            result.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public void ShouldEvaluateFalseToFalse()
         {
             var result = EvaluateTruthy("#{falsey}",
@@ -493,10 +493,10 @@ namespace Octostache.Tests
                     {"falsey", "false"}
                });
 
-            Assert.IsFalse(result);
+            result.Should().BeFalse();
         }
 
-        [Test]
+        [Fact]
         public void ShouldEvaluateMissingToFalse()
         {
             var result = EvaluateTruthy("#{missing}",
@@ -505,10 +505,10 @@ namespace Octostache.Tests
                     {"truthy", "true"}
                });
 
-            Assert.IsFalse(result);
+            result.Should().BeFalse();
         }
 
-        [Test]
+        [Fact]
         public void ShouldEvaluateExistsToTrue()
         {
             var result = EvaluateTruthy("#{exists}",
@@ -517,7 +517,7 @@ namespace Octostache.Tests
                     {"exists", "exists"}
                });
 
-            Assert.IsTrue(result);
+            result.Should().BeTrue();
         }
     }
 }

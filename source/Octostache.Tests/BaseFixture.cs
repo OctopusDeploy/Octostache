@@ -8,15 +8,13 @@ using System.Runtime.Caching;
 #else
 using Microsoft.Extensions.Caching.Memory;
 #endif
-using NUnit.Framework;
+using Xunit;
 
 namespace Octostache.Tests
 {
-    [TestFixture]
     public abstract class BaseFixture
     {
-        [SetUp]
-        public void Setup()
+        public BaseFixture()
         {
 #if NET40
             //The TemplateParser Cache is retained between tests. A little hackery to clear it.
@@ -48,7 +46,6 @@ namespace Octostache.Tests
             {
                 dictionary[pair.Key] = pair.Value;
             }
-            string error;
             return dictionary.EvaluateTruthy(template);
         }
 
