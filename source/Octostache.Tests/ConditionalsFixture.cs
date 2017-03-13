@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
+using FluentAssertions;
 
 namespace Octostache.Tests
 {
-    [TestFixture]
     public class ConditionalsFixture :BaseFixture
     {
 
-        [Test]
+        [Fact]
         public void ConditionalIsSupported()
         {
             var result = Evaluate("#{if Truthy}#{Result}#{/if}",
@@ -20,10 +20,10 @@ namespace Octostache.Tests
                     {"Truthy", "true"},
                 });
 
-            Assert.AreEqual("result", result);
+            result.Should().Be("result");
         }
 
-        [Test]
+        [Fact]
         public void ConditionalIsSupportedWithLeadingWhitespace()
         {
             var result = Evaluate("#{ if Truthy}#{Result}#{/if}",
@@ -33,7 +33,7 @@ namespace Octostache.Tests
                     {"Truthy", "true"},
                 });
 
-            Assert.AreEqual("result", result);
+            result.Should().Be("result");
 
             result = Evaluate("#{  if Truthy}#{Result}#{/if}",
                             new Dictionary<string, string>
@@ -42,10 +42,10 @@ namespace Octostache.Tests
                     {"Truthy", "true"},
                             });
 
-            Assert.AreEqual("result", result);
+            result.Should().Be("result");
         }
 
-        [Test]
+        [Fact]
         public void ConditionalIsSupportedWithTrailingWhitespace()
         {
             var result = Evaluate("#{if Truthy }#{Result}#{/if}",
@@ -55,7 +55,7 @@ namespace Octostache.Tests
                     {"Truthy", "true"},
                 });
 
-            Assert.AreEqual("result", result);
+            result.Should().Be("result");
 
             result = Evaluate("#{if Truthy  }#{Result}#{/if}",
                             new Dictionary<string, string>
@@ -64,10 +64,10 @@ namespace Octostache.Tests
                     {"Truthy", "true"},
                             });
 
-            Assert.AreEqual("result", result);
+            result.Should().Be("result");
         }
 
-        [Test]
+        [Fact]
         public void ConditionalUnlessIsSupported()
         {
             var result = Evaluate("#{unless Truthy}#{Result}#{/unless}",
@@ -77,10 +77,10 @@ namespace Octostache.Tests
                     {"Truthy", "false"},
                 });
 
-            Assert.AreEqual("result", result);
+            result.Should().Be("result");
         }
 
-        [Test]
+        [Fact]
         public void ConditionalToOtherDictValueIsSupported()
         {
             var result = Evaluate("#{if Octopus == Compare}#{Result}#{/if}",
@@ -91,10 +91,10 @@ namespace Octostache.Tests
                     {"Compare", "octopus"}
                 });
 
-            Assert.AreEqual("result", result);
+            result.Should().Be("result");
         }
 
-        [Test]
+        [Fact]
         public void ConditionalToStringIsSupported()
         {
             var result = Evaluate("#{if Octopus == \"octopus\"}#{Result}#{/if}",
@@ -104,10 +104,10 @@ namespace Octostache.Tests
                     {"Octopus", "octopus"},
                 });
 
-            Assert.AreEqual("result", result);
+            result.Should().Be("result");
         }
 
-        [Test]
+        [Fact]
         public void ConditionalNegationIsSupported()
         {
             var result = Evaluate("#{if Octopus != \"software\"}#{Result}#{/if}",
@@ -117,7 +117,7 @@ namespace Octostache.Tests
                     {"software", "something else"},
                 });
 
-            Assert.AreEqual("result", result);
+            result.Should().Be("result");
         }
     }
 }

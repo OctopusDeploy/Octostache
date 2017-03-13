@@ -1,12 +1,12 @@
 ﻿using System;
-using NUnit.Framework;
+using Xunit;
+using FluentAssertions;
 
 namespace Octostache.Tests
 {
-    [TestFixture]
     public class JsonFixture :BaseFixture
     {
-        [Test]
+        [Fact]
         public void JsonDoesNotOverrideExisting()
         {
             var variables = new VariableDictionary
@@ -17,12 +17,12 @@ namespace Octostache.Tests
                 ["Test.Donkey.Kong"] = "MARIO",
             };
 
-            Assert.AreEqual("Go Away", variables.Evaluate("#{Test.Hello}"));
-            Assert.AreEqual("Nope", variables.Evaluate("#{Test[Foo]}"));
-            Assert.AreEqual("MARIO", variables.Evaluate("#{Test.Donkey.Kong}"));
+            variables.Evaluate("#{Test.Hello}").Should().Be("Go Away");
+            variables.Evaluate("#{Test[Foo]}").Should().Be("Nope");
+            variables.Evaluate("#{Test.Donkey.Kong}").Should().Be("MARIO");
         }
 
-        [Test]
+        [Fact]
         public void JsonSupportsVariableInVariable()
         {
             var variables = new VariableDictionary
@@ -32,29 +32,29 @@ namespace Octostache.Tests
                 ["Test"] = "{#{Prop}: \"#{Val}\"}",
             };
 
-            Assert.AreEqual("Bar", variables.Evaluate("#{Test[Foo]}"));
-            Assert.AreEqual("Bar", variables.Evaluate("#{Test.Foo}"));
-            Assert.AreEqual("Bar", variables.Evaluate("#{Test[#{Prop}]}"));
+            variables.Evaluate("#{Test[Foo]}").Should().Be("Bar");
+            variables.Evaluate("#{Test.Foo}").Should().Be("Bar");
+            variables.Evaluate("#{Test[#{Prop}]}").Should().Be("Bar");
         }
 
-        [Test]
-        [TestCase("{\"Hello\": \"World\"}", "#{Test[Hello]}", "World", TestName = "Simple Indexing")]
-        [TestCase("{\"Hello\": \"World\"}", "#{Test.Hello}", "World", TestName = "Simple Dot Notation")]
-        [TestCase("{\"Hello\": {\"World\": {\"Foo\": {\"Bar\": 12 }}}}", "#{Test[Hello][World][Foo][Bar]}", "12", TestName = "Deep")]
-        [TestCase("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[1].Name}", "Bread", TestName = "Arrays")]
-        [TestCase("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", "{\"Bar\":\"11\"}", TestName = "Raw JSON returned")]
-        [TestCase("{Name: \"#{Test.Value}\", Desc: \"Monkey\", Value: 12}", "#{Test.Name}", "12", TestName = "Non-Direct inner JSON", Description = "Non -Direct inner JSON reference can resolve if quoted.")]
-        public void SuccessfulJsonParsing(string json, string pattern, string expectedResult)
-        {
+        [Theory]
+        [InlineData("{\"Hello\": \"World\"}", "#{Test[Hello]}", "World", "Simple Indexing")]
+        [InlineData("{\"Hello\": \"World\"}", "#{Test.Hello}", "World", "Simple Dot Notation")]
+        [InlineData("{\"Hello\": {\"World\": {\"Foo\": {\"Bar\": 12 }}}}", "#{Test[Hello][World][Foo][Bar]}", "12", "Deep")]
+        [InlineData("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[1].Name}", "Bread", "Arrays")]
+        [InlineData("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", "{\"Bar\":\"11\"}", "Raw JSON returned")]
+        [InlineData("{Name: \"#{Test.Value}\", Desc: \"Monkey\", Value: 12}", "#{Test.Name}", "12", "Non-Direct inner JSON")]
+        public void SuccessfulJsonParsing(string json, string pattern, string expectedResult, string testName)
+        { 
             var variables = new VariableDictionary
             {
                 ["Test"] = json
             };
 
-            Assert.That(variables.Evaluate(pattern), Is.EqualTo(expectedResult));
+            variables.Evaluate(pattern).Should().Be(expectedResult);
         }
 
-        [Test]
+        [Fact]
         public void JsonInvalidDoesNotReplace()
         {
             var variables = new VariableDictionary
@@ -62,10 +62,10 @@ namespace Octostache.Tests
                 ["Test"] = "{Name: NoComma}",
             };
 
-            Assert.AreEqual("#{Test.Name}", variables.Evaluate("#{Test.Name}"));
+            variables.Evaluate("#{Test.Name}").Should().Be("#{Test.Name}");
         }
 
-        [Test]
+        [Fact]
         public void JsonArraySupportsIterator()
         {
             var variables = new VariableDictionary
@@ -75,10 +75,10 @@ namespace Octostache.Tests
 
             var pattern = "#{each number in Test}#{number}#{if Octopus.Template.Each.Last == \"False\"}-#{/if}#{/each}";
 
-            Assert.AreEqual("2-3-5-8", variables.Evaluate(pattern));
+            variables.Evaluate(pattern).Should().Be("2-3-5-8");
         }
 
-        [Test]
+        [Fact]
         public void JsonArraySafeguardedFromNullValues()
         {
             var variables = new VariableDictionary
@@ -88,10 +88,10 @@ namespace Octostache.Tests
 
             var pattern = "Before:#{each number in Test.Blah}#{number}#{/each}:After";
 
-            Assert.AreEqual("Before::After", variables.Evaluate(pattern));
+            variables.Evaluate(pattern).Should().Be("Before::After");
         }
 
-        [Test]
+        [Fact]
         public void JsonObjectSupportsIterator()
         {
             var variables = new VariableDictionary
@@ -101,10 +101,10 @@ namespace Octostache.Tests
 
             var pattern = @"#{each size in Octopus.Sizes}#{size}:#{size.Value},#{/each}";
 
-            Assert.AreEqual("Small:11.5,Large:15.21,", variables.Evaluate(pattern));
+            variables.Evaluate(pattern).Should().Be("Small:11.5,Large:15.21,");
         }
 
-        [Test]
+        [Fact]
         public void JsonObjectSupportsIteratorWithInnerSelection()
         {
             var variables = new VariableDictionary
@@ -114,10 +114,10 @@ namespace Octostache.Tests
 
             var pattern = @"#{each size in Octopus.Sizes}#{size.Key} - #{size.Value.Error}#{/each}";
 
-            Assert.AreEqual("X-Large - Not Stocked", variables.Evaluate(pattern));
+            variables.Evaluate(pattern).Should().Be("X-Large - Not Stocked");
         }
 
-        [Test]
+        [Fact]
         public void NullJsonPropertyTreatedAsEmptyString()
         {
             var variables = new VariableDictionary
@@ -127,7 +127,7 @@ namespace Octostache.Tests
 
             var pattern = @"Alpha#{Foo.Bar}bet";
 
-            Assert.AreEqual("Alphabet", variables.Evaluate(pattern));
+            variables.Evaluate(pattern).Should().Be("Alphabet");
         }
     }
 }
