@@ -59,6 +59,7 @@ namespace Octostache.Tests
             error.Should().NotBeNull();
         }
 
+        [Theory]
         [InlineData("#{Foo", "Foo=Bar;")]
         [InlineData("#{Fo[o}", "Foo=Bar;Fo[o]=Bar")]
         [InlineData("#{each a in Action}", "Action[a]=One")]
