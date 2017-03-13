@@ -190,8 +190,8 @@ namespace Octostache.Templates
         {
             return value != "0" &&
                 value != "" &&
-                string.Compare(value, "no", StringComparison.OrdinalIgnoreCase) != 0 &&
-                string.Compare(value, "false", StringComparison.OrdinalIgnoreCase) != 0;
+                string.Compare(value.Trim(), "no", StringComparison.OrdinalIgnoreCase) != 0 &&
+                string.Compare(value.Trim(), "false", StringComparison.OrdinalIgnoreCase) != 0;
         }
     }
 }
