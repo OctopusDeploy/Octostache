@@ -22,5 +22,31 @@
         {
             return "[" + (IsSymbol ? "#{"+ Symbol +"}" : Index) + "]";
         }
+
+        public override bool Equals(SymbolExpressionStep other) => Equals(other as Indexer);
+
+        protected bool Equals(Indexer other)
+        {
+            return base.Equals(other) && string.Equals(Index, other.Index) && Equals(Symbol, other.Symbol);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Indexer) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = base.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Index != null ? Index.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Symbol != null ? Symbol.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
     }
 }

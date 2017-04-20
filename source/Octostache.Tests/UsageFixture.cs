@@ -217,6 +217,18 @@ namespace Octostache.Tests
         }
 
         [Fact]
+        public void MissingIndexedVariableWhenTheIndexerIsAValidVariableAndTheVariableNameIsTheSameAsTheIndexedVariableName()
+        {
+            var result = Evaluate("#{MY_VAR}", new Dictionary<string, string>
+            {
+                { "MY_VAR", "#{MY_VAR[#{foo}]}" },
+                { "foo", "bar" },
+            });
+            result.Should().Be("#{MY_VAR[#{foo}]}");
+        }
+
+
+        [Fact]
         public void IterationOverAnEmptyCollectionIsFine()
         {
             var result = Evaluate("Ok#{each nothing in missing}#{nothing}#{/each}", new Dictionary<string, string>());

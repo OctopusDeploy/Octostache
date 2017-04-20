@@ -31,7 +31,7 @@ namespace Octostache.Templates
             return val.Item ?? "";
         }
 
-        private void ValidateNoRecursion(SymbolExpression expression)
+        private void ValidateThatRecursionIsNotOccuring(SymbolExpression expression)
         {
             var ancestor = this;
             while(ancestor != null)
@@ -61,7 +61,7 @@ namespace Octostache.Templates
 
         Binding WalkTo(SymbolExpression expression, out string[] missingTokens)
         {
-            ValidateNoRecursion(expression);
+            ValidateThatRecursionIsNotOccuring(expression);
             symbolStack.Push(expression);
 
             try
