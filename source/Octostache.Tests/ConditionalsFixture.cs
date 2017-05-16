@@ -119,5 +119,19 @@ namespace Octostache.Tests
 
             result.Should().Be("result");
         }
+
+        [Fact]
+        public void NestedConditionalsAreSupported()
+        {
+            var result = Evaluate("#{if Truthy}#{if Fooey==\"foo\"}#{Result}#{/if}#{/if}",
+                new Dictionary<string, string>
+                {
+                    {"Result", "result"},
+                    {"Truthy", "true"},
+                    {"Fooey", "foo"},
+                });
+
+            result.Should().Be("result");
+        }
     }
 }
