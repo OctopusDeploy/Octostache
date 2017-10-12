@@ -179,7 +179,7 @@ namespace Octostache.Templates
         static readonly Parser<ConditionalExpressionToken> TokenMatch =
             (from expression in Symbol.Token()
              from _eq in Keyword("==").Token().Or(Keyword("!=").Token())
-             from compareTo in QuotedText.Token()
+             from compareTo in QuotedText.Token().Or(EscapedQuotedText.Token())
              let eq = _eq == "=="
              select new ConditionalStringExpressionToken(expression, eq, compareTo))
                 .WithPosition();
@@ -220,6 +220,11 @@ namespace Octostache.Templates
              from content in Parse.CharExcept(new[] { '"', '#' }).Many().Text()
              from close in Parse.Char('"')
              select content).Token();
+
+        public static readonly Parser<string> EscapedQuotedText =
+        (from open in Parse.String("\\\"")
+            from content in Parse.AnyChar.Until(Parse.String("\\\"")).Text()
+            select content).Token();
 
         static readonly Parser<TemplateToken> Token =
             Conditional.Select(t => (TemplateToken)t)
