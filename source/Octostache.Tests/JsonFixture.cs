@@ -104,6 +104,21 @@ namespace Octostache.Tests
             variables.Evaluate(pattern).Should().Be("Small:11.5,Large:15.21,");
         }
 
+
+        [Fact]
+        public void JsonEvaluatesConditionalsWithEscapes()
+        {
+            var variables = new VariableDictionary
+            {
+                ["Foo"] = "test text"
+            };
+
+            var pattern = "{\"Bar\":\"#{if Foo == \\\"test text\\\"}Blaa#{/if}\"}";
+
+            variables.Evaluate(pattern).Should().Be("{\"Bar\":\"Blaa\"}");
+        }
+
+
         [Fact]
         public void JsonObjectSupportsIteratorWithInnerSelection()
         {
