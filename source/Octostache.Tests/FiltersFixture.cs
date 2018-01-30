@@ -57,11 +57,16 @@ namespace Octostache.Tests
             result.Should().Be("A&amp;&apos;bc");
         }
 
-        [Fact]
-        public void JsonIsEscaped()
+        [Theory]
+        [InlineData("Test\"Test", "Test\\\"Test", "Quotes")]
+        [InlineData("Test\rTest", "Test\\rTest", "Carriage return")]
+        [InlineData("Test\nTest", "Test\\nTest", "Linefeed")]
+        [InlineData("Test\tTest", "Test\\tTest", "Tab")]
+        [InlineData("Test\\Test", "Test\\\\Test", "Backslash")]
+        public void JsonIsEscaped(string input, string expectedResult, string testName)
         {
-            var result = Evaluate("#{Foo | JsonEscape}", new Dictionary<string, string> { { "Foo", "A&\"bc" } });
-            result.Should().Be("A&\\\"bc");
+            var result = Evaluate("#{Foo | JsonEscape}", new Dictionary<string, string> { { "Foo", input } });
+            result.Should().Be(expectedResult);
         }
 
         [Fact]
