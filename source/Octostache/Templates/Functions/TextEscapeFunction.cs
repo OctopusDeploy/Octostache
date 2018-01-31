@@ -81,11 +81,11 @@ namespace Octostache.Templates.Functions
         // This is overly simplistic since Unicode chars also need escaping.
         static readonly IDictionary<char, string> JsonEntityMap = new Dictionary<char, string>
         {
-            { '\"', "\\\"" },
-            { '\r', "\\r" },
-            { '\t', "\\t" },
-            { '\n', "\\n" },
-            { '\\', "\\\\" }
+            { '\"', @"\""" },
+            { '\r', @"\r" },
+            { '\t', @"\t" },
+            { '\n', @"\n" },
+            { '\\', @"\\" }
         };
     }
 }
