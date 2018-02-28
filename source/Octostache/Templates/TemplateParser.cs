@@ -164,11 +164,16 @@ namespace Octostache.Templates
              from expression in TokenMatch.Token().Or(StringMatch.Token()).Or(TruthyMatch.Token())
              from sp2 in Parse.WhiteSpace.Many()
              from rdelim in RDelim
-             from truthy in Parse.Ref(() => Template)
+             from truthy in Parse.Ref(() => IfTemplate)
+             from elseMatch in
+                 (from el in Parse.String("#{else}")
+                  from template in Parse.Ref(() => Template)
+                  select template).Optional()
              from end in Parse.String("#{/" + kw + "}")
+             let falsey = elseMatch.IsDefined ? elseMatch.Get() : Enumerable.Empty<TemplateToken>()
              select kw == "if" ?
-                 new ConditionalToken(expression, truthy, Enumerable.Empty<TemplateToken>()) :
-                 new ConditionalToken(expression, Enumerable.Empty<TemplateToken>(), truthy))
+                 new ConditionalToken(expression, truthy, falsey) :
+                 new ConditionalToken(expression, falsey, truthy))
                 .WithPosition();
 
         static readonly Parser<ConditionalExpressionToken> TruthyMatch =
@@ -234,6 +239,9 @@ namespace Octostache.Templates
 
         static readonly Parser<TemplateToken[]> Template =
             Token.Many().Select(tokens => tokens.ToArray());
+
+        static readonly Parser<TemplateToken[]> IfTemplate =
+            Token.Except(Parse.String("#{else}")).Many().Select(tokens => tokens.ToArray());
 
         static readonly Parser<TemplateToken[]> ContinueOnErrorsTemplate =
             Token.ContinueMany().Select(tokens => tokens.ToArray());

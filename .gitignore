@@ -196,3 +196,6 @@ FakesAssemblies/
 *.opt
 project.lock.json
 tools/
+
+# Include the cake packages.config
+!tools/packages.config

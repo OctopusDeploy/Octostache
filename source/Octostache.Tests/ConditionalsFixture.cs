@@ -133,5 +133,48 @@ namespace Octostache.Tests
 
             result.Should().Be("result");
         }
+
+        [Fact]
+        public void ElseIsSupportedTrue()
+        {
+            var result = Evaluate("#{if Truthy}#{Result}#{else}#{ElseResult}#{/if}",
+                new Dictionary<string, string>
+                {
+                    {"Result", "result"},
+                    {"ElseResult", "elseresult"},
+                    {"Truthy", "true"},
+                });
+
+            result.Should().Be("result");
+        }
+
+        [Fact]
+        public void ElseIsSupportedFalse()
+        {
+            var result = Evaluate("#{if Truthy}#{Result}#{else}#{ElseResult}#{/if}",
+                new Dictionary<string, string>
+                {
+                    {"Result", "result"},
+                    {"ElseResult", "elseresult"},
+                    {"Truthy", "false"},
+                });
+
+            result.Should().Be("elseresult");
+        }
+
+        [Fact]
+        public void NestIfInElse()
+        {
+            var result = Evaluate("#{if Truthy}#{Result}#{else}#{if Fooey==\"foo\"}#{ElseResult}#{/if}#{/if}",
+                new Dictionary<string, string>
+                {
+                    {"Result", "result"},
+                    {"ElseResult", "elseresult"},
+                    {"Fooey", "foo"},
+                    {"Truthy", "false"},
+                });
+
+            result.Should().Be("elseresult");
+        }
     }
 }
