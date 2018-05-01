@@ -300,5 +300,27 @@ namespace Octostache
         {
             return variables.Keys.ToList();
         }
+
+        /// <summary>
+        /// Returns any index values for a collection.
+        /// For example, given keys: Package[A], Package[B]
+        /// GetIndexes("Package") would return {A, B}
+        /// </summary>
+        /// <param name="variableCollectionName"></param>
+        /// <returns>A list of index values for the specified collection name.</returns>
+        public List<string> GetIndexes(string variableCollectionName)
+        {
+            if (string.IsNullOrWhiteSpace(variableCollectionName))
+                throw new ArgumentOutOfRangeException(nameof(variableCollectionName),
+                    $"{nameof(variableCollectionName)} must not be null or empty");
+
+            if (!TemplateParser.TryParseIdentifierPath(variableCollectionName, out var symbolExpression))
+                throw new Exception($"Could not evaluate indexes for path {variableCollectionName}");
+            
+            var context = new EvaluationContext(Binding, null);
+            var bindings = context.ResolveAll(symbolExpression, out var missingTokens);
+            return bindings.Select(b => b.Item).ToList();
+
+        }
     }
 }

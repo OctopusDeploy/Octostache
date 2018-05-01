@@ -199,3 +199,6 @@ tools/
 
 # Include the cake packages.config
 !tools/packages.config
+
+# Rider
+.idea/
