@@ -303,7 +303,7 @@ namespace Octostache
 
         /// <summary>
         /// Returns any index values for a collection.
-        /// For example, given keys: Package[A], Package[B]
+        /// For example, given keys: Package[A].Name, Package[B].Name
         /// GetIndexes("Package") would return {A, B}
         /// </summary>
         /// <param name="variableCollectionName"></param>
