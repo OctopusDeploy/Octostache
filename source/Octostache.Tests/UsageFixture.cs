@@ -531,5 +531,26 @@ namespace Octostache.Tests
 
             result.Should().BeTrue();
         }
+
+        [Fact]
+        public void CanGetIndexes()
+        {
+            var variableDictionary = new VariableDictionary
+            {
+                ["Octopus.Action[Package A].Name"] = "A",
+                ["Octopus.Action[Package B].Name"] = "B",
+                ["PackageBName"] = "#{Octopus.Action[Package B].Name}",
+            };
+
+            var presentIndexes = variableDictionary.GetIndexes("Octopus.Action");
+            
+            Assert.Equal(2, presentIndexes.Count);
+            Assert.True(presentIndexes.Contains("Package A"));
+            Assert.True(presentIndexes.Contains("Package B"));
+
+            var absentIndexes = variableDictionary.GetIndexes("Foo.Bar");
+            
+            Assert.Equal(0, absentIndexes.Count);
+        }
     }
 }
