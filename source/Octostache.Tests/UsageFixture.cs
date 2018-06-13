@@ -545,14 +545,14 @@ namespace Octostache.Tests
             };
 
             var presentIndexes = variableDictionary.GetIndexes("Octopus.Action");
-            
-            Assert.Equal(2, presentIndexes.Count);
-            Assert.True(presentIndexes.Contains("Package A"));
-            Assert.True(presentIndexes.Contains("Package B"));
+
+            presentIndexes.Should().HaveCount(2);
+            presentIndexes.Should().Contain("Package A");
+            presentIndexes.Should().Contain("Package B");
 
             var absentIndexes = variableDictionary.GetIndexes("Foo.Bar");
-            
-            Assert.Equal(0, absentIndexes.Count);
+
+            absentIndexes.Should().HaveCount(0);
         }
     }
 }

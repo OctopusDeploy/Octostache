@@ -207,5 +207,13 @@ namespace Octostache.Tests
             var result = Evaluate("#{Foo|ToUpper|ToLower}", new Dictionary<string, string> { { "Foo", "Abc" } });
             result.Should().Be("abc");
         }
+
+        [Fact]
+        public void StringsCanBeBase64Encoded()
+        {
+            var dict = new Dictionary<string, string> { { "String", "Foo Bar" } };
+            var result = Evaluate("#{String | tobase64}",dict);
+            result.Should().Be("Rm9vIEJhcg==");
+        }
     }
 }
