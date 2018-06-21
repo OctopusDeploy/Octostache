@@ -167,6 +167,9 @@ namespace Octostache
             error = null;
             if (expressionOrVariableOrText == null) return null;
 
+            if (!expressionOrVariableOrText.Contains("#{"))
+                return expressionOrVariableOrText;
+            
             Template template;
             if (!TemplateParser.TryParseTemplate(expressionOrVariableOrText, out template, out error, haltOnError))
                 return expressionOrVariableOrText;
