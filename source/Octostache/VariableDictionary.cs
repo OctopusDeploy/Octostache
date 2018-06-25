@@ -167,7 +167,7 @@ namespace Octostache
             error = null;
             if (expressionOrVariableOrText == null) return null;
 
-            if (!expressionOrVariableOrText.Contains("#{"))
+            if (CanEvaluationBeSkippedForExpression(expressionOrVariableOrText))
                 return expressionOrVariableOrText;
             
             Template template;
@@ -325,5 +325,17 @@ namespace Octostache
             return bindings.Select(b => b.Item).ToList();
 
         }
+
+        /// <summary>
+        /// Determines whether an expression/variable value/text needs to be evaluated before being used.
+        /// If true is returned from this method, the raw value of <paramref name="expressionOrVariableOrText" />
+        /// can be used without running it through a VariableDictionary. Even if false is returned, the value
+        /// may not contain subsitution tokens, and may be unchanged after evaluation. 
+        /// </summary>
+        /// <param name="expressionOrVariableOrText">The variable to evaluate</param>
+        /// <returns>False if the variable contains something that looks like a substitution tokens, otherwise true</returns>
+        public static bool CanEvaluationBeSkippedForExpression(string expressionOrVariableOrText)
+            => !expressionOrVariableOrText.Contains("#{");
+
     }
 }
