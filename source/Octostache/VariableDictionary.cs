@@ -335,7 +335,7 @@ namespace Octostache
         /// <param name="expressionOrVariableOrText">The variable to evaluate</param>
         /// <returns>False if the variable contains something that looks like a substitution tokens, otherwise true</returns>
         public static bool CanEvaluationBeSkippedForExpression(string expressionOrVariableOrText)
-            => !expressionOrVariableOrText.Contains("#{");
+            => expressionOrVariableOrText == null || !expressionOrVariableOrText.Contains("#{");
 
     }
 }
