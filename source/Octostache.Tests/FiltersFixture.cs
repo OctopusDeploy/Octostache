@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Xunit;
 using FluentAssertions;
 
@@ -162,7 +160,6 @@ namespace Octostache.Tests
             DateTime.Parse(result).Should().BeCloseTo(DateTime.Now, 60000);
         }
 
-
         [Fact]
         public void NowDateCanBeFormatted()
         {
@@ -214,6 +211,34 @@ namespace Octostache.Tests
             var dict = new Dictionary<string, string> { { "String", "Foo Bar" } };
             var result = Evaluate("#{String | tobase64}",dict);
             result.Should().Be("Rm9vIEJhcg==");
+        }
+
+        [Fact]
+        public void Replace()
+        {
+            var result = Evaluate("#{foo | Replace abc def}", new Dictionary<string, string> { { "foo", "abc" } });
+            result.Should().Be("def");
+        }
+
+        [Fact]
+        public void ReplaceWithEmptyString()
+        {
+            var result = Evaluate("#{foo | Replace a}", new Dictionary<string, string> { { "foo", "abc" } });
+            result.Should().Be("bc");
+        }
+
+        [Fact]
+        public void ReplaceDoesNothing()
+        {
+            var result = Evaluate("#{foo | Replace}", new Dictionary<string, string> { { "foo", "abc" } });
+            result.Should().Be("#{foo | Replace}");
+        }
+
+        [Fact]
+        public void ReplaceIsCaseSensitive()
+        {
+            var result = Evaluate("#{foo | Replace abc def}", new Dictionary<string, string> { { "foo", "ABC" } });
+            result.Should().Be("ABC");
         }
     }
 }

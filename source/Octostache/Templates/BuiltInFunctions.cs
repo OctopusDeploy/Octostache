@@ -17,7 +17,8 @@ namespace Octostache.Templates
             {"markdown", TextEscapeFunction.Markdown },
             {"nowdate", DateFunction.NowDate },
             {"nowdateutc", DateFunction.NowDateUtc },
-            {"format", FormatFunction.Format }
+            {"format", FormatFunction.Format },
+            {"replace", TextReplaceFunction.Replace }
         };
  
         // Configuration shoudl be done at startup, this isn't thread-safe.
