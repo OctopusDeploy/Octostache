@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
 using Xunit;
 using FluentAssertions;
 
@@ -162,7 +161,6 @@ namespace Octostache.Tests
             DateTime.Parse(result).Should().BeCloseTo(DateTime.Now, 60000);
         }
 
-
         [Fact]
         public void NowDateCanBeFormatted()
         {
@@ -214,6 +212,116 @@ namespace Octostache.Tests
             var dict = new Dictionary<string, string> { { "String", "Foo Bar" } };
             var result = Evaluate("#{String | tobase64}",dict);
             result.Should().Be("Rm9vIEJhcg==");
+        }
+
+        [Fact]
+        public void Replace()
+        {
+            var result = Evaluate("#{foo | Replace abc def}", new Dictionary<string, string> { { "foo", "abc" } });
+            result.Should().Be("def");
+        }
+
+        [Fact]
+        public void ReplaceWithEmptyString()
+        {
+            var result = Evaluate("#{foo | Replace a}", new Dictionary<string, string> { { "foo", "abc" } });
+            result.Should().Be("bc");
+        }
+
+        [Fact]
+        public void ReplaceDoesNothing()
+        {
+            var result = Evaluate("#{foo | Replace}", new Dictionary<string, string> { { "foo", "abc" } });
+            result.Should().Be("#{foo | Replace}");
+        }
+
+        [Fact]
+        public void ReplaceIsCaseSensitive()
+        {
+            var result = Evaluate("#{foo | Replace abc def}", new Dictionary<string, string> { { "foo", "ABC" } });
+            result.Should().Be("ABC");
+        }
+
+        [Fact]
+        public void ReplaceHandlesSpaces()
+        {
+            var result = Evaluate(@"#{foo | Replace ""ab c"" ""d ef""}", new Dictionary<string, string> { { "foo", "ab c" } });
+            result.Should().Be("d ef");
+        }
+        
+        [Fact]
+        public void ReplaceWorksWithVariableOptions()
+        {
+            var result = Evaluate("#{foo | Replace #{regex}#{replacement}}", new Dictionary<string, string>
+            {
+                { "foo", "abc" },
+                { "regex", "b"},
+                { "replacement", "x"}
+            });
+            result.Should().Be(@"axc");
+        }
+        
+        [Fact]
+        public void ReplaceHandlesDoubleQuotesViaNestedSubsitution()
+        {
+            var result = Evaluate("#{foo | Replace #{regex}#{replacement}}", new Dictionary<string, string>
+            {
+                { "foo", @"a""b" },
+                { "regex", @"a"""},
+                { "replacement", @"""c"}
+            });
+            result.Should().Be(@"""cb");
+        }
+        
+        
+        [Fact]
+        public void ReplaceHandlesSingleQuotes()
+        {
+            var result = Evaluate(@"#{foo | Replace ""a'b"" ""d'e""}", new Dictionary<string, string> { { "foo", "a'b" } });
+            result.Should().Be("d'e");
+        }
+        
+        [Fact]
+        public void ReplaceRange()
+        {
+            var result = Evaluate(@"#{foo | Replace ""[a-z]+"" 1}", new Dictionary<string, string> { { "foo", "a'b" } });
+            result.Should().Be("1'1");
+        }
+        
+        [Fact]
+        public void ReplaceHandlesEscapingRegexSpecialCharacter()
+        {
+            var result = Evaluate(@"#{foo | Replace ""a\(b"" ""d(e""}", new Dictionary<string, string> { { "foo", @"a(b" } });
+            result.Should().Be(@"d(e");
+        }
+        
+        [Fact]
+        public void ReplaceCanSubstitute()
+        {
+            var result = Evaluate(@"#{foo | Replace ""o(.+)o([a-z]*)s"" ""o$2o$1s""}", new Dictionary<string, string> { { "foo", "opuocts" } });
+            result.Should().Be("octopus");
+        }
+        
+        [Fact]
+        public void ReplaceCanDoMultipleSubstitutions()
+        {
+            var result = Evaluate(@"#{foo | Replace ""a"" x}", new Dictionary<string, string> { { "foo", "ababa" } });
+            result.Should().Be("xbxbx");
+        }
+        
+        
+        [Fact]
+        public void ReplaceAtStartOfLine()
+        {
+            var result = Evaluate(@"#{foo | Replace ""^a"" x}", new Dictionary<string, string> { { "foo", "ababa" } });
+            result.Should().Be("xbaba");
+        }
+        
+        [Fact]
+        public void ReplaceAtEndOfLine()
+        {
+            var result = Evaluate(@"#{foo | Replace ""a$"" x}", new Dictionary<string, string> { { "foo", "ababa" } });
+            result.Should().Be("ababx");
         }
     }
 }
