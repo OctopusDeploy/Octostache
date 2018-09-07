@@ -1,9 +1,11 @@
-﻿using Sprache;
+﻿using System.Collections.Generic;
+using Sprache;
 
 namespace Octostache.Templates
 {
-    abstract class TemplateToken : IInputToken
+    public abstract class TemplateToken : IInputToken
     {
         public Position InputPosition { get; set; }
+        public abstract IEnumerable<string> GetArguments();
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Octostache.Templates
+﻿using System.Collections.Generic;
+
+namespace Octostache.Templates
 {
     class Indexer : SymbolExpressionStep
     {
@@ -22,6 +24,8 @@
         {
             return "[" + (IsSymbol ? "#{"+ Symbol +"}" : Index) + "]";
         }
+
+        public override IEnumerable<string> GetArguments() => Symbol?.GetArguments() ?? new string[0];
 
         public override bool Equals(SymbolExpressionStep other) => Equals(other as Indexer);
 

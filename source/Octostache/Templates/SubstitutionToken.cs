@@ -1,4 +1,6 @@
-﻿namespace Octostache.Templates
+﻿using System.Collections.Generic;
+
+namespace Octostache.Templates
 {
     /// <summary>
     /// Example: <code>#{Octopus.Action[Foo].Name</code>.
@@ -21,5 +23,7 @@
         {
             return "#{" + Expression + "}";
         }
+
+        public override IEnumerable<string> GetArguments() => Expression.GetArguments();
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Octostache.Templates
+﻿using System.Collections.Generic;
+
+namespace Octostache.Templates
 {
     class DependencyWildcard : SymbolExpressionStep
     {
@@ -6,5 +8,7 @@
         {
             return "*";
         }
+
+        public override IEnumerable<string> GetArguments() => new string[0];
     }
 }

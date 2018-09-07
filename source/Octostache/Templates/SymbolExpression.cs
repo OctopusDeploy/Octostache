@@ -59,5 +59,7 @@ namespace Octostache.Templates
         }
 
         public static IEqualityComparer<SymbolExpression> StepsComparer { get; } = new StepsEqualityComparer();
+        public override IEnumerable<string> GetArguments() 
+            => steps.SelectMany(s => s.GetArguments());
     }
 }

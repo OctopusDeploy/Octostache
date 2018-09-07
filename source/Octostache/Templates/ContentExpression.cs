@@ -1,4 +1,5 @@
-﻿using Sprache;
+﻿using System.Collections.Generic;
+using Sprache;
 
 namespace Octostache.Templates
 {
@@ -9,5 +10,6 @@ namespace Octostache.Templates
     abstract class ContentExpression : IInputToken
     {
         public Position InputPosition { get; set; }
+        public abstract IEnumerable<string> GetArguments();
     }
 }

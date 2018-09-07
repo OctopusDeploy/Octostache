@@ -35,5 +35,8 @@ namespace Octostache.Templates
         {
             return "#{each " + Enumerator + " in " + Collection + "}" + string.Join("", Template.Cast<object>()) + "#{/each}";
         }
+
+        public override IEnumerable<string> GetArguments()
+            => Collection.GetArguments();
     }
 }

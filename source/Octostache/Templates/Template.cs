@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Octostache.Templates
 {
-    class Template
+    public class Template
     {
         readonly TemplateToken[] tokens;
 

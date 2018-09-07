@@ -44,5 +44,9 @@ namespace Octostache.Templates
 
             return $"{Function} ({string.Join(", ", GetAllArguments().Select(t => t.ToString()))})";
         }
+
+        public override IEnumerable<string> GetArguments()
+            => Argument.GetArguments()
+                .Concat(Options.SelectMany(o => o.GetArguments()));
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using Sprache;
 
 namespace Octostache.Templates
@@ -11,6 +12,7 @@ namespace Octostache.Templates
     abstract class SymbolExpressionStep : IInputToken
     {
         public Position InputPosition { get; set; }
+        public abstract IEnumerable<string> GetArguments();
 
         public virtual bool Equals(SymbolExpressionStep other)
         {
