@@ -1,4 +1,6 @@
-﻿namespace Octostache.Templates
+﻿using System.Collections.Generic;
+
+namespace Octostache.Templates
 {
     class Identifier : SymbolExpressionStep
     {
@@ -13,6 +15,8 @@
         {
             return Text;
         }
+
+        public override IEnumerable<string> GetArguments() => new[] {Text};
 
         public override bool Equals(SymbolExpressionStep other) => Equals(other as Identifier);
 

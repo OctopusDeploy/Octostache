@@ -27,6 +27,11 @@ namespace Octostache.Templates
         {
             return "#{if " + Token.LeftSide + Token.EqualityText + "}" + string.Join("", TruthyTemplate.Cast<object>()) + "#{else}" + string.Join("", FalsyTemplate.Cast<object>()) + "#{/if}";
         }
+
+        public override IEnumerable<string> GetArguments() 
+            => Token.GetArguments()
+                .Concat(TruthyTemplate.SelectMany(t => t.GetArguments()))
+                .Concat(FalsyTemplate.SelectMany(t => t.GetArguments()));
     }
 
     class ConditionalExpressionToken : TemplateToken
@@ -38,6 +43,9 @@ namespace Octostache.Templates
         {
             LeftSide = leftSide;
         }
+
+        public override IEnumerable<string> GetArguments() 
+              => LeftSide.GetArguments();
     }
 
     class ConditionalStringExpressionToken : ConditionalExpressionToken
@@ -51,6 +59,9 @@ namespace Octostache.Templates
             Equality = eq;
             RightSide = rightSide;
         }
+
+        public override IEnumerable<string> GetArguments()
+            => base.GetArguments().Concat(new[] {RightSide});
     }
 
     class ConditionalSymbolExpressionToken : ConditionalExpressionToken
@@ -64,5 +75,8 @@ namespace Octostache.Templates
             Equality = eq;
             RightSide = rightSide;
         }
+        
+        public override IEnumerable<string> GetArguments()
+            => base.GetArguments().Concat(RightSide.GetArguments());
     }
 }

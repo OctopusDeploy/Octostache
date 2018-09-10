@@ -11,7 +11,7 @@ using Sprache;
 
 namespace Octostache.Templates
 {
-    static class TemplateParser
+    public static class TemplateParser
     {
         static readonly Parser<Identifier> Identifier = Parse
             .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':' || c == '/' || c == '~' || c == '(' || c == ')', "identifier")
@@ -295,6 +295,21 @@ namespace Octostache.Templates
          }
 #endif
 
+        /// <summary>
+        /// Gets the names of variable replacement arguments that are resolvable by inspection of the template.
+        /// This excludes variables referenced inside and itterator (foreach) as the items cannot be determined without the
+        /// actual variable collection. The collection itself is returned.
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="haltOnError"></param>
+        /// <returns></returns>
+        public static HashSet<string> ParseTemplateAndGetArgumentNames(string template, bool haltOnError = true)
+        {
+            var parser = haltOnError ? Template : ContinueOnErrorsTemplate;
+            var templateTokens = parser.End().Parse(template);
+
+            return new HashSet<string>(templateTokens.SelectMany(t => t.GetArguments()));
+        }
 
 
         public static Template ParseTemplate(string template)

@@ -16,5 +16,7 @@ namespace Octostache.Templates
         {
             return string.Concat(Text).Replace("#{", "##{");
         }
+
+        public override IEnumerable<string> GetArguments() => new string[0];
     }
 }
