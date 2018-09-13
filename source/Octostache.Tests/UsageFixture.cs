@@ -1,10 +1,9 @@
-﻿using System;
+﻿using FluentAssertions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using Xunit;
-using FluentAssertions;
 
 namespace Octostache.Tests
 {
@@ -19,6 +18,28 @@ namespace Octostache.Tests
             variables.Set("FriendCount", "99");
             variables.Set("InstallPath", "C:\\#{Directory}");
             variables.Set("Directory", "MyDirectory");
+
+            variables.Get("InstallPath").Should().Be("C:\\MyDirectory");
+            variables.GetRaw("InstallPath").Should().Be("C:\\#{Directory}");
+            variables.GetFlag("IsFamous").Should().Be(true);
+            variables.GetFlag("IsInfamous").Should().Be(false);
+            variables.GetFlag("IsInfamous", true).Should().Be(true);
+            variables.GetInt32("FriendCount").Should().Be(99);
+            variables.GetInt32("FollowerCount").Should().Be(null);
+        }
+
+        [Fact]
+        public void UseDictionaryWithCollectionInitializer()
+        {
+            var variables = new VariableDictionary
+            {
+                {"Foo", "Bar"},
+                {"IsFamous", "True"},
+                {"FriendCount", "99"},
+                {"InstallPath", "C:\\#{Directory}"},
+                {"Directory", "MyDirectory"}
+            };
+
 
             variables.Get("InstallPath").Should().Be("C:\\MyDirectory");
             variables.GetRaw("InstallPath").Should().Be("C:\\#{Directory}");
@@ -169,7 +190,7 @@ namespace Octostache.Tests
         public void Performance()
         {
             var watch = Stopwatch.StartNew();
-            var result = Evaluate("Hello, #{Location}!", new Dictionary<string, string> {{"Location", "World"}});
+            var result = Evaluate("Hello, #{Location}!", new Dictionary<string, string> { { "Location", "World" } });
             result.Should().Be("Hello, World!");
 
             var iterations = 0;
@@ -294,12 +315,12 @@ namespace Octostache.Tests
         {
             var pattern = "#{Location[#{Continent}]}";
 
-            var variables = new VariableDictionary();            
+            var variables = new VariableDictionary();
             variables.Evaluate(pattern).Should().Be(pattern);
-            
+
             variables.Set("Location[Europe]", "Madrid");
             variables.Evaluate(pattern).Should().Be(pattern);
-         
+
             variables.Set("Continent", "Europe");
             variables.Evaluate(pattern).Should().Be("Madrid");
         }
@@ -372,14 +393,14 @@ namespace Octostache.Tests
         [Fact]
         public void DoubleHashEscapesToken()
         {
-            var result = Evaluate("##{foo}", new Dictionary<string, string> {{"foo", "Abc"}});
+            var result = Evaluate("##{foo}", new Dictionary<string, string> { { "foo", "Abc" } });
             result.Should().Be("#{foo}");
         }
 
         [Fact]
         public void TripleHashResolvesToSinglePlusToken()
         {
-            var result = Evaluate("###{foo}", new Dictionary<string, string> {{"foo", "Abc"}});
+            var result = Evaluate("###{foo}", new Dictionary<string, string> { { "foo", "Abc" } });
             result.Should().Be("#Abc");
         }
 
@@ -449,7 +470,7 @@ namespace Octostache.Tests
 
             parent["SomeVariable"].Should().BeNull();
 
-            // If one process calls another (using the same variables file), the parent process should 
+            // If one process calls another (using the same variables file), the parent process should
             // reload its variables once the child finishes.
             parent.Reload();
 

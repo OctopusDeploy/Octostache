@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 #if NET40
 using System.Runtime.Caching;
 #else
 using Microsoft.Extensions.Caching.Memory;
 #endif
-using Xunit;
 
 namespace Octostache.Tests
 {
@@ -20,7 +17,7 @@ namespace Octostache.Tests
             //The TemplateParser Cache is retained between tests. A little hackery to clear it.
             var parser = typeof(VariableDictionary).Assembly.GetType("Octostache.Templates.TemplateParser");
             var cache = (MemoryCache)parser.GetField("Cache", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
-            
+
             foreach (var item in cache)
             {
                 cache.Remove(item.Key);
