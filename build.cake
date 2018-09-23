@@ -111,7 +111,27 @@ Task("CopyToLocalPackages")
     CopyFileToDirectory($"{artifactsDir}/Octostache.{nugetVersion}.nupkg", localPackagesDir);
 });
 
+Task("Publish")
+    .IsDependentOn("Pack")
+    .WithCriteria(BuildSystem.IsRunningOnTeamCity)
+    .Does(() =>
+{
+	NuGetPush($"{artifactsDir}Octostache.{nugetVersion}.nupkg", new NuGetPushSettings {
+		Source = "https://f.feedz.io/octopus-deploy/dependencies/nuget",
+		ApiKey = EnvironmentVariable("FeedzIoApiKey")
+	});
+
+    if (gitVersionInfo.PreReleaseTagWithDash == "")
+    {
+          NuGetPush($"{artifactsDir}Octostache.{nugetVersion}.nupkg", new NuGetPushSettings {
+            Source = "https://www.nuget.org/api/v2/package",
+            ApiKey = EnvironmentVariable("NuGetApiKey")
+        });
+    }
+});
+
 Task("Default")
+    .IsDependentOn("Publish")
     .IsDependentOn("CopyToLocalPackages");
 
 //////////////////////////////////////////////////////////////////////
