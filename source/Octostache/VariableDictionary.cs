@@ -1,12 +1,13 @@
+using Octostache.Templates;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Octostache.Templates;
 
 namespace Octostache
 {
-    public class VariableDictionary
+    public class VariableDictionary : IEnumerable<KeyValuePair<string, string>>
     {
         readonly Dictionary<string, string> variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         string storageFilePath;
@@ -169,7 +170,7 @@ namespace Octostache
 
             if (CanEvaluationBeSkippedForExpression(expressionOrVariableOrText))
                 return expressionOrVariableOrText;
-            
+
             Template template;
             if (!TemplateParser.TryParseTemplate(expressionOrVariableOrText, out template, out error, haltOnError))
                 return expressionOrVariableOrText;
@@ -245,7 +246,7 @@ namespace Octostache
         }
 
         /// <summary>
-        /// Gets a given variable by name. If the variable contains an expression, it will be evaluated. Converts the variable to a boolean using <code>bool.TryParse()</code>. Returns a given  
+        /// Gets a given variable by name. If the variable contains an expression, it will be evaluated. Converts the variable to a boolean using <code>bool.TryParse()</code>. Returns a given
         /// default value if the variable is not defined, is empty, or isn't a valid boolean value.
         /// </summary>
         /// <param name="variableName">The name of the variable to find.</param>
@@ -264,7 +265,7 @@ namespace Octostache
         }
 
         /// <summary>
-        /// Gets a given variable by name. If the variable contains an expression, it will be evaluated. Converts the variable to an integer using <code>int.TryParse()</code>. Returns null 
+        /// Gets a given variable by name. If the variable contains an expression, it will be evaluated. Converts the variable to an integer using <code>int.TryParse()</code>. Returns null
         /// if the variable is not defined.
         /// </summary>
         /// <param name="variableName">The name of the variable to find.</param>
@@ -319,7 +320,7 @@ namespace Octostache
 
             if (!TemplateParser.TryParseIdentifierPath(variableCollectionName, out var symbolExpression))
                 throw new Exception($"Could not evaluate indexes for path {variableCollectionName}");
-            
+
             var context = new EvaluationContext(Binding, null);
             var bindings = context.ResolveAll(symbolExpression, out var missingTokens);
             return bindings.Select(b => b.Item).ToList();
@@ -330,12 +331,27 @@ namespace Octostache
         /// Determines whether an expression/variable value/text needs to be evaluated before being used.
         /// If true is returned from this method, the raw value of <paramref name="expressionOrVariableOrText" />
         /// can be used without running it through a VariableDictionary. Even if false is returned, the value
-        /// may not contain subsitution tokens, and may be unchanged after evaluation. 
+        /// may not contain subsitution tokens, and may be unchanged after evaluation.
         /// </summary>
         /// <param name="expressionOrVariableOrText">The variable to evaluate</param>
         /// <returns>False if the variable contains something that looks like a substitution tokens, otherwise true</returns>
         public static bool CanEvaluationBeSkippedForExpression(string expressionOrVariableOrText)
             => expressionOrVariableOrText == null || !expressionOrVariableOrText.Contains("#{");
 
+        public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+        {
+            return variables.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+
+        public void Add(string key, string value)
+        {
+            Set(key, value);
+        }
     }
 }
