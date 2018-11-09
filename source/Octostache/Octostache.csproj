@@ -10,7 +10,7 @@
     <PackageId>Octostache</PackageId>
     <PackageIconUrl>http://i.octopusdeploy.com/resources/Avatar3-32x32.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/OctopusDeploy/Octostache/</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/OctopusDeploy/Octostache/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseUrl>https://github.com/OctopusDeploy/Octostache/blob/master/LICENSE.txt</PackageLicenseUrl>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
