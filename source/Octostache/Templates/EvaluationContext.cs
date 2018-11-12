@@ -187,7 +187,8 @@ namespace Octostache.Templates
             }
 
 
-            return JsonParser.TryParse(parentBinding, property, out subBinding);
+            return JsonParser.TryParse(parentBinding, property, out subBinding) 
+                || YamlParser.TryParse(parentBinding, property, out subBinding);
         }
 
         private SymbolExpression CopyExpression(SymbolExpression expression)
@@ -222,8 +223,8 @@ namespace Octostache.Templates
             if (val.Item == null)
                 return Enumerable.Empty<Binding>();
 
-            Binding[] bindings;
-            if (JsonParser.TryParse(new Binding(val.Item), out bindings))
+            var binding = new Binding(val.Item);
+            if (JsonParser.TryParse(binding, out var bindings) || YamlParser.TryParse(binding, out bindings))
             {
                 return bindings;
             }

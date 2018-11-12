@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>Variable substitution syntax used in Octopus Deploy.</Description>
     <NeutralLanguage>en-US</NeutralLanguage>
@@ -20,22 +19,19 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="Sprache" Version="2.1.0" />
     <PackageReference Include="Markdig" Version="0.10.4" />
+    <PackageReference Include="YamlDotNet" Version="4.2.1" />
   </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="1.0.2" />
   </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
-
 </Project>

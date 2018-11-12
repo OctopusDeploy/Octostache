@@ -1,9 +1,93 @@
 ﻿using System;
 using Xunit;
 using FluentAssertions;
+using YamlDotNet.Serialization;
 
 namespace Octostache.Tests
 {
+
+    public class YamlFixture : BaseFixture
+    {
+        [Fact]
+        public void YamlDoesNotOverrideExisting()
+        {
+            var yaml = @"foo: Go Away
+product:
+    - sku         : BL394D
+      quantity    : 4
+      description : Basketball
+      price       : 450.00";
+            
+            var variables = new VariableDictionary
+            {
+                ["Test.Hello"] = "Go Away",
+                ["Test"] = yaml,
+                ["Test[Foo]"] = "Nope",
+                ["Test.Donkey.Kong"] = "MARIO",
+            };
+
+            variables.Evaluate("#{Test.Hello}").Should().Be("Go Away");
+            variables.Evaluate("#{Test[foo]}").Should().Be("Nope");
+            variables.Evaluate("#{Test.Donkey.Kong}").Should().Be("MARIO");
+        }
+        
+        
+        [Fact]
+        public void YamlSupportsVariableInVariable()
+        {
+            var variables = new VariableDictionary
+            {
+                ["Prop"] = "Foo",
+                ["Val"] = "Bar",
+                ["Test"] = "#{Prop}: #{Val}",
+            };
+
+            variables.Evaluate("#{Test[Foo]}").Should().Be("Bar");
+            variables.Evaluate("#{Test.Foo}").Should().Be("Bar");
+            variables.Evaluate("#{Test[#{Prop}]}").Should().Be("Bar");
+        }
+        
+        
+        [Theory]
+        [InlineData("Hello: World", "#{Test[Hello]}", "World", "Simple Indexing")]
+        [InlineData("Hello: World", "#{Test.Hello}", "World", "Simple Dot Notation")]
+        [InlineData(@"Hello:
+    World:
+        Foo:
+            Bar: 12", "#{Test[Hello][World][Foo][Bar]}", "12", "Deep")]
+        [InlineData(@"Items:
+  - Name: Toast
+  - Name: Bread", "#{Test.Items[1].Name}", "Bread", "Arrays")]
+        [InlineData(@"Foo:
+                        Bar: 11", "#{Test.Foo}", "Bar: 11", "Raw YAML returned")]
+        [InlineData(@"Name: '#{Test.Value}'
+Desc: Monkey
+Value: 12", "#{Test.Name}", "12", "Non-Direct inner YAML")]
+        public void SuccessfulYamlParsing(string json, string pattern, string expectedResult, string testName)
+        { 
+            var variables = new VariableDictionary
+            {
+                ["Test"] = json
+            };
+
+            variables.Evaluate(pattern).Should().Be(expectedResult);
+        }
+
+        
+        
+        [Fact]
+        public void Foo()
+        {
+
+            var d = new Deserializer().Deserialize<object>(@"AAPL:
+  - shares: -75.088
+    date: 11/27/2015
+  - shares: 75.088
+    date: 11/26/2015");
+        }
+    }
+    
+    
     public class JsonFixture :BaseFixture
     {
         [Fact]
@@ -59,7 +143,7 @@ namespace Octostache.Tests
         {
             var variables = new VariableDictionary
             {
-                ["Test"] = "{Name: NoComma}",
+                ["Test"] = "{Name: NoQuote}",
             };
 
             variables.Evaluate("#{Test.Name}").Should().Be("#{Test.Name}");
