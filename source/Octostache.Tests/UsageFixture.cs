@@ -563,14 +563,16 @@ namespace Octostache.Tests
             {
                 ["Octopus.Action[Package A].Name"] = "A",
                 ["Octopus.Action[Package B].Name"] = "B",
+                ["Octopus.Action[].Name"] = "C",
                 ["PackageBName"] = "#{Octopus.Action[Package B].Name}",
             };
 
             var presentIndexes = variableDictionary.GetIndexes("Octopus.Action");
 
-            presentIndexes.Should().HaveCount(2);
+            presentIndexes.Should().HaveCount(3);
             presentIndexes.Should().Contain("Package A");
             presentIndexes.Should().Contain("Package B");
+            presentIndexes.Should().Contain("");
 
             var absentIndexes = variableDictionary.GetIndexes("Foo.Bar");
 

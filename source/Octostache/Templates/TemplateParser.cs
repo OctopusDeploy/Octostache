@@ -56,11 +56,14 @@ namespace Octostache.Templates
 
         static readonly Parser<Indexer> Indexer =
             (from open in Parse.Char('[')
-             from index in SymbolIndexer.Token().Or(StringIndexer.Token())
-             from close in Parse.Char(']')
-             select index)
-                .WithPosition()
-                .Named("indexer");
+                from index in (from index in SymbolIndexer.Token().Or(StringIndexer.Token())
+                        from close in Parse.Char(']')
+                        select index) // NonEmpty Index
+                    .Or(from close in Parse.Char(']')
+                        select new Indexer(string.Empty)) //Empty Index
+                select index)
+            .WithPosition()
+            .Named("indexer");
 
         static readonly Parser<SymbolExpressionStep> TrailingStep =
             Parse.Char('.').Then(_ => Identifier).Select(i => (SymbolExpressionStep)i)
