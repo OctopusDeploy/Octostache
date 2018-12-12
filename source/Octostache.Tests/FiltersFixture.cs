@@ -50,6 +50,13 @@ namespace Octostache.Tests
         }
 
         [Fact]
+        public void UrlsAreEncoded()
+        {
+            var result = Evaluate("#{Foo | UrlEncode}", new Dictionary<string, string> { { "Foo", "A:b+/c" } });
+            result.Should().Be("A%3Ab%2B%2Fc");
+        }
+
+        [Fact]
         public void XmlIsEscaped()
         {
             var result = Evaluate("#{Foo | XmlEscape}", new Dictionary<string, string> { { "Foo", "A&'bc" } });

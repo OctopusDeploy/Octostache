@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using Markdig;
 
 namespace Octostache.Templates.Functions
@@ -43,6 +45,17 @@ namespace Octostache.Templates.Functions
                 .UseAutoLinks()      //make links for http:// etc
                 .Build();
             return Markdig.Markdown.ToHtml(argument.Trim(), pipeline) + '\n';
+        }
+
+        public static string UrlEncode(string argument, string[] options)
+        {
+            if (options.Any())
+                return null;
+
+            if (argument == null)
+                return null;
+
+            return Uri.EscapeDataString(argument);
         }
 
         static string Escape(string raw, IDictionary<char, string> entities)
