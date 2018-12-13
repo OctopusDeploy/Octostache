@@ -23,9 +23,10 @@ namespace Octostache.Tests
                 {
                     {"Octopus.Action[Package A].Name", "A"},
                     {"Octopus.Action[Package B].Name", "B"},
+                    {"Octopus.Action[].Name", "Blank"},
                 });
 
-            result.Should().Be("Package A-APackage B-B");
+            result.Should().Be("Package A-APackage B-B-Blank");
         }
 
         [Fact]
@@ -38,10 +39,12 @@ namespace Octostache.Tests
                     {"Octopus.Action[Package A].Name", "A"},
                     {"Octopus.Action[Package A].TargetRoles", "a,b"},
                     {"Octopus.Action[Package B].Name", "B"},
-                    {"Octopus.Action[Package B].TargetRoles", "c"}
+                    {"Octopus.Action[Package B].TargetRoles", "c"},
+                    {"Octopus.Action[].Name", "Z"},
+                    {"Octopus.Action[].TargetRoles", "y"}
                 });
 
-            result.Should().Be("AaAbBc");
+            result.Should().Be("AaAbBcZy");
         }
 
         [Fact]
@@ -52,11 +55,13 @@ namespace Octostache.Tests
                 {
                     {"PackageA_Name", "A"},
                     {"PackageB_Name", "B"},
+                    {"PackageC_Name", "C"},
                     {"Octopus.Action[Package A].Name", "#{PackageA_Name}"},
                     {"Octopus.Action[Package B].Name", "#{PackageB_Name}"},
+                    {"Octopus.Action[].Name", "#{PackageC_Name}"},
                 });
 
-            result.Should().Be("AB");
+            result.Should().Be("ABC");
         }
 
         [Fact]
