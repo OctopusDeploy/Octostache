@@ -47,7 +47,18 @@ namespace Octostache.Templates.Functions
             return Markdig.Markdown.ToHtml(argument.Trim(), pipeline) + '\n';
         }
 
-        public static string UrlEncode(string argument, string[] options)
+        public static string UriStringEscape(string argument, string[] options)
+        {
+            if (options.Any())
+                return null;
+
+            if (argument == null)
+                return null;
+
+            return Uri.EscapeUriString(argument);
+        }
+
+        public static string UriDataStringEscape(string argument, string[] options)
         {
             if (options.Any())
                 return null;
