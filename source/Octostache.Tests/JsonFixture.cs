@@ -144,5 +144,18 @@ namespace Octostache.Tests
 
             variables.Evaluate(pattern).Should().Be("Alphabet");
         }
+
+        [Fact]
+        public void MissingJsonPropertyTreatedAsEmptyString()
+        {
+            var variables = new VariableDictionary
+            {
+                ["Foo"] = "{Bar: \"ABC\"}",
+            };
+
+            var pattern = @"Alpha#{Foo.NotBar}bet";
+
+            variables.Evaluate(pattern).Should().Be("Alphabet");
+        }
     }
 }

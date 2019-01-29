@@ -114,6 +114,10 @@ namespace Octostache.CustomStringParsers
 
         static Binding ConvertJTokenToBinding(JToken token)
         {
+            if(token == null)
+            {
+                return new Binding(string.Empty);
+            }
             if (token is JValue)
             {
                 return new Binding(token.Value<string>() ?? string.Empty);
