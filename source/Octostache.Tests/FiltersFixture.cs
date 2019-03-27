@@ -13,6 +13,7 @@ namespace Octostache.Tests
         [InlineData("#{Foo.Bar | HtmlEscape}")]
         [InlineData("#{Foo.Bar | ToUpper}")]
         [InlineData("#{Foo.Bar | Markdown}")]
+        [InlineData("#{Foo.Bar | MarkdownToHtml}")]
         public void UnmatchedSubstitutionsAreEchoed(string template)
         {
             string error;
@@ -70,7 +71,7 @@ namespace Octostache.Tests
 
         [Theory]
         [InlineData("#{Foo | Markdown}")]
-        [InlineData("#{Foo | ToHtml}")]
+        [InlineData("#{Foo | MarkdownToHtml}")]
         public void MarkdownIsProcessed(string input)
         {
             var result = Evaluate(input, new Dictionary<string, string> { { "Foo", "_yeah!_" } });
@@ -79,7 +80,7 @@ namespace Octostache.Tests
 
         [Theory]
         [InlineData("#{Foo | Markdown}")]
-        [InlineData("#{Foo | ToHtml}")]
+        [InlineData("#{Foo | MarkdownToHtml}")]
         public void MarkdownHttpLinkIsProcessed(string input)
         {
             var result = Evaluate(input, new Dictionary<string, string> { { "Foo", "http://octopus.com" } });
@@ -88,7 +89,7 @@ namespace Octostache.Tests
 
         [Theory]
         [InlineData("#{Foo | Markdown}")]
-        [InlineData("#{Foo | ToHtml}")]
+        [InlineData("#{Foo | MarkdownToHtml}")]
         public void MarkdownTablesAreProcessed(string input)
         {
             var dictionary = new Dictionary<string, string> { {"Foo", 
