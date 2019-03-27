@@ -14,14 +14,15 @@ namespace Octostache.Templates
             {"htmlescape", TextEscapeFunction.HtmlEscape },
             {"xmlescape", TextEscapeFunction.XmlEscape },
             {"jsonescape", TextEscapeFunction.JsonEscape },
-            {"markdown", TextEscapeFunction.Markdown },
+            {"markdown", TextEscapeFunction.MarkdownToHtml },
+            {"markdowntohtml", TextEscapeFunction.MarkdownToHtml },
             {"nowdate", DateFunction.NowDate },
             {"nowdateutc", DateFunction.NowDateUtc },
             {"format", FormatFunction.Format },
             {"replace", TextReplaceFunction.Replace }
         };
  
-        // Configuration shoudl be done at startup, this isn't thread-safe.
+        // Configuration should be done at startup, this isn't thread-safe.
         public static void Register(string name, Func<string, string[], string> implementation)
         {
             var functionName = name.ToLowerInvariant();

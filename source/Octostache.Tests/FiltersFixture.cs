@@ -68,28 +68,34 @@ namespace Octostache.Tests
             result.Should().Be(expectedResult);
         }
 
-        [Fact]
-        public void MarkdownIsProcessed()
+        [Theory]
+        [InlineData("#{Foo | Markdown}")]
+        [InlineData("#{Foo | ToHtml}")]
+        public void MarkdownIsProcessed(string input)
         {
-            var result = Evaluate("#{Foo | Markdown}", new Dictionary<string, string> { { "Foo", "_yeah!_" } });
+            var result = Evaluate(input, new Dictionary<string, string> { { "Foo", "_yeah!_" } });
             result.Trim().Should().Be("<p><em>yeah!</em></p>");
         }
 
-        [Fact]
-        public void MarkdownHttpLinkIsProcessed()
+        [Theory]
+        [InlineData("#{Foo | Markdown}")]
+        [InlineData("#{Foo | ToHtml}")]
+        public void MarkdownHttpLinkIsProcessed(string input)
         {
-            var result = Evaluate("#{Foo | Markdown}", new Dictionary<string, string> { { "Foo", "http://octopus.com" } });
+            var result = Evaluate(input, new Dictionary<string, string> { { "Foo", "http://octopus.com" } });
             result.Trim().Should().Be("<p><a href=\"http://octopus.com\">http://octopus.com</a></p>");
         }
 
-        [Fact]
-        public void MarkdownTablesAreProcessed()
+        [Theory]
+        [InlineData("#{Foo | Markdown}")]
+        [InlineData("#{Foo | ToHtml}")]
+        public void MarkdownTablesAreProcessed(string input)
         {
             var dictionary = new Dictionary<string, string> { {"Foo", 
 @"|Header1|Header2|
 |-|-|
 |Cell1|Cell2|" }};
-            var result = Evaluate("#{Foo | Markdown}", dictionary);
+            var result = Evaluate(input, dictionary);
             result.Trim().Should().Be("<table>\n<thead>\n<tr>\n<th>Header1</th>\n<th>Header2</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Cell1</td>\n<td>Cell2</td>\n</tr>\n</tbody>\n</table>");
         }
 
