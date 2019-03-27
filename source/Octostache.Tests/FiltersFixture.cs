@@ -79,12 +79,14 @@ namespace Octostache.Tests
         }
 
         [Theory]
-        [InlineData("#{Foo | Markdown}")]
-        [InlineData("#{Foo | MarkdownToHtml}")]
-        public void MarkdownHttpLinkIsProcessed(string input)
+        [InlineData("#{Foo | Markdown}", "http://octopus.com", "<p><a href=\"http://octopus.com\">http://octopus.com</a></p>")]
+        [InlineData("#{Foo | MarkdownToHtml}", "http://octopus.com", "<p><a href=\"http://octopus.com\">http://octopus.com</a></p>")]
+        [InlineData("#{Foo | Markdown}", "[Some link](http://octopus.com)", "<p><a href=\"http://octopus.com\">Some link</a></p>")]
+        [InlineData("#{Foo | MarkdownToHtml}", "[Some link](http://octopus.com)", "<p><a href=\"http://octopus.com\">Some link</a></p>")]
+        public void MarkdownHttpLinkIsProcessed(string input, string value, string expectedResult)
         {
-            var result = Evaluate(input, new Dictionary<string, string> { { "Foo", "http://octopus.com" } });
-            result.Trim().Should().Be("<p><a href=\"http://octopus.com\">http://octopus.com</a></p>");
+            var result = Evaluate(input, new Dictionary<string, string> { { "Foo", value } });
+            result.Trim().Should().Be(expectedResult);
         }
 
         [Theory]
