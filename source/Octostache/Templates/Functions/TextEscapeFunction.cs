@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Markdig;
@@ -32,7 +33,13 @@ namespace Octostache.Templates.Functions
             return Escape(argument, JsonEntityMap);
         }
 
+        [Obsolete("Please use MarkdownToHtml instead.")]
         public static string Markdown(string argument, string[] options)
+        {
+            return MarkdownToHtml(argument, options);
+        }
+
+        public static string MarkdownToHtml(string argument, string[] options)
         {
             if (argument == null || options.Any())
                 return null;

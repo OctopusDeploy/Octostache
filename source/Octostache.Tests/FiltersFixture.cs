@@ -13,6 +13,7 @@ namespace Octostache.Tests
         [InlineData("#{Foo.Bar | HtmlEscape}")]
         [InlineData("#{Foo.Bar | ToUpper}")]
         [InlineData("#{Foo.Bar | Markdown}")]
+        [InlineData("#{Foo.Bar | MarkdownToHtml}")]
         public void UnmatchedSubstitutionsAreEchoed(string template)
         {
             string error;
@@ -68,28 +69,36 @@ namespace Octostache.Tests
             result.Should().Be(expectedResult);
         }
 
-        [Fact]
-        public void MarkdownIsProcessed()
+        [Theory]
+        [InlineData("#{Foo | Markdown}")]
+        [InlineData("#{Foo | MarkdownToHtml}")]
+        public void MarkdownIsProcessed(string input)
         {
-            var result = Evaluate("#{Foo | Markdown}", new Dictionary<string, string> { { "Foo", "_yeah!_" } });
+            var result = Evaluate(input, new Dictionary<string, string> { { "Foo", "_yeah!_" } });
             result.Trim().Should().Be("<p><em>yeah!</em></p>");
         }
 
-        [Fact]
-        public void MarkdownHttpLinkIsProcessed()
+        [Theory]
+        [InlineData("#{Foo | Markdown}", "http://octopus.com", "<p><a href=\"http://octopus.com\">http://octopus.com</a></p>")]
+        [InlineData("#{Foo | MarkdownToHtml}", "http://octopus.com", "<p><a href=\"http://octopus.com\">http://octopus.com</a></p>")]
+        [InlineData("#{Foo | Markdown}", "[Some link](http://octopus.com)", "<p><a href=\"http://octopus.com\">Some link</a></p>")]
+        [InlineData("#{Foo | MarkdownToHtml}", "[Some link](http://octopus.com)", "<p><a href=\"http://octopus.com\">Some link</a></p>")]
+        public void MarkdownHttpLinkIsProcessed(string input, string value, string expectedResult)
         {
-            var result = Evaluate("#{Foo | Markdown}", new Dictionary<string, string> { { "Foo", "http://octopus.com" } });
-            result.Trim().Should().Be("<p><a href=\"http://octopus.com\">http://octopus.com</a></p>");
+            var result = Evaluate(input, new Dictionary<string, string> { { "Foo", value } });
+            result.Trim().Should().Be(expectedResult);
         }
 
-        [Fact]
-        public void MarkdownTablesAreProcessed()
+        [Theory]
+        [InlineData("#{Foo | Markdown}")]
+        [InlineData("#{Foo | MarkdownToHtml}")]
+        public void MarkdownTablesAreProcessed(string input)
         {
             var dictionary = new Dictionary<string, string> { {"Foo", 
 @"|Header1|Header2|
 |-|-|
 |Cell1|Cell2|" }};
-            var result = Evaluate("#{Foo | Markdown}", dictionary);
+            var result = Evaluate(input, dictionary);
             result.Trim().Should().Be("<table>\n<thead>\n<tr>\n<th>Header1</th>\n<th>Header2</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Cell1</td>\n<td>Cell2</td>\n</tr>\n</tbody>\n</table>");
         }
 
