@@ -88,7 +88,8 @@ namespace Octostache.Templates
                         .Or(Substitution)
                         .Or(IdentifierWithoutWhitespace.Token().Select(t => t.Text)
                             .Or(QuotedText)
-                            .Select(t => new TextToken(t)))
+                            .Or(EscapedQuotedText)
+                        .Select(t => new TextToken(t)))
                         .Named("option").Many().Optional()
                 select new { Function = fn.Text, options = option }
                 ).AtLeastOnce()
@@ -223,13 +224,13 @@ namespace Octostache.Templates
                 .Select(s => new TextToken(s.ToArray()))
                 .WithPosition();
 
-        public static readonly Parser<string> QuotedText =
+        static readonly Parser<string> QuotedText =
             (from open in Parse.Char('"')
              from content in Parse.CharExcept(new[] { '"', '#' }).Many().Text()
              from close in Parse.Char('"')
              select content).Token();
 
-        public static readonly Parser<string> EscapedQuotedText =
+        static readonly Parser<string> EscapedQuotedText =
         (from open in Parse.String("\\\"")
             from content in Parse.AnyChar.Until(Parse.String("\\\"")).Text()
             select content).Token();

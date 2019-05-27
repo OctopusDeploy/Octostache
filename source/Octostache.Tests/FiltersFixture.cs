@@ -132,8 +132,16 @@ namespace Octostache.Tests
         [Fact]
         public void GenericConverterAcceptsDate()
         {
-            var dict = new Dictionary<string, string> { { "MyDate", "2030/05/22 09:05:00" }, { "Format", "HH dd-MMM-yyyy" } };
+            var dict = new Dictionary<string, string> { { "MyDate", "2030/05/22 09:05:00" } };
             var result = Evaluate("#{MyDate | Format DateTime \"HH dd-MMM-yyyy\" }", dict);
+            result.Should().Be("09 22-May-2030");
+        }
+        
+        [Fact]
+        public void EscaoedFilterStringAccepted()
+        {
+            var dict = new Dictionary<string, string> { { "MyDate", "2030/05/22 09:05:00" }};
+            var result = Evaluate("#{MyDate | Format DateTime \\\"HH dd-MMM-yyyy\\\" }", dict);
             result.Should().Be("09 22-May-2030");
         }
 
