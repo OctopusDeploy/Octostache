@@ -403,5 +403,40 @@ namespace Octostache.Tests
             var result = Evaluate(@"#{foo | Substring 0 -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
             result.Should().Be("#{foo | Substring 0 -1}");
         }
+
+        [Fact]
+        public void TruncateDoesNothing()
+        {
+            var result = Evaluate(@"#{foo | Truncate}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("#{foo | Truncate}");
+        }
+
+        [Fact]
+        public void TruncateDoesNothingWithLengthGreaterThanArgumentLength()
+        {
+            var result = Evaluate(@"#{foo | Truncate 50}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus Deploy");
+        }
+
+        [Fact]
+        public void TruncateHandlesNonNumericLength()
+        {
+            var result = Evaluate(@"#{foo | Truncate a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("#{foo | Truncate a}");
+        }
+
+        [Fact]
+        public void TruncateHandlesNegativeLength()
+        {
+            var result = Evaluate(@"#{foo | Truncate -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("#{foo | Truncate -1}");
+        }
+
+        [Fact]
+        public void TruncateTruncatesArgumentToSpecifiedLength()
+        {
+            var result = Evaluate(@"#{foo | Truncate 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus...");
+        }
     }
 }
