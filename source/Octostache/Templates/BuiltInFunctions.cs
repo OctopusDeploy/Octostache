@@ -21,7 +21,8 @@ namespace Octostache.Templates
             {"nowdateutc", DateFunction.NowDateUtc },
             {"format", FormatFunction.Format },
             {"replace", TextReplaceFunction.Replace },
-            {"substring", TextSubstringFunction.Substring}
+            {"substring", TextSubstringFunction.Substring},
+            {"truncate", TextManipulationFunction.Truncate}
         };
 
         // Configuration should be done at startup, this isn't thread-safe.

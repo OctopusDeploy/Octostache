@@ -62,6 +62,20 @@ namespace Octostache.Templates.Functions
                     return null;
                 }
             }
+		}	
+
+        public static string Truncate(string argument, string[] options)
+        {
+            if (argument == null ||
+                !options.Any() ||
+                !int.TryParse(options[0], out int _) ||
+                int.Parse(options[0]) < 0)
+                return null;
+
+            var length = int.Parse(options[0]);
+            return length < argument.Length
+                ? $"{argument.Substring(0, length)}..."
+                : argument;
         }
     }
 }
