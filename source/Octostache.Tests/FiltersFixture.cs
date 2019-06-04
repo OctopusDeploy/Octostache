@@ -438,5 +438,40 @@ namespace Octostache.Tests
             var result = Evaluate(@"#{foo | Truncate 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
             result.Should().Be("Octopus...");
         }
+
+        [Fact]
+        public void TrimIsApplied()
+        {
+            var result = Evaluate(@"#{foo | Trim}", new Dictionary<string, string> { { "foo", " Octopus Deploy " } });
+            result.Should().Be("Octopus Deploy");
+        }
+
+        [Fact]
+        public void TrimStartIsApplied()
+        {
+            var result = Evaluate(@"#{foo | Trim start}", new Dictionary<string, string> { { "foo", " Octopus Deploy " } });
+            result.Should().Be("Octopus Deploy ");
+        }
+
+        [Fact]
+        public void TrimEndIsApplied()
+        {
+            var result = Evaluate(@"#{foo | Trim End}", new Dictionary<string, string> { { "foo", " Octopus Deploy " } });
+            result.Should().Be(" Octopus Deploy");
+        }
+
+        [Fact]
+        public void TrimCanBeChained()
+        {
+            var result = Evaluate(@"#{foo | Substring 8 | Trim}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus");
+        }
+
+        [Fact]
+        public void TrimWithInvalidOptionDoesNoting()
+        {
+            var result = Evaluate(@"#{foo | Trim Both}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("#{foo | Trim Both}");
+        }
     }
 }
