@@ -77,5 +77,23 @@ namespace Octostache.Templates.Functions
                 ? $"{argument.Substring(0, length)}..."
                 : argument;
         }
+
+        public static string Trim(string argument, string[] options)
+        {
+            if (argument == null)
+                return null;
+
+            if (!options.Any()) return argument.Trim();
+
+            switch(options[0].ToLower())
+            {
+                case "start":
+                    return argument.TrimStart();
+                case "end":
+                    return argument.TrimEnd();
+                default:
+                    return null;
+            }
+        }
     }
 }

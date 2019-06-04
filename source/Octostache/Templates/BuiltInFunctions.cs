@@ -22,7 +22,8 @@ namespace Octostache.Templates
             {"format", FormatFunction.Format },
             {"replace", TextReplaceFunction.Replace },
             {"substring", TextSubstringFunction.Substring},
-            {"truncate", TextManipulationFunction.Truncate}
+            {"truncate", TextManipulationFunction.Truncate},
+            {"trim", TextManipulationFunction.Trim}
         };
 
         // Configuration should be done at startup, this isn't thread-safe.
