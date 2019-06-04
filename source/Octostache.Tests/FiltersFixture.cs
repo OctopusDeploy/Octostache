@@ -94,7 +94,7 @@ namespace Octostache.Tests
         [InlineData("#{Foo | MarkdownToHtml}")]
         public void MarkdownTablesAreProcessed(string input)
         {
-            var dictionary = new Dictionary<string, string> { {"Foo", 
+            var dictionary = new Dictionary<string, string> { {"Foo",
 @"|Header1|Header2|
 |-|-|
 |Cell1|Cell2|" }};
@@ -128,7 +128,7 @@ namespace Octostache.Tests
             var result = Evaluate("#{Cash | Format Double C}", dict);
             result.Should().Be(23.4.ToString("C"));
         }
-        
+
         [Fact]
         public void GenericConverterAcceptsDate()
         {
@@ -136,7 +136,7 @@ namespace Octostache.Tests
             var result = Evaluate("#{MyDate | Format DateTime \"HH dd-MMM-yyyy\" }", dict);
             result.Should().Be("09 22-May-2030");
         }
-        
+
         [Fact]
         public void EscaoedFilterStringAccepted()
         {
@@ -265,7 +265,7 @@ namespace Octostache.Tests
             var result = Evaluate(@"#{foo | Replace ""ab c"" ""d ef""}", new Dictionary<string, string> { { "foo", "ab c" } });
             result.Should().Be("d ef");
         }
-        
+
         [Fact]
         public void ReplaceWorksWithVariableOptions()
         {
@@ -277,7 +277,7 @@ namespace Octostache.Tests
             });
             result.Should().Be(@"axc");
         }
-        
+
         [Fact]
         public void ReplaceHandlesDoubleQuotesViaNestedSubsitution()
         {
@@ -289,56 +289,119 @@ namespace Octostache.Tests
             });
             result.Should().Be(@"""cb");
         }
-        
-        
+
+
         [Fact]
         public void ReplaceHandlesSingleQuotes()
         {
             var result = Evaluate(@"#{foo | Replace ""a'b"" ""d'e""}", new Dictionary<string, string> { { "foo", "a'b" } });
             result.Should().Be("d'e");
         }
-        
+
         [Fact]
         public void ReplaceRange()
         {
             var result = Evaluate(@"#{foo | Replace ""[a-z]+"" 1}", new Dictionary<string, string> { { "foo", "a'b" } });
             result.Should().Be("1'1");
         }
-        
+
         [Fact]
         public void ReplaceHandlesEscapingRegexSpecialCharacter()
         {
             var result = Evaluate(@"#{foo | Replace ""a\(b"" ""d(e""}", new Dictionary<string, string> { { "foo", @"a(b" } });
             result.Should().Be(@"d(e");
         }
-        
+
         [Fact]
         public void ReplaceCanSubstitute()
         {
             var result = Evaluate(@"#{foo | Replace ""o(.+)o([a-z]*)s"" ""o$2o$1s""}", new Dictionary<string, string> { { "foo", "opuocts" } });
             result.Should().Be("octopus");
         }
-        
+
         [Fact]
         public void ReplaceCanDoMultipleSubstitutions()
         {
             var result = Evaluate(@"#{foo | Replace ""a"" x}", new Dictionary<string, string> { { "foo", "ababa" } });
             result.Should().Be("xbxbx");
         }
-        
-        
+
+
         [Fact]
         public void ReplaceAtStartOfLine()
         {
             var result = Evaluate(@"#{foo | Replace ""^a"" x}", new Dictionary<string, string> { { "foo", "ababa" } });
             result.Should().Be("xbaba");
         }
-        
+
         [Fact]
         public void ReplaceAtEndOfLine()
         {
             var result = Evaluate(@"#{foo | Replace ""a$"" x}", new Dictionary<string, string> { { "foo", "ababa" } });
             result.Should().Be("ababx");
+        }
+
+        [Fact]
+        public void SubstringDoesNothing()
+        {
+            var result = Evaluate(@"#{foo | Substring}", new Dictionary<string, string> { { "foo" , "ababa" } });
+            result.Should().Be("#{foo | Substring}");
+        }
+
+        [Fact]
+        public void SubstringWithOnlyLength()
+        {
+            var result = Evaluate(@"#{foo | Substring 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus");
+        }
+
+        [Fact]
+        public void SubstringWithStartAndLength()
+        {
+            var result = Evaluate(@"#{foo | Substring 8 6}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Deploy");
+        }
+
+        [Fact]
+        public void SubstringHandlesNonNumericLength()
+        {
+            var result = Evaluate(@"#{foo | Substring a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("#{foo | Substring a}");
+        }
+
+        [Fact]
+        public void SubstringHandlesNonNumericLengthWithStart()
+        {
+            var result = Evaluate(@"#{foo | Substring 0 a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("#{foo | Substring 0 a}");
+        }
+
+        [Fact]
+        public void SubstringHandlesLengthIndexOutOfRange()
+        {
+            var result = Evaluate(@"#{foo | Substring 20}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("#{foo | Substring 20}");
+        }
+
+        [Fact]
+        public void SubstringHandlesStartAndLengthIndexOutOfRange()
+        {
+            var result = Evaluate(@"#{foo | Substring 8 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("#{foo | Substring 8 7}");
+        }
+
+        [Fact]
+        public void SubstringHandlesNegativeValueForLength()
+        {
+            var result = Evaluate(@"#{foo | Substring -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("#{foo | Substring -1}");
+        }
+
+        [Fact]
+        public void SubstringHandlesNegativeStartAndLength()
+        {
+            var result = Evaluate(@"#{foo | Substring 0 -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("#{foo | Substring 0 -1}");
         }
     }
 }
