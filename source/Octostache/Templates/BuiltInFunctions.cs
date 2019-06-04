@@ -20,9 +20,10 @@ namespace Octostache.Templates
             {"nowdate", DateFunction.NowDate },
             {"nowdateutc", DateFunction.NowDateUtc },
             {"format", FormatFunction.Format },
-            {"replace", TextReplaceFunction.Replace }
+            {"replace", TextReplaceFunction.Replace },
+            {"substring", TextSubstringFunction.Substring}
         };
- 
+
         // Configuration should be done at startup, this isn't thread-safe.
         public static void Register(string name, Func<string, string[], string> implementation)
         {
