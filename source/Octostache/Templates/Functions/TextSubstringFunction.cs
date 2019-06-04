@@ -16,8 +16,7 @@ namespace Octostache.Templates.Functions
 
             return argument.Substring(
                 options.Length == 1 ? 0 : int.Parse(options[0]),
-                options.Length == 1 ? int.Parse(options[0]) : int.Parse(options[1])
-            ).Trim();
+                options.Length == 1 ? int.Parse(options[0]) : int.Parse(options[1]));
         }
     }
 }
