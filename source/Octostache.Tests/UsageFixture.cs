@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Octostache.Templates;
 using Xunit;
 
 namespace Octostache.Tests
@@ -115,13 +116,13 @@ namespace Octostache.Tests
         }
 
         [Theory]
-        [InlineData("#{Foo}", "Foo=#{Foo}")]
-        [InlineData("#{Foo}", "Foo=#{Fox};Fox=#{Fax};Fax=#{Fix};Fix=#{Foo}")]
-        public void MaximumRecursionLimitException(string template, string variableDefinitions)
+        [InlineData("#{Foo}", "Foo=#{Foo}", "Foo -> Foo")]
+        [InlineData("#{Foo}", "Foo=#{Fox};Fox=#{Fax};Fax=#{Fix};Fix=#{Foo}", "Foo -> Fox -> Fax -> Fix -> Foo")]
+        public void MaximumRecursionLimitException(string template, string variableDefinitions, string expectedChain)
         {
             var ex =
-                Assert.Throws<InvalidOperationException>(() => ParseVariables(variableDefinitions).Evaluate(template));
-            ex.Message.Should().Contain("appears to have resulted in a self referencing loop");
+                Assert.Throws<RecursiveDefinitionException>(() => ParseVariables(variableDefinitions).Evaluate(template));
+            ex.Message.Should().Be($"An attempt to parse the variable symbol \"Foo\" appears to have resulted in a self referencing loop ({expectedChain}). Ensure that recursive loops do not exist in the variable values.");
         }
 
         [Fact]

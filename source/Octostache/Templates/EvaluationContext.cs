@@ -38,8 +38,7 @@ namespace Octostache.Templates
             {
                 if (ancestor.symbolStack.Contains(expression, SymbolExpression.StepsComparer))
                 {
-                    throw new InvalidOperationException(string.Format("An attempt to parse the variable symbol \"{0}\" appears to have resulted in a self referencing loop ({1}). Ensure that recursive loops do not exist in the variable values.", 
-                        expression, string.Join(" -> ", ancestor.symbolStack.Select(x => x.ToString()))));
+                    throw new RecursiveDefinitionException(expression, ancestor.symbolStack);
                 }
                 ancestor = ancestor.parent;
             }
