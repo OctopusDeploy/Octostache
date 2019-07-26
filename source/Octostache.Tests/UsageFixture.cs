@@ -57,6 +57,8 @@ namespace Octostache.Tests
         [InlineData("#{Foo}", "Foo=#{Bar};Bar=Baz", "Baz")]
         [InlineData("#{Foo}", "Foo=#{Bar | ToBase64};Bar=Baz", "QmF6")]
         [InlineData("#{Foo}", "Foo=#{Bar | ToBase64 unicode};Bar=Baz", "QgBhAHoA")]
+        [InlineData("#{Foo}", "Foo=#{Bar | FromBase64};Bar=QmF6", "Baz")]
+        [InlineData("#{Foo}", "Foo=#{Bar | FromBase64 unicode};Bar=QgBhAHoA", "Baz")]
         [InlineData("#{Foo}", "Foo=#{Bar | ToLower};Bar=Baz", "baz")]
         [InlineData("#{Foo Bar Jazz}", "Foo Bar Jazz=Bar", "Bar")]
         [InlineData("#{Foo|ToUpper}", "Foo=#{Bar | ToLower};Bar=Baz", "BAZ")]

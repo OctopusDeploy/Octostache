@@ -36,5 +36,32 @@ namespace Octostache.Templates.Functions
             }
             return Convert.ToBase64String(argumentBytes);
         }
+        
+        public static string FromBase64(string argument, string[] options)
+        {
+            if (options.Length > 1 || argument == null)
+            {
+                return null;
+            }
+
+            var encoding = !options.Any() ? "utf8" : options[0].ToLower();
+            var argumentBytes = Convert.FromBase64String(argument);
+            switch (encoding)
+            {
+                case "utf8":
+                case "utf-8":
+                {
+                    return Encoding.UTF8.GetString(argumentBytes);
+                }
+                case "unicode":
+                {
+                    return Encoding.Unicode.GetString(argumentBytes);
+                }
+                default:
+                {
+                    return null;
+                }
+            }
+        }
     }
 }

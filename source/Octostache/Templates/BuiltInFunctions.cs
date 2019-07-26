@@ -11,6 +11,7 @@ namespace Octostache.Templates
             {"tolower", TextCaseFunction.ToLower },
             {"toupper", TextCaseFunction.ToUpper },
             {"tobase64", TextManipulationFunction.ToBase64 },
+            {"frombase64", TextManipulationFunction.FromBase64 },
             {"htmlescape", TextEscapeFunction.HtmlEscape },
             {"xmlescape", TextEscapeFunction.XmlEscape },
             {"jsonescape", TextEscapeFunction.JsonEscape },
