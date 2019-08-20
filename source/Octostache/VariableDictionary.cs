@@ -322,9 +322,7 @@ namespace Octostache
                 throw new Exception($"Could not evaluate indexes for path {variableCollectionName}");
 
             var context = new EvaluationContext(Binding, null);
-            var bindings = context.ResolveAll(symbolExpression, out var missingTokens);
-            return bindings.Select(b => b.Item).ToList();
-
+            return context.ResolveIndexes(symbolExpression, out _).ToList();
         }
 
         /// <summary>

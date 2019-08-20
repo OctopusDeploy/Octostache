@@ -73,35 +73,31 @@ namespace Octostache.Templates
 
                 foreach (var step in expression.Steps)
                 {
-                    var iss = step as Identifier;
-                    if (iss != null)
+                    if (step is Identifier identifierStep)
                     {
                         Binding newVal;
-                        if (val.TryGetValue(iss.Text, out newVal))
+                        if (val.TryGetValue(identifierStep.Text, out newVal))
                         {
                             val = newVal;
                             continue;
                         }
 
-                        if (TryCustomParsers(val, iss.Text, out newVal))
+                        if (TryCustomParsers(val, identifierStep.Text, out newVal))
                         {
                             val = newVal;
                             continue;
                         }
                     }
-                    else
-                    {
-                        var ix = step as Indexer;
-                        if (ix != null)
+                    else if (step is Indexer indexerStep)
                         {
-                            if (ix.IsSymbol)
+                            if (indexerStep.IsSymbol)
                             {
                                 // Substitution should have taken place in previous CopyExpression above. 
                                 // If not then it must not be found.
                                 return null;
                             }
 
-                            if (ix.Index == "*" && val.Indexable.Count > 0)
+                            if (indexerStep.Index == "*" && val.Indexable.Count > 0)
                             {
                                 val = val.Indexable.First().Value;
                                 continue;
@@ -109,23 +105,23 @@ namespace Octostache.Templates
 
 
                             Binding newVal;
-                            if (val.Indexable.TryGetValue(ix.Index, out newVal))
+                            if (val.Indexable.TryGetValue(indexerStep.Index, out newVal))
                             {
                                 val = newVal;
                                 continue;
                             }
 
-                            if (TryCustomParsers(val, ix.Index, out newVal))
+                            if (TryCustomParsers(val, indexerStep.Index, out newVal))
                             {
                                 val = newVal;
                                 continue;
                             }
                         }
-                        else
-                        {
-                            throw new NotImplementedException("Unknown step type: " + step);
-                        }
+                    else
+                    {
+                        throw new NotImplementedException("Unknown step type: " + step);
                     }
+
 
                     if (parent == null)
                         return null;
@@ -207,6 +203,12 @@ namespace Octostache.Templates
                 }
                 return s;
             }));
+        }
+
+        public IEnumerable<string> ResolveIndexes(SymbolExpression collection, out string[] missingTokens)
+        {
+            var val = WalkTo(collection, out missingTokens);
+            return val?.Indexable?.Select(c => c.Key) ?? Enumerable.Empty<string>();
         }
 
         public IEnumerable<Binding> ResolveAll(SymbolExpression collection, out string[] missingTokens)

@@ -581,5 +581,21 @@ namespace Octostache.Tests
 
             absentIndexes.Should().HaveCount(0);
         }
+        
+        [Fact]
+        public void CanGetDeepIndexes()
+        {
+            var variableDictionary = new VariableDictionary
+            {
+                ["Octopus.Action[Package A].Size[Small]"] = "1",
+                ["Octopus.Action[Package A].Size[Medium]"] = "2",
+            };
+
+            var presentIndexes = variableDictionary.GetIndexes("Octopus.Action[Package A].Size");
+
+            presentIndexes.Should().HaveCount(2);
+            presentIndexes.Should().Contain("Small");
+            presentIndexes.Should().Contain("Medium");
+        }
     }
 }
