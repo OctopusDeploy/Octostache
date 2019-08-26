@@ -349,6 +349,13 @@ namespace Octostache.Tests
         }
 
         [Fact]
+        public void SubstringWithTooManyArgumentsDoesNothing()
+        {
+            var result = Evaluate(@"#{foo | Substring 1 2 3}", new Dictionary<string, string> {{"foo", "ababa"}});
+            result.Should().Be("#{foo | Substring 1 2 3}");
+        }
+
+        [Fact]
         public void SubstringWithOnlyLength()
         {
             var result = Evaluate(@"#{foo | Substring 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
