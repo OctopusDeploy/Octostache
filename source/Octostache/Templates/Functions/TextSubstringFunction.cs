@@ -8,6 +8,7 @@ namespace Octostache.Templates.Functions
         {
             if (argument == null ||
                 options.Length == 0 ||
+                options.Length > 2 ||
                 options.Any(o => !int.TryParse(o, out int _)) ||
                 options.Any(o => int.Parse(o) < 0) ||
                 (options.Length == 1 && int.Parse(options[0]) > argument.Length) ||
