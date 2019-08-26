@@ -62,7 +62,7 @@ namespace Octostache.Templates.Functions
                     return null;
                 }
             }
-		}	
+        }
 
         public static string Truncate(string argument, string[] options)
         {
