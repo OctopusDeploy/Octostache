@@ -43,25 +43,34 @@ namespace Octostache.Tests
             result.Should().Be("ABC");
         }
 
-        [Fact]
-        public void HtmlIsEscaped()
+        [Theory]
+        [InlineData("A&'bc", "A&amp;&apos;bc")]
+        [InlineData("", "")]
+        [InlineData(null, "")]
+        public void HtmlIsEscaped(string input, string expectedOutput)
         {
-            var result = Evaluate("#{Foo | HtmlEscape}", new Dictionary<string, string> { { "Foo", "A&'bc" } });
-            result.Should().Be("A&amp;&apos;bc");
+            var result = Evaluate("#{Foo | HtmlEscape}", new Dictionary<string, string> { { "Foo", input } });
+            result.Should().Be(expectedOutput);
         }
 
-        [Fact]
-        public void UrlDataStringsAreEncoded()
+        [Theory]
+        [InlineData("A b:c+d/e", "A%20b%3Ac%2Bd%2Fe")]
+        [InlineData("", "")]
+        [InlineData(null, "")]
+        public void UriDataStringsAreEncoded(string input, string expectedOutput)
         {
-            var result = Evaluate("#{Foo | UriDataEscape}", new Dictionary<string, string> { { "Foo", "A b:c+d/e" } });
-            result.Should().Be("A%20b%3Ac%2Bd%2Fe");
+            var result = Evaluate("#{Foo | UriDataEscape}", new Dictionary<string, string> { { "Foo", input } });
+            result.Should().Be(expectedOutput);
         }
 
-        [Fact]
-        public void UrlStringsAreEncoded()
+        [Theory]
+        [InlineData("A b:c+d/e", "A%20b:c+d/e")]
+        [InlineData("", "")]
+        [InlineData(null, "")]
+        public void UriStringsAreEncoded(string input, string expectedOutput)
         {
-            var result = Evaluate("#{Foo | UriEscape}", new Dictionary<string, string> { { "Foo", "A b:c+d/e" } });
-            result.Should().Be("A%20b:c+d/e");
+            var result = Evaluate("#{Foo | UriEscape}", new Dictionary<string, string> { { "Foo", input } });
+            result.Should().Be(expectedOutput);
         }
 
         [Fact]
