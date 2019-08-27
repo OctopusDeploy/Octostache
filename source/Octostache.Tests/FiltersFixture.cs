@@ -51,6 +51,20 @@ namespace Octostache.Tests
         }
 
         [Fact]
+        public void UrlDataStringsAreEncoded()
+        {
+            var result = Evaluate("#{Foo | UriDataEscape}", new Dictionary<string, string> { { "Foo", "A b:c+d/e" } });
+            result.Should().Be("A%20b%3Ac%2Bd%2Fe");
+        }
+
+        [Fact]
+        public void UrlStringsAreEncoded()
+        {
+            var result = Evaluate("#{Foo | UriEscape}", new Dictionary<string, string> { { "Foo", "A b:c+d/e" } });
+            result.Should().Be("A%20b:c+d/e");
+        }
+
+        [Fact]
         public void XmlIsEscaped()
         {
             var result = Evaluate("#{Foo | XmlEscape}", new Dictionary<string, string> { { "Foo", "A&'bc" } });

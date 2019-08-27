@@ -13,6 +13,8 @@ namespace Octostache.Templates
             {"tobase64", TextManipulationFunction.ToBase64 },
             {"frombase64", TextManipulationFunction.FromBase64 },
             {"htmlescape", TextEscapeFunction.HtmlEscape },
+            {"uriescape", TextEscapeFunction.UriStringEscape },
+            {"uridataescape", TextEscapeFunction.UriDataStringEscape},
             {"xmlescape", TextEscapeFunction.XmlEscape },
             {"jsonescape", TextEscapeFunction.JsonEscape },
             {"markdown", TextEscapeFunction.MarkdownToHtml },
