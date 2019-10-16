@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -93,6 +94,62 @@ namespace Octostache.Templates.Functions
                     return argument.TrimEnd();
                 default:
                     return null;
+            }
+        }
+
+        public static string UriPart(string argument, string[] options)
+        {
+            if (argument == null)
+                return null;
+
+            if (!options.Any())
+                return $"[{nameof(UriPart)}: no argument given]";
+
+            if (!Uri.TryCreate(argument, UriKind.RelativeOrAbsolute, out var uri))
+                return argument;
+
+            // NOTE: IdnHost property not available in .NET Framework target
+
+            switch (options[0].ToLower())
+            {
+                case "absolutepath":
+                    return uri.AbsolutePath;
+                case "absoluteuri":
+                    return uri.AbsoluteUri;
+                case "authority":
+                    return uri.Authority;
+                case "dnssafehost":
+                    return uri.DnsSafeHost;
+                case "fragment":
+                    return uri.Fragment;
+                case "host":
+                    return uri.Host;
+                case "hostnametype":
+                    return Enum.GetName(typeof(UriHostNameType), uri.HostNameType);
+                case "isabsoluteuri":
+                    return uri.IsAbsoluteUri.ToString();
+                case "isdefaultport":
+                    return uri.IsDefaultPort.ToString();
+                case "isfile":
+                    return uri.IsFile.ToString();
+                case "isloopback":
+                    return uri.IsLoopback.ToString();
+                case "isunc":
+                    return uri.IsUnc.ToString();
+                case "localpath":
+                    return uri.LocalPath;
+                case "pathandquery":
+                    return uri.PathAndQuery;
+                case "port":
+                    return uri.Port.ToString(CultureInfo.InvariantCulture);
+                case "query":
+                    return uri.Query;
+                case "scheme":
+                    return uri.Scheme;
+                case "userinfo":
+                    return uri.UserInfo;
+                default:
+                    return $"[{nameof(UriPart)}: argument '{options[0]}' not supported]";
             }
         }
     }
