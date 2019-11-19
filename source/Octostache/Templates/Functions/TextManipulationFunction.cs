@@ -110,46 +110,53 @@ namespace Octostache.Templates.Functions
 
             // NOTE: IdnHost property not available in .NET Framework target
 
-            switch (options[0].ToLower())
+            try
             {
-                case "absolutepath":
-                    return uri.AbsolutePath;
-                case "absoluteuri":
-                    return uri.AbsoluteUri;
-                case "authority":
-                    return uri.Authority;
-                case "dnssafehost":
-                    return uri.DnsSafeHost;
-                case "fragment":
-                    return uri.Fragment;
-                case "host":
-                    return uri.Host;
-                case "hostnametype":
-                    return Enum.GetName(typeof(UriHostNameType), uri.HostNameType);
-                case "isabsoluteuri":
-                    return uri.IsAbsoluteUri.ToString();
-                case "isdefaultport":
-                    return uri.IsDefaultPort.ToString();
-                case "isfile":
-                    return uri.IsFile.ToString();
-                case "isloopback":
-                    return uri.IsLoopback.ToString();
-                case "isunc":
-                    return uri.IsUnc.ToString();
-                case "localpath":
-                    return uri.LocalPath;
-                case "pathandquery":
-                    return uri.PathAndQuery;
-                case "port":
-                    return uri.Port.ToString(CultureInfo.InvariantCulture);
-                case "query":
-                    return uri.Query;
-                case "scheme":
-                    return uri.Scheme;
-                case "userinfo":
-                    return uri.UserInfo;
-                default:
-                    return $"[{nameof(UriPart)}: argument '{options[0]}' not supported]";
+                switch (options[0].ToLowerInvariant())
+                {
+                    case "absolutepath":
+                        return uri.AbsolutePath;
+                    case "absoluteuri":
+                        return uri.AbsoluteUri;
+                    case "authority":
+                        return uri.Authority;
+                    case "dnssafehost":
+                        return uri.DnsSafeHost;
+                    case "fragment":
+                        return uri.Fragment;
+                    case "host":
+                        return uri.Host;
+                    case "hostnametype":
+                        return Enum.GetName(typeof(UriHostNameType), uri.HostNameType);
+                    case "isabsoluteuri":
+                        return uri.IsAbsoluteUri.ToString().ToLowerInvariant();
+                    case "isdefaultport":
+                        return uri.IsDefaultPort.ToString().ToLowerInvariant();
+                    case "isfile":
+                        return uri.IsFile.ToString().ToLowerInvariant();
+                    case "isloopback":
+                        return uri.IsLoopback.ToString().ToLowerInvariant();
+                    case "isunc":
+                        return uri.IsUnc.ToString().ToLowerInvariant();
+                    case "localpath":
+                        return uri.LocalPath;
+                    case "pathandquery":
+                        return uri.PathAndQuery;
+                    case "port":
+                        return uri.Port.ToString(CultureInfo.InvariantCulture);
+                    case "query":
+                        return uri.Query;
+                    case "scheme":
+                        return uri.Scheme;
+                    case "userinfo":
+                        return uri.UserInfo;
+                    default:
+                        return $"[{nameof(UriPart)}: argument '{options[0]}' not supported]";
+                }
+            }
+            catch (Exception e)
+            {
+                return $"[{nameof(UriPart)} {options[0]}: {e.Message}]";
             }
         }
     }

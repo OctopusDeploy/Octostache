@@ -503,164 +503,32 @@ namespace Octostache.Tests
             result.Should().Be("#{foo | Trim Both}");
         }
 
-        [Fact]
-        public void UriPartNoArgument()
+        [Theory]
+        [InlineData("/docs", "UriPart Host", "[UriPart Host: This operation is not supported for a relative URI.]")]
+        [InlineData("https://octopus.com/docs", "UriPart", "[UriPart: no argument given]")]
+        [InlineData("https://octopus.com/docs", "UriPart bar", "[UriPart: argument 'bar' not supported]")]
+        [InlineData("https://octopus.com/docs", "UriPart AbsolutePath", "/docs")]
+        [InlineData("https://octopus.com/docs", "UriPart AbsoluteUri", "https://octopus.com/docs")]
+        [InlineData("https://octopus.com/docs", "UriPart Authority", "octopus.com")]
+        [InlineData("https://octopus.com/docs", "UriPart DnsSafeHost", "octopus.com")]
+        [InlineData("https://octopus.com/docs/deployment-process/variables/variable-substitutions#VariableSubstitutionSyntax-Conditionalsconditionals", "UriPart Fragment", "#VariableSubstitutionSyntax-Conditionalsconditionals")]
+        [InlineData("https://octopus.com/docs", "UriPart Host", "octopus.com")]
+        [InlineData("https://octopus.com/docs", "UriPart HostNameType", "Dns")]
+        [InlineData("https://octopus.com/docs", "UriPart IsAbsoluteUri", "true")]
+        [InlineData("https://octopus.com/docs", "UriPart IsDefaultPort", "true")]
+        [InlineData("https://octopus.com/docs", "UriPart IsFile", "false")]
+        [InlineData("https://octopus.com/docs", "UriPart IsLoopback", "false")]
+        [InlineData("https://octopus.com/docs", "UriPart IsUnc", "false")]
+        [InlineData("https://octopus.com/docs/deployment-process/variables/variable-substitutions", "UriPart LocalPath", "/docs/deployment-process/variables/variable-substitutions")]
+        [InlineData("https://octopus.com/docs/deployment-process/variables/variable-substitutions?filter=substitution", "UriPart PathAndQuery", "/docs/deployment-process/variables/variable-substitutions?filter=substitution")]
+        [InlineData("https://octopus.com/docs", "UriPart Port", "443")]
+        [InlineData("https://octopus.com/docs?filter=substitution", "UriPart Query", "?filter=substitution")]
+        [InlineData("https://octopus.com/docs", "UriPart Scheme", "https")]
+        [InlineData("https://username:password@octopus.com", "UriPart UserInfo", "username:password")]
+        public void UriPart(string inputUrl, string inputFilterExpression, string expectedOutput)
         {
-            var uri = @"https://octopus.com/docs";
-            var result = Evaluate(@"#{foo | UriPart}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("[UriPart: no argument given]");
-        }
-
-        [Fact]
-        public void UriPartInvalidArgument()
-        {
-            var uri = @"https://octopus.com/docs";
-            var result = Evaluate(@"#{foo | UriPart bar}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("[UriPart: argument 'bar' not supported]");
-        }
-
-        [Fact]
-        public void UriPartAbsolutePath()
-        {
-            var uri = @"https://octopus.com/docs";
-            var result = Evaluate(@"#{foo | UriPart AbsolutePath}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("/docs");
-        }
-
-        [Fact]
-        public void UriPartAbsoluteUri()
-        {
-            var uri = @"https://octopus.com/docs";
-            var result = Evaluate(@"#{foo | UriPart AbsoluteUri}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("https://octopus.com/docs");
-        }
-
-        [Fact]
-        public void UriPartAuthority()
-        {
-            var uri = @"https://octopus.com";
-            var result = Evaluate(@"#{foo | UriPart Authority}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("octopus.com");
-        }
-
-        [Fact]
-        public void UriPartDnsSafeHost()
-        {
-            var uri = @"https://octopus.com";
-            var result = Evaluate(@"#{foo | UriPart DnsSafeHost}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("octopus.com");
-        }
-
-        [Fact]
-        public void UriPartFragment()
-        {
-            var uri = @"https://octopus.com/docs/deployment-process/variables/variable-substitutions#VariableSubstitutionSyntax-Conditionalsconditionals";
-            var result = Evaluate(@"#{foo | UriPart Fragment}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("#VariableSubstitutionSyntax-Conditionalsconditionals");
-        }
-
-        [Fact]
-        public void UriPartHost()
-        {
-            var uri = @"https://octopus.com/docs/deployment-process/variables/variable-substitutions";
-            var result = Evaluate(@"#{foo | UriPart Host}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("octopus.com");
-        }
-
-        [Fact]
-        public void UriPartHostNameType()
-        {
-            var uri = @"https://octopus.com";
-            var result = Evaluate(@"#{foo | UriPart HostNameType}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("Dns");
-        }
-
-        [Fact]
-        public void UriPartIsAbsoluteUri()
-        {
-            var uri = @"https://octopus.com/docs/deployment-process/variables/variable-substitutions";
-            var result = Evaluate(@"#{foo | UriPart IsAbsoluteUri}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("True");
-        }
-
-        [Fact]
-        public void UriPartIsDefaultPort()
-        {
-            var uri = @"https://octopus.com";
-            var result = Evaluate(@"#{foo | UriPart IsDefaultPort}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("True");
-        }
-
-        [Fact]
-        public void UriPartIsFile()
-        {
-            var uri = @"https://octopus.com";
-            var result = Evaluate(@"#{foo | UriPart IsFile}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("False");
-        }
-
-        [Fact]
-        public void UriPartIsLoopback()
-        {
-            var uri = @"https://octopus.com";
-            var result = Evaluate(@"#{foo | UriPart IsLoopback}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("False");
-        }
-
-        [Fact]
-        public void UriPartIsUnc()
-        {
-            var uri = @"https://octopus.com";
-            var result = Evaluate(@"#{foo | UriPart IsUnc}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("False");
-        }
-
-        [Fact]
-        public void UriPartLocalPath()
-        {
-            var uri = @"https://octopus.com/docs/deployment-process/variables/variable-substitutions";
-            var result = Evaluate(@"#{foo | UriPart LocalPath}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("/docs/deployment-process/variables/variable-substitutions");
-        }
-
-        [Fact]
-        public void UriPartPathAndQuery()
-        {
-            var uri = @"https://octopus.com/docs/deployment-process/variables/variable-substitutions";
-            var result = Evaluate(@"#{foo | UriPart PathAndQuery}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("/docs/deployment-process/variables/variable-substitutions");
-        }
-
-        [Fact]
-        public void UriPartPort()
-        {
-            var uri = @"https://octopus.com";
-            var result = Evaluate(@"#{foo | UriPart Port}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("443");
-        }
-
-        [Fact]
-        public void UriPartQuery()
-        {
-            var uri = @"https://octopus.com/docs?filter=substitution";
-            var result = Evaluate(@"#{foo | UriPart Query}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("?filter=substitution");
-        }
-
-        [Fact]
-        public void UriPartScheme()
-        {
-            var uri = @"https://octopus.com";
-            var result = Evaluate(@"#{foo | UriPart Scheme}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("https");
-        }
-
-        [Fact]
-        public void UriPartUserInfo()
-        {
-            var uri = @"https://username:password@octopus.com";
-            var result = Evaluate(@"#{foo | UriPart UserInfo}", new Dictionary<string, string> { { "foo", uri } });
-            result.Should().Be("username:password");
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputUrl } });
+            result.Should().Be(expectedOutput);
         }
     }
 }
