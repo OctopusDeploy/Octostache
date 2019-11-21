@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Xunit;
 using FluentAssertions;
 
@@ -502,6 +501,36 @@ namespace Octostache.Tests
         {
             var result = Evaluate(@"#{foo | Trim Both}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
             result.Should().Be("#{foo | Trim Both}");
+        }
+
+        [Theory]
+        [InlineData("/docs", "UriPart Host", "[UriPart Host error: This operation is not supported for a relative URI.]")]
+        [InlineData("https://octopus.com/docs", "UriPart", "[UriPart error: no argument given]")]
+        [InlineData("https://octopus.com/docs", "UriPart bar", "[UriPart bar error: argument 'bar' not supported]")]
+        [InlineData("https://octopus.com/docs", "UriPart AbsolutePath", "/docs")]
+        [InlineData("https://octopus.com/docs", "UriPart AbsoluteUri", "https://octopus.com/docs")]
+        [InlineData("https://octopus.com/docs", "UriPart Authority", "octopus.com")]
+        [InlineData("https://octopus.com/docs", "UriPart DnsSafeHost", "octopus.com")]
+        [InlineData("https://octopus.com/docs#filters", "UriPart Fragment", "#filters")]
+        [InlineData("https://octopus.com/docs", "UriPart Host", "octopus.com")]
+        [InlineData("https://octopus.com/docs", "UriPart HostAndPort", "octopus.com:443")]
+        [InlineData("https://octopus.com/docs", "UriPart HostNameType", "Dns")]
+        [InlineData("https://octopus.com/docs", "UriPart IsAbsoluteUri", "true")]
+        [InlineData("https://octopus.com/docs", "UriPart IsDefaultPort", "true")]
+        [InlineData("https://octopus.com/docs", "UriPart IsFile", "false")]
+        [InlineData("https://octopus.com/docs", "UriPart IsLoopback", "false")]
+        [InlineData("https://octopus.com/docs", "UriPart IsUnc", "false")]
+        [InlineData("https://octopus.com/docs", "UriPart Path", "/docs")]
+        [InlineData("https://octopus.com/docs?filter=faq", "UriPart PathAndQuery", "/docs?filter=faq")]
+        [InlineData("https://octopus.com/docs", "UriPart Port", "443")]
+        [InlineData("https://octopus.com/docs?filter=faq", "UriPart Query", "?filter=faq")]
+        [InlineData("https://octopus.com/docs", "UriPart Scheme", "https")]
+        [InlineData("https://octopus.com/docs", "UriPart SchemeAndServer", "https://octopus.com")]
+        [InlineData("https://username:password@octopus.com", "UriPart UserInfo", "username:password")]
+        public void UriPart(string inputUrl, string inputFilterExpression, string expectedOutput)
+        {
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputUrl } });
+            result.Should().Be(expectedOutput);
         }
     }
 }
