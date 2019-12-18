@@ -28,7 +28,7 @@ namespace Octostache.Templates.Functions
                     var encoding = Encoding.GetEncoding(arguments.Length > 1 ? arguments[1] : "utf-8");
                     var byteData = encoding.GetBytes(data);
 #if NET40
-                    var encryptedBytes = publicKey.Encrypt(byteData, false);
+                    var encryptedBytes = publicKey.Encrypt(byteData, true);
 #else
                     var encryptedBytes = publicKey.Encrypt(byteData, RSAEncryptionPadding.OaepSHA1);
 #endif
