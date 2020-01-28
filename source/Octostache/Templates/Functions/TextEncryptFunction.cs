@@ -14,10 +14,12 @@ namespace Octostache.Templates.Functions
                 return null;
             }
 
+            X509Certificate2 certificate = null;
+
             try
             {
 
-                var certificate = new X509Certificate2(Convert.FromBase64String(arguments[0]));
+                certificate = new X509Certificate2(Convert.FromBase64String(arguments[0]));
 #if NET40
                 var publicKey = (RSACryptoServiceProvider)certificate.PublicKey.Key;
 #else
@@ -37,6 +39,14 @@ namespace Octostache.Templates.Functions
             }
             catch (Exception)
             {
+            }
+            finally
+            {
+                // IDisposable was only added to certificate after.Net 4.6
+                if (certificate != null && certificate is IDisposable disposableCertificate)
+                {
+                    disposableCertificate.Dispose();
+                }
             }
 
             return null;
