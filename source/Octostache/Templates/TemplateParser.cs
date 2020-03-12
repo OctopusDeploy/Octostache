@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-#if NET40
+#if NET40 || NETCOREAPP3_1
 using System.Runtime.Caching;
 #else
 using Microsoft.Extensions.Caching.Memory;
@@ -265,7 +265,7 @@ namespace Octostache.Templates
         static readonly MemoryCache Cache;
 
 
-#if NET40
+#if NET40 || NETCOREAPP3_1
         static TemplateParser()
         {
             Cache = new MemoryCache("Octostache", new NameValueCollection() { { "CacheMemoryLimitMegabytes", (20 * 1024).ToString() } });
