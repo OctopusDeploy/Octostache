@@ -90,6 +90,24 @@ namespace Octostache.Tests
             var result = Evaluate("#{Foo | JsonEscape}", new Dictionary<string, string> { { "Foo", input } });
             result.Should().Be(expectedResult);
         }
+        
+        [Theory]
+        [InlineData("single'quote", "single''quote")]
+        [InlineData("\\'", "\\'")]
+        [InlineData("a\n\tb\n\tc\n\td", "a\n\tb\n\tc\n\td")]
+        public void YamlSingleQuoteIsEscaped(string input, string expectedResult)
+        {
+            var result = Evaluate("#{Foo | YamlSingleQuoteEscape}", new Dictionary<string, string>({ { "Foo", input } });
+            result.Should().Be(expectedResult);
+        }
+
+        [Theory]
+        [InlineData("double\"quote", "double\"\"quote")]
+        public void YamlDoubleQuoteIsEscaped(string input, string expectedResult)
+        {
+            var result = Evaluate("#{Foo | YamlDoubleQuoteEscape}", new Dictionary<string, string>({ { "Foo", input } });
+            result.Should().Be(expectedResult);
+        }
 
         [Theory]
         [InlineData("#{Foo | Markdown}")]
