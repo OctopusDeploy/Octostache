@@ -34,6 +34,22 @@ namespace Octostache.Templates.Functions
             return Escape(argument, JsonEntityMap);
         }
 
+        public static string YamlSingleQuoteEscape(string argument, string[] options)
+        {
+            if (options.Any())
+                return null;
+
+            return Escape(argument, YamlSingleQuoteMap);
+        }
+
+        public static string YamlDoubleQuoteEscape(string argument, string[] options)
+        {
+            if (options.Any())
+                return null;
+
+            return Escape(argument, YamlDoubleQuoteMap);
+        }
+
         [Obsolete("Please use MarkdownToHtml instead.")]
         public static string Markdown(string argument, string[] options)
         {
@@ -116,6 +132,17 @@ namespace Octostache.Templates.Functions
             { '\t', @"\t" },
             { '\n', @"\n" },
             { '\\', @"\\" }
+        };
+        
+        static readonly IDictionary<char, string> YamlSingleQuoteMap = new Dictionary<char, string>
+        {
+            { '\'', "''"}
+        };
+        
+        static readonly IDictionary<char, string> YamlDoubleQuoteMap = new Dictionary<char, string>
+        {
+            { '\\', "\\\\"},
+            { '"', "\\\""}
         };
     }
 }

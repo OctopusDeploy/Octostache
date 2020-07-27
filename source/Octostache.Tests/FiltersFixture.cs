@@ -93,19 +93,21 @@ namespace Octostache.Tests
         
         [Theory]
         [InlineData("single'quote", "single''quote")]
-        [InlineData("\\'", "\\'")]
+        [InlineData("\\'", "\\''")]
         [InlineData("a\n\tb\n\tc\n\td", "a\n\tb\n\tc\n\td")]
         public void YamlSingleQuoteIsEscaped(string input, string expectedResult)
         {
-            var result = Evaluate("#{Foo | YamlSingleQuoteEscape}", new Dictionary<string, string>({ { "Foo", input } });
+            var result = Evaluate("#{Foo | YamlSingleQuoteEscape}", new Dictionary<string, string> { { "Foo", input } });
             result.Should().Be(expectedResult);
         }
 
         [Theory]
-        [InlineData("double\"quote", "double\"\"quote")]
+        [InlineData("double\"quote", "double\\\"quote")]
+        [InlineData("\\", "\\\\")]
+        [InlineData("single'quote", "single'quote")]
         public void YamlDoubleQuoteIsEscaped(string input, string expectedResult)
         {
-            var result = Evaluate("#{Foo | YamlDoubleQuoteEscape}", new Dictionary<string, string>({ { "Foo", input } });
+            var result = Evaluate("#{Foo | YamlDoubleQuoteEscape}", new Dictionary<string, string> { { "Foo", input } });
             result.Should().Be(expectedResult);
         }
 

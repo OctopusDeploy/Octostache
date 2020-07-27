@@ -17,6 +17,8 @@ namespace Octostache.Templates
             {"uridataescape", TextEscapeFunction.UriDataStringEscape},
             {"xmlescape", TextEscapeFunction.XmlEscape },
             {"jsonescape", TextEscapeFunction.JsonEscape },
+            {"yamlsinglequoteescape", TextEscapeFunction.YamlSingleQuoteEscape },
+            {"yamldoublequoteescape", TextEscapeFunction.YamlDoubleQuoteEscape },
             {"markdown", TextEscapeFunction.MarkdownToHtml },
             {"markdowntohtml", TextEscapeFunction.MarkdownToHtml },
             {"nowdate", DateFunction.NowDate },
