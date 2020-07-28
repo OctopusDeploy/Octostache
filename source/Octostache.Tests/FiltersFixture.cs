@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Xunit;
 using FluentAssertions;
@@ -94,7 +94,9 @@ namespace Octostache.Tests
         [Theory]
         [InlineData("single'quote", "single''quote")]
         [InlineData("\\'", "\\''")]
-        [InlineData("a\n\tb\n\tc\n\td", "a\n\tb\n\tc\n\td")]
+        [InlineData("a\n\tb\n\tc\n\td", "a\n\n\tb\n\n\tc\n\n\td")]
+        [InlineData("a\r\nb", "a\r\n\r\nb")]
+        [InlineData("", "")]
         [InlineData(null, "")]
         public void YamlSingleQuoteIsEscaped(string input, string expectedResult)
         {

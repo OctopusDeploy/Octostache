@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using Markdig;
 
 namespace Octostache.Templates.Functions
@@ -36,9 +37,11 @@ namespace Octostache.Templates.Functions
 
         public static string YamlSingleQuoteEscape(string argument, string[] options)
         {
-            if (options.Any())
+            if (argument == null || options.Any())
                 return null;
 
+            argument = ReplaceNewLinesWithDoubleNewLines(argument);
+            
             return Escape(argument, YamlSingleQuoteMap);
         }
 
@@ -50,6 +53,13 @@ namespace Octostache.Templates.Functions
             return Escape(argument, YamlDoubleQuoteMap);
         }
 
+        private static readonly Regex NewLineRegex = new Regex(@"\r?\n");
+        
+        private static string ReplaceNewLinesWithDoubleNewLines(string input)
+        {
+            return NewLineRegex.Replace(input, "$0$0");
+        }
+        
         [Obsolete("Please use MarkdownToHtml instead.")]
         public static string Markdown(string argument, string[] options)
         {
@@ -136,7 +146,7 @@ namespace Octostache.Templates.Functions
         
         static readonly IDictionary<char, string> YamlSingleQuoteMap = new Dictionary<char, string>
         {
-            { '\'', "''"}
+            { '\'', "''" }
         };
         
         static readonly IDictionary<char, string> YamlDoubleQuoteMap = new Dictionary<char, string>
