@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Markdig;
 
@@ -35,10 +36,12 @@ namespace Octostache.Templates.Functions
 
         public static string YamlSingleQuoteEscape(string argument, string[] options)
         {
+            // https://yaml.org/spec/history/2002-10-31.html#syntax-single
+            
             if (argument == null || options.Any())
                 return null;
 
-            argument = ReplaceNewLinesWithDoubleNewLines(argument);
+            argument = HandleSingleQuoteYamlNewLines(argument);
             
             return Escape(argument, YamlSingleQuoteMap);
         }
@@ -51,11 +54,22 @@ namespace Octostache.Templates.Functions
             return Escape(argument, YamlDoubleQuoteMap);
         }
 
-        private static readonly Regex NewLineRegex = new Regex(@"\r?\n");
+        private static readonly Regex NewLineRegex = new Regex(@"\n+");
         
-        private static string ReplaceNewLinesWithDoubleNewLines(string input)
+        private static string HandleSingleQuoteYamlNewLines(string input)
         {
-            return NewLineRegex.Replace(input, "$0$0");
+            // A single newline is parsed by YAML as a space
+            // A double newline is parsed by YAML as a single newline
+            // A triple newline is parsed by YAML as a double newline
+            // ...etc
+
+            // YAML also turns CRLFs inside a scalar into LFs
+            // https://yaml.org/spec/history/2002-10-31.html#syntax-eol-norm
+
+            var output = input.Replace("\r\n", "\n");
+            output = NewLineRegex.Replace(output, m => new string('\n', m.Length + 1));
+
+            return output;
         }
         
         [Obsolete("Please use MarkdownToHtml instead.")]

@@ -150,6 +150,47 @@ namespace Octostache.Tests
         }
 
         [Theory]
+        [InlineData("")]
+        [InlineData("a")]
+        [InlineData("\"")]
+        [InlineData("'")]
+        [InlineData("\t")]
+        [InlineData("\n")]
+        [InlineData("我叫章鱼")]
+        [InlineData("this contains six spaces\nand one line break")]
+        public void YamlSingleQuotedStringsCanRoundTrip(string input)
+        {
+            var yaml = Evaluate("Key: '#{Input | YamlSingleQuoteEscape}'", new Dictionary<string, string> { { "Input", input } });
+
+            var doc = new DeserializerBuilder()
+                .Build()
+                .Deserialize<TestDocument>(yaml);
+
+            doc.Key.Should().Be(input);
+        }
+
+        [Theory]
+        [InlineData("\r\n", "\n")]
+        [InlineData("a\nb", "a\nb")]
+        [InlineData("a \nb", "a\nb")]
+        [InlineData("a\n\nb", "a\n\nb")]
+        [InlineData("a\r\nb", "a\nb")]
+        [InlineData("a\r\n\nb", "a\n\nb")]
+        [InlineData("a \n\nb", "a\n\nb")]
+        [InlineData("a\n\n\n\n\nb", "a\n\n\n\n\nb")]
+        [InlineData("this contains six spaces\nand one line break", "this contains six spaces\nand one line break")]
+        public void YamlSingleQuotedStringsCanRoundTripWithSideEffects(string input, string expected)
+        {
+            var yaml = Evaluate("Key: '#{Input | YamlSingleQuoteEscape}'", new Dictionary<string, string> { { "Input", input } });
+
+            var doc = new DeserializerBuilder()
+                .Build()
+                .Deserialize<TestDocument>(yaml);
+
+            doc.Key.Should().Be(expected);
+        }
+
+        [Theory]
         [InlineData("#{Foo | Markdown}")]
         [InlineData("#{Foo | MarkdownToHtml}")]
         public void MarkdownIsProcessed(string input)
