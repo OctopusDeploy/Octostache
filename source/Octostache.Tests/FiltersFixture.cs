@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Xunit;
 using FluentAssertions;
+using YamlDotNet.Serialization;
 
 namespace Octostache.Tests
 {
@@ -107,12 +108,45 @@ namespace Octostache.Tests
         [Theory]
         [InlineData("double\"quote", "double\\\"quote")]
         [InlineData("\\", "\\\\")]
+        [InlineData("\"", "\\\"")]
+        [InlineData("\t", "\\t")]
+        [InlineData("\n", "\\n")]
+        [InlineData("\r\n", "\\r\\n")]
+        [InlineData("a\n\tb\n\tc\n\td", "a\\n\\tb\\n\\tc\\n\\td")]
+        [InlineData("a\r\nb", "a\\r\\nb")]
         [InlineData("single'quote", "single'quote")]
+        [InlineData("我叫章鱼", "\\u6211\\u53eb\\u7ae0\\u9c7c")]
         [InlineData(null, "")]
         public void YamlDoubleQuoteIsEscaped(string input, string expectedResult)
         {
             var result = Evaluate("#{Foo | YamlDoubleQuoteEscape}", new Dictionary<string, string> { { "Foo", input } });
             result.Should().Be(expectedResult);
+        }
+
+        private class TestDocument
+        {
+            public string Key { get; set; }
+        }
+        
+        [Theory]
+        [InlineData("")]
+        [InlineData("a")]
+        [InlineData("\"")]
+        [InlineData("'")]
+        [InlineData("\t")]
+        [InlineData("\n")]
+        [InlineData("\r\n")]
+        [InlineData("我叫章鱼")]
+        [InlineData("This\nis a more\r\n \"complicated\"\texample \\❤")]
+        public void YamlDoubleQuotedStringsCanRoundTrip(string input)
+        {
+            var yaml = Evaluate("Key: \"#{Input | YamlDoubleQuoteEscape}\"", new Dictionary<string, string> { { "Input", input } });
+
+            var doc = new DeserializerBuilder()
+                .Build()
+                .Deserialize<TestDocument>(yaml);
+
+            doc.Key.Should().Be(input);
         }
 
         [Theory]

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Text.RegularExpressions;
 using Markdig;
 
@@ -115,6 +113,14 @@ namespace Octostache.Templates.Functions
             }));
         }
 
+        static string Escape(string raw, Func<char, string> mapping)
+        {
+            if (raw == null)
+                return null;
+
+            return string.Join("", raw.Select(mapping));
+        }
+        
         static readonly IDictionary<char, string> HtmlEntityMap = new Dictionary<char, string>
         {
             { '&', "&amp;" },
@@ -148,11 +154,39 @@ namespace Octostache.Templates.Functions
         {
             { '\'', "''" }
         };
-        
-        static readonly IDictionary<char, string> YamlDoubleQuoteMap = new Dictionary<char, string>
+
+        static bool IsAsciiPrintable(char ch)
         {
-            { '\\', "\\\\"},
-            { '"', "\\\""}
-        };
+            return ch >= 0x20 && ch <= 0x7E;
+        }
+
+        static string EncodeUnicodeCharForYaml(char ch)
+        {
+            var hex = ((int)ch).ToString("x4");
+            return $"\\u{hex}";
+        }
+        
+        static string YamlDoubleQuoteMap(char ch)
+        {
+            // Yaml supports multiple ways to encode newlines. One method we tried
+            // (doubling newlines) doesn't work consistently across all libraries/
+            // validators, so we've gone with escaping newlines (\\r, \\n) instead.
+
+            switch (ch)
+            {
+                case '\r':
+                    return "\\r";
+                case '\n':
+                    return "\\n";
+                case '\t':
+                    return "\\t";
+                case '\\':
+                    return "\\\\";
+                case '"':
+                    return "\\\"";
+                default:
+                    return IsAsciiPrintable(ch) ? ch.ToString() : EncodeUnicodeCharForYaml(ch);
+            }
+        }
     }
 }
