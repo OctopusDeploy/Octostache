@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 using FluentAssertions;
 using YamlDotNet.Serialization;
@@ -96,7 +97,8 @@ namespace Octostache.Tests
         [InlineData("single'quote", "single''quote")]
         [InlineData("\\'", "\\''")]
         [InlineData("a\n\tb\n\tc\n\td", "a\n\n\tb\n\n\tc\n\n\td")]
-        [InlineData("a\r\nb", "a\n\nb")]
+        [InlineData("a\r\nb", "a\r\n\r\nb")]
+        [InlineData("a\n\r\nb", "a\n\n\r\nb")]
         [InlineData("", "")]
         [InlineData(null, "")]
         public void YamlSingleQuoteIsEscaped(string input, string expectedResult)
@@ -170,14 +172,15 @@ namespace Octostache.Tests
         }
 
         [Theory]
-        [InlineData("\r\n", "\n")]
+        [InlineData("\r\n", "\r\n")]
+        [InlineData("\r\n\r\n", "\r\n\r\n")]
         [InlineData("a\nb", "a\nb")]
         [InlineData("a \nb", "a\nb")]
         [InlineData("a\n\nb", "a\n\nb")]
-        [InlineData("a\r\nb", "a\nb")]
-        [InlineData("a\r\n\nb", "a\n\nb")]
+        [InlineData("a\r\nb", "a\r\nb")]
+        [InlineData("a\r\n\nb", "a\r\n\nb")]
         [InlineData("a \n\nb", "a\n\nb")]
-        [InlineData("a\n\n\n\n\nb", "a\n\n\n\n\nb")]
+        [InlineData("a\n\n\n\n\r\nb", "a\n\n\n\n\r\nb")]
         [InlineData("this contains six spaces\nand one line break", "this contains six spaces\nand one line break")]
         public void YamlSingleQuotedStringsCanRoundTripWithSideEffects(string input, string expected)
         {
@@ -187,7 +190,10 @@ namespace Octostache.Tests
                 .Build()
                 .Deserialize<TestDocument>(yaml);
 
-            doc.Key.Should().Be(expected);
+            // Yamldotnet normalises \r\n in single quoted scalars to \n.
+            var normalisedExpected = expected.Replace("\r\n", "\n");
+            
+            doc.Key.Should().Be(normalisedExpected);
         }
 
         [Theory]
@@ -199,6 +205,14 @@ namespace Octostache.Tests
             result.Trim().Should().Be("<p><em>yeah!</em></p>");
         }
 
+        [Fact]
+        public void Test()
+        {
+            var input = "a\r\nb\nc\na";
+            var parts = input.Split('\n').Distinct();
+            
+        }
+        
         [Theory]
         [InlineData("#{Foo | Markdown}", "http://octopus.com", "<p><a href=\"http://octopus.com\">http://octopus.com</a></p>")]
         [InlineData("#{Foo | MarkdownToHtml}", "http://octopus.com", "<p><a href=\"http://octopus.com\">http://octopus.com</a></p>")]

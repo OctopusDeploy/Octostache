@@ -54,7 +54,7 @@ namespace Octostache.Templates.Functions
             return Escape(argument, YamlDoubleQuoteMap);
         }
 
-        private static readonly Regex NewLineRegex = new Regex(@"\n+");
+        private static readonly Regex NewLineRegex = new Regex(@"(?:\r?\n)+");
         
         private static string HandleSingleQuoteYamlNewLines(string input)
         {
@@ -63,11 +63,14 @@ namespace Octostache.Templates.Functions
             // A triple newline is parsed by YAML as a double newline
             // ...etc
 
-            // YAML also turns CRLFs inside a scalar into LFs
-            // https://yaml.org/spec/history/2002-10-31.html#syntax-eol-norm
+            var output = NewLineRegex.Replace(input, m =>
+            {
+                var newlineToInsert = m.Value.StartsWith("\r")
+                    ? "\r\n"
+                    : "\n";
 
-            var output = input.Replace("\r\n", "\n");
-            output = NewLineRegex.Replace(output, m => new string('\n', m.Length + 1));
+                return newlineToInsert + m.Value;
+            });
 
             return output;
         }
