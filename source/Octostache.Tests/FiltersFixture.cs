@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -92,7 +92,7 @@ namespace Octostache.Tests
             var result = Evaluate("#{Foo | JsonEscape}", new Dictionary<string, string> { { "Foo", input } });
             result.Should().Be(expectedResult);
         }
-        
+
         [Theory]
         [InlineData("single'quote", "single''quote")]
         [InlineData("\\'", "\\''")]
@@ -195,6 +195,44 @@ namespace Octostache.Tests
             var normalisedExpected = expected.Replace("\r\n", "\n");
             
             doc.Key.Should().Be(normalisedExpected);
+        }
+
+        [Theory]
+        [InlineData(" ", "\\ ")]
+        [InlineData(":", "\\:")]
+        [InlineData("=", "\\=")]
+        [InlineData("\\", "\\\\")]
+        [InlineData("\r", "\\r")]
+        [InlineData("\n", "\\n")]
+        [InlineData("\t", "\\t")]
+        [InlineData("abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyz")]
+        [InlineData("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ")]
+        [InlineData("0123456789", "0123456789")]
+        [InlineData("我叫章鱼", "\\u6211\\u53eb\\u7ae0\\u9c7c")]
+        [InlineData("÷ü", "÷ü")]
+        public void PropertiesKeyIsEscaped(string input, string expected)
+        {
+            var result = Evaluate("#{Foo | PropertiesKeyEscape}", new Dictionary<string, string> {{"Foo", input}});
+            result.Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData(":", ":")]
+        [InlineData("=", "=")]
+        [InlineData(" ", " ")]
+        [InlineData("\\", "\\\\")]
+        [InlineData("\r", "\\r")]
+        [InlineData("\n", "\\n")]
+        [InlineData("\t", "\\t")]
+        [InlineData("abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyz")]
+        [InlineData("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ")]
+        [InlineData("0123456789", "0123456789")]
+        [InlineData("我叫章鱼", "\\u6211\\u53eb\\u7ae0\\u9c7c")]
+        [InlineData("÷ü", "÷ü")]
+        public void PropertiesValueIsEscaped(string input, string expected)
+        {
+            var result = Evaluate("#{Foo | PropertiesValueEscape}", new Dictionary<string, string> {{"Foo", input}});
+            result.Should().Be(expected);
         }
 
         [Theory]

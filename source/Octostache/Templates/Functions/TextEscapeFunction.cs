@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using System.Text.RegularExpressions;
 using Markdig;
 
@@ -75,6 +76,22 @@ namespace Octostache.Templates.Functions
             return output;
         }
         
+        public static string PropertiesKeyEscape(string argument, string[] options)
+        {
+            if (options.Any())
+                return null;
+
+            return Escape(argument, PropertiesKeyMap);
+        }
+
+        public static string PropertiesValueEscape(string argument, string[] options)
+        {
+            if (options.Any())
+                return null;
+
+            return Escape(argument, PropertiesValueMap);
+        }
+
         [Obsolete("Please use MarkdownToHtml instead.")]
         public static string Markdown(string argument, string[] options)
         {
@@ -177,12 +194,17 @@ namespace Octostache.Templates.Functions
             return ch >= 0x20 && ch <= 0x7E;
         }
 
-        static string EncodeUnicodeCharForYaml(char ch)
+        static bool IsIso88591Compatible(char ch)
+        {
+            return ch >= 0x20 && ch < 0xFF;
+        }
+        
+        static string EscapeUnicodeCharForYamlOrProperties(char ch)
         {
             var hex = ((int)ch).ToString("x4");
             return $"\\u{hex}";
         }
-        
+
         static string YamlDoubleQuoteMap(char ch)
         {
             // Yaml supports multiple ways to encode newlines. One method we tried
@@ -202,8 +224,49 @@ namespace Octostache.Templates.Functions
                 case '"':
                     return "\\\"";
                 default:
-                    return IsAsciiPrintable(ch) ? ch.ToString() : EncodeUnicodeCharForYaml(ch);
+                    return IsAsciiPrintable(ch) 
+                        ? ch.ToString() 
+                        : EscapeUnicodeCharForYamlOrProperties(ch);
             }
         }
+
+        static string CommonPropertiesMap(char ch)
+        {
+            switch (ch)
+            {
+                case '\\':
+                    return "\\\\";
+                case '\r':
+                    return "\\r";
+                case '\n':
+                    return "\\n";
+                case '\t':
+                    // In some contexts a tab can get treated as non-semantic whitespace,
+                    // or as part of the separator between keys and values. It's safer to
+                    // always encode tabs.
+                    return "\\t";
+                default:
+                    return IsIso88591Compatible(ch)
+                        ? ch.ToString()
+                        : EscapeUnicodeCharForYamlOrProperties(ch);
+            }
+        }
+        
+        static string PropertiesKeyMap(char ch)
+        {
+            switch (ch)
+            {
+                case ' ':
+                    return "\\ ";
+                case ':':
+                    return "\\:";
+                case '=':
+                    return "\\=";
+                default:
+                    return CommonPropertiesMap(ch);
+            }
+        }
+
+        static string PropertiesValueMap(char ch) => CommonPropertiesMap(ch);
     }
 }
