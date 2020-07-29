@@ -205,14 +205,6 @@ namespace Octostache.Tests
             result.Trim().Should().Be("<p><em>yeah!</em></p>");
         }
 
-        [Fact]
-        public void Test()
-        {
-            var input = "a\r\nb\nc\na";
-            var parts = input.Split('\n').Distinct();
-            
-        }
-        
         [Theory]
         [InlineData("#{Foo | Markdown}", "http://octopus.com", "<p><a href=\"http://octopus.com\">http://octopus.com</a></p>")]
         [InlineData("#{Foo | MarkdownToHtml}", "http://octopus.com", "<p><a href=\"http://octopus.com\">http://octopus.com</a></p>")]
