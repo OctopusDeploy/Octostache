@@ -75,7 +75,7 @@ namespace Octostache.Templates.Functions
 
             return output;
         }
-        
+
         public static string PropertiesKeyEscape(string argument, string[] options)
         {
             if (options.Any())
@@ -224,9 +224,7 @@ namespace Octostache.Templates.Functions
                 case '"':
                     return "\\\"";
                 default:
-                    return IsAsciiPrintable(ch) 
-                        ? ch.ToString() 
-                        : EscapeUnicodeCharForYamlOrProperties(ch);
+                    return IsAsciiPrintable(ch) ? ch.ToString() : EscapeUnicodeCharForYamlOrProperties(ch);
             }
         }
 
@@ -251,7 +249,7 @@ namespace Octostache.Templates.Functions
                         : EscapeUnicodeCharForYamlOrProperties(ch);
             }
         }
-        
+
         static string PropertiesKeyMap(char ch)
         {
             switch (ch)
