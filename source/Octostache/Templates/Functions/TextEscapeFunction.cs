@@ -54,7 +54,7 @@ namespace Octostache.Templates.Functions
             return Escape(argument, YamlDoubleQuoteMap);
         }
 
-        private static readonly Regex NewLineRegex = new Regex(@"(?:\r?\n)+");
+        private static readonly Regex NewLineRegex = new Regex(@"(?:\r?\n)+", RegexOptions.Compiled);
         
         private static string HandleSingleQuoteYamlNewLines(string input)
         {
