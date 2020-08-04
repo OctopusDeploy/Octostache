@@ -175,7 +175,8 @@ namespace Octostache.Tests
         [InlineData("\r\n", "\r\n")]
         [InlineData("\r\n\r\n", "\r\n\r\n")]
         [InlineData("a\nb", "a\nb")]
-        [InlineData("a \nb", "a\nb")]
+        [InlineData("a \nb", "a\nb")] // white space before a newline: cannot be escaped within single quotes
+        [InlineData("a\n b", "a\nb")] // white space after a newline: cannot be escaped within single quotes
         [InlineData("a\n\nb", "a\n\nb")]
         [InlineData("a\r\nb", "a\r\nb")]
         [InlineData("a\r\n\nb", "a\r\n\nb")]
