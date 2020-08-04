@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Text.RegularExpressions;
 using Markdig;
 
@@ -154,7 +152,15 @@ namespace Octostache.Templates.Functions
 
             return string.Join("", raw.Select(mapping));
         }
-        
+
+        static string Escape(string raw, Func<char, int, string> mapping)
+        {
+            if (raw == null)
+                return null;
+
+            return string.Join("", raw.Select(mapping));
+        }
+
         static readonly IDictionary<char, string> HtmlEntityMap = new Dictionary<char, string>
         {
             { '&', "&amp;" },
@@ -265,6 +271,15 @@ namespace Octostache.Templates.Functions
             }
         }
 
-        static string PropertiesValueMap(char ch) => CommonPropertiesMap(ch);
+        static string PropertiesValueMap(char ch, int index)
+        {
+            switch (ch)
+            {
+                case ' ' when index == 0:
+                    return "\\ ";
+                default:
+                    return CommonPropertiesMap(ch);
+            }
+        }
     }
 }
