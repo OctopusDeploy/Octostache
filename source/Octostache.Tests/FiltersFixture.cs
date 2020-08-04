@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 using FluentAssertions;
+using YamlDotNet.Serialization;
 
 namespace Octostache.Tests
 {
@@ -89,6 +91,110 @@ namespace Octostache.Tests
         {
             var result = Evaluate("#{Foo | JsonEscape}", new Dictionary<string, string> { { "Foo", input } });
             result.Should().Be(expectedResult);
+        }
+        
+        [Theory]
+        [InlineData("single'quote", "single''quote")]
+        [InlineData("\\'", "\\''")]
+        [InlineData("a\n\tb\n\tc\n\td", "a\n\n\tb\n\n\tc\n\n\td")]
+        [InlineData("a\r\nb", "a\r\n\r\nb")]
+        [InlineData("a\n\r\nb", "a\n\n\r\nb")]
+        [InlineData("", "")]
+        [InlineData(null, "")]
+        public void YamlSingleQuoteIsEscaped(string input, string expectedResult)
+        {
+            var result = Evaluate("#{Foo | YamlSingleQuoteEscape}", new Dictionary<string, string> { { "Foo", input } });
+            result.Should().Be(expectedResult);
+        }
+
+        [Theory]
+        [InlineData("double\"quote", "double\\\"quote")]
+        [InlineData("\\", "\\\\")]
+        [InlineData("\"", "\\\"")]
+        [InlineData("\t", "\\t")]
+        [InlineData("\n", "\\n")]
+        [InlineData("\r\n", "\\r\\n")]
+        [InlineData("a\n\tb\n\tc\n\td", "a\\n\\tb\\n\\tc\\n\\td")]
+        [InlineData("a\r\nb", "a\\r\\nb")]
+        [InlineData("single'quote", "single'quote")]
+        [InlineData("我叫章鱼", "\\u6211\\u53eb\\u7ae0\\u9c7c")]
+        [InlineData(null, "")]
+        public void YamlDoubleQuoteIsEscaped(string input, string expectedResult)
+        {
+            var result = Evaluate("#{Foo | YamlDoubleQuoteEscape}", new Dictionary<string, string> { { "Foo", input } });
+            result.Should().Be(expectedResult);
+        }
+
+        private class TestDocument
+        {
+            public string Key { get; set; }
+        }
+        
+        [Theory]
+        [InlineData("")]
+        [InlineData("a")]
+        [InlineData("\"")]
+        [InlineData("'")]
+        [InlineData("\t")]
+        [InlineData("\n")]
+        [InlineData("\r\n")]
+        [InlineData("我叫章鱼")]
+        [InlineData("This\nis a more\r\n \"complicated\"\texample \\❤")]
+        public void YamlDoubleQuotedStringsCanRoundTrip(string input)
+        {
+            var yaml = Evaluate("Key: \"#{Input | YamlDoubleQuoteEscape}\"", new Dictionary<string, string> { { "Input", input } });
+
+            var doc = new DeserializerBuilder()
+                .Build()
+                .Deserialize<TestDocument>(yaml);
+
+            doc.Key.Should().Be(input);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("a")]
+        [InlineData("\"")]
+        [InlineData("'")]
+        [InlineData("\t")]
+        [InlineData("\n")]
+        [InlineData("我叫章鱼")]
+        [InlineData("this contains six spaces\nand one line break")]
+        public void YamlSingleQuotedStringsCanRoundTrip(string input)
+        {
+            var yaml = Evaluate("Key: '#{Input | YamlSingleQuoteEscape}'", new Dictionary<string, string> { { "Input", input } });
+
+            var doc = new DeserializerBuilder()
+                .Build()
+                .Deserialize<TestDocument>(yaml);
+
+            doc.Key.Should().Be(input);
+        }
+
+        [Theory]
+        [InlineData("\r\n", "\r\n")]
+        [InlineData("\r\n\r\n", "\r\n\r\n")]
+        [InlineData("a\nb", "a\nb")]
+        [InlineData("a \nb", "a\nb")] // white space before a newline: cannot be escaped within single quotes
+        [InlineData("a\n b", "a\nb")] // white space after a newline: cannot be escaped within single quotes
+        [InlineData("a\n\nb", "a\n\nb")]
+        [InlineData("a\r\nb", "a\r\nb")]
+        [InlineData("a\r\n\nb", "a\r\n\nb")]
+        [InlineData("a \n\nb", "a\n\nb")]
+        [InlineData("a\n\n\n\n\r\nb", "a\n\n\n\n\r\nb")]
+        [InlineData("this contains six spaces\nand one line break", "this contains six spaces\nand one line break")]
+        public void YamlSingleQuotedStringsCanRoundTripWithSideEffects(string input, string expected)
+        {
+            var yaml = Evaluate("Key: '#{Input | YamlSingleQuoteEscape}'", new Dictionary<string, string> { { "Input", input } });
+
+            var doc = new DeserializerBuilder()
+                .Build()
+                .Deserialize<TestDocument>(yaml);
+
+            // Yamldotnet normalises \r\n in single quoted scalars to \n.
+            var normalisedExpected = expected.Replace("\r\n", "\n");
+            
+            doc.Key.Should().Be(normalisedExpected);
         }
 
         [Theory]

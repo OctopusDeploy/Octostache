@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Net;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using Markdig;
 
 namespace Octostache.Templates.Functions
@@ -34,6 +34,47 @@ namespace Octostache.Templates.Functions
             return Escape(argument, JsonEntityMap);
         }
 
+        public static string YamlSingleQuoteEscape(string argument, string[] options)
+        {
+            // https://yaml.org/spec/history/2002-10-31.html#syntax-single
+            
+            if (argument == null || options.Any())
+                return null;
+
+            argument = HandleSingleQuoteYamlNewLines(argument);
+            
+            return Escape(argument, YamlSingleQuoteMap);
+        }
+
+        public static string YamlDoubleQuoteEscape(string argument, string[] options)
+        {
+            if (options.Any())
+                return null;
+
+            return Escape(argument, YamlDoubleQuoteMap);
+        }
+
+        private static readonly Regex NewLineRegex = new Regex(@"(?:\r?\n)+", RegexOptions.Compiled);
+        
+        private static string HandleSingleQuoteYamlNewLines(string input)
+        {
+            // A single newline is parsed by YAML as a space
+            // A double newline is parsed by YAML as a single newline
+            // A triple newline is parsed by YAML as a double newline
+            // ...etc
+
+            var output = NewLineRegex.Replace(input, m =>
+            {
+                var newlineToInsert = m.Value.StartsWith("\r")
+                    ? "\r\n"
+                    : "\n";
+
+                return newlineToInsert + m.Value;
+            });
+
+            return output;
+        }
+        
         [Obsolete("Please use MarkdownToHtml instead.")]
         public static string Markdown(string argument, string[] options)
         {
@@ -89,6 +130,14 @@ namespace Octostache.Templates.Functions
             }));
         }
 
+        static string Escape(string raw, Func<char, string> mapping)
+        {
+            if (raw == null)
+                return null;
+
+            return string.Join("", raw.Select(mapping));
+        }
+        
         static readonly IDictionary<char, string> HtmlEntityMap = new Dictionary<char, string>
         {
             { '&', "&amp;" },
@@ -117,5 +166,44 @@ namespace Octostache.Templates.Functions
             { '\n', @"\n" },
             { '\\', @"\\" }
         };
+        
+        static readonly IDictionary<char, string> YamlSingleQuoteMap = new Dictionary<char, string>
+        {
+            { '\'', "''" }
+        };
+
+        static bool IsAsciiPrintable(char ch)
+        {
+            return ch >= 0x20 && ch <= 0x7E;
+        }
+
+        static string EncodeUnicodeCharForYaml(char ch)
+        {
+            var hex = ((int)ch).ToString("x4");
+            return $"\\u{hex}";
+        }
+        
+        static string YamlDoubleQuoteMap(char ch)
+        {
+            // Yaml supports multiple ways to encode newlines. One method we tried
+            // (doubling newlines) doesn't work consistently across all libraries/
+            // validators, so we've gone with escaping newlines (\\r, \\n) instead.
+
+            switch (ch)
+            {
+                case '\r':
+                    return "\\r";
+                case '\n':
+                    return "\\n";
+                case '\t':
+                    return "\\t";
+                case '\\':
+                    return "\\\\";
+                case '"':
+                    return "\\\"";
+                default:
+                    return IsAsciiPrintable(ch) ? ch.ToString() : EncodeUnicodeCharForYaml(ch);
+            }
+        }
     }
 }
