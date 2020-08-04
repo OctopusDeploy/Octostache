@@ -202,7 +202,7 @@ namespace Octostache.Templates.Functions
 
         static bool IsIso88591Compatible(char ch)
         {
-            return ch >= 0x20 && ch < 0xFF;
+            return ch >= 0x00 && ch < 0xFF;
         }
         
         static string EscapeUnicodeCharForYamlOrProperties(char ch)
