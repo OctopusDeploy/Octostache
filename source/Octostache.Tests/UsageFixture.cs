@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Octostache.Templates;
 using Xunit;
 
@@ -580,6 +582,38 @@ namespace Octostache.Tests
             var absentIndexes = variableDictionary.GetIndexes("Foo.Bar");
 
             absentIndexes.Should().HaveCount(0);
+        }
+
+        [Fact]
+        public void EncryptText()
+        {
+            var certificate = MakeCert();
+            if (certificate != null)
+            {
+                var variableDictionary = new VariableDictionary
+                {
+                    //TODO: Verify this is how Octopus certificate variables create certificate base64 strings. #{CertificateVariable.Certificate}
+                    ["CertificateBase64String"] = Convert.ToBase64String(certificate.RawData),
+                    ["Data"] = "Test",
+                    ["EncryptedData"] = "#{Data | RSAEncrypt #{CertificateBase64String}}"
+                };
+
+                var encryptedString = variableDictionary.Evaluate("#{EncryptedData}");
+                encryptedString.Should().NotBeNullOrWhiteSpace();
+            }
+        }
+
+        static X509Certificate2 MakeCert()
+        {
+#if NETCOREAPP
+            var rsa = RSA.Create();
+            var req = new CertificateRequest("cn=test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            return req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(1));
+#else
+            //TODO: could potentially manually create certificate and include it as an embedded resource to use here.
+            return null;
+#endif
+
         }
     }
 }

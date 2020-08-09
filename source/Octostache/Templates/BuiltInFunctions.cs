@@ -30,7 +30,8 @@ namespace Octostache.Templates
             {"substring", TextSubstringFunction.Substring},
             {"truncate", TextManipulationFunction.Truncate},
             {"trim", TextManipulationFunction.Trim},
-            {"uripart", TextManipulationFunction.UriPart}
+            {"uripart", TextManipulationFunction.UriPart},
+            {"rsaencrypt", TextEncryptFunction.RSAEncrypt }
         };
 
         // Configuration should be done at startup, this isn't thread-safe.
