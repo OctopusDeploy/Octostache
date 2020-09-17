@@ -52,7 +52,7 @@ namespace Octostache.Templates
         static readonly Parser<Indexer> SymbolIndexer =
             (from index in Substitution.Token()
              where index.Expression is SymbolExpression
-             select new Indexer((index.Expression as SymbolExpression)!))
+             select new Indexer((SymbolExpression) index.Expression))
                 .WithPosition();
 
         static readonly Parser<Indexer> Indexer =

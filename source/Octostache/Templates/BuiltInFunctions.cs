@@ -33,15 +33,6 @@ namespace Octostache.Templates
             {"uripart", TextManipulationFunction.UriPart}
         };
 
-        // Configuration should be done at startup, this isn't thread-safe.
-        public static void Register(string name, Func<string?, string[], string?> implementation)
-        {
-            var functionName = name.ToLowerInvariant();
-
-            if(!Extensions.ContainsKey(functionName))
-                Extensions.Add(functionName, implementation);
-        }
-
         public static string? InvokeOrNull(string function, string? argument, string[] options)
         {
             var functionName = function.ToLowerInvariant();

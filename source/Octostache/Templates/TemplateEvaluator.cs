@@ -139,14 +139,14 @@ namespace Octostache.Templates
             {
                 missingTokens.Add(st.ToString());
             }
-            context.Output?.Write(value ?? st.ToString());
+            context.Output.Write(value ?? st.ToString());
         }
 
         static void EvaluateTextToken(EvaluationContext context, TextToken tt)
         {
             foreach (var text in tt.Text)
             {
-                context.Output?.Write(text);
+                context.Output.Write(text);
             }
         }
 

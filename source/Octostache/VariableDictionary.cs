@@ -308,7 +308,7 @@ namespace Octostache
             if (!TemplateParser.TryParseIdentifierPath(variableCollectionName, out var symbolExpression))
                 throw new Exception($"Could not evaluate indexes for path {variableCollectionName}");
 
-            var context = new EvaluationContext(Binding, null);
+            var context = new EvaluationContext(Binding, TextWriter.Null);
             var bindings = context.ResolveAll(symbolExpression, out _);
             // ReSharper disable once RedundantEnumerableCastCall
             return bindings.Select(b => b.Item).Where(x => x != null).Cast<string>().ToList();

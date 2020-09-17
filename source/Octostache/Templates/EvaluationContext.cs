@@ -14,14 +14,14 @@ namespace Octostache.Templates
         readonly EvaluationContext? parent;
         readonly Stack<SymbolExpression> symbolStack = new Stack<SymbolExpression>();
 
-        public EvaluationContext(Binding binding, TextWriter? output, EvaluationContext? parent = null)
+        public EvaluationContext(Binding binding, TextWriter output, EvaluationContext? parent = null)
         {
             this.binding = binding;
             Output = output;
             this.parent = parent;
         }
 
-        public TextWriter? Output { get; }
+        public TextWriter Output { get; }
 
         public string Resolve(SymbolExpression expression, out string[] missingTokens)
         {
