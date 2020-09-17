@@ -1,51 +1,42 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Markdig;
 
 namespace Octostache.Templates.Functions
 {
-    internal class TextEscapeFunction
+    class TextEscapeFunctions
     {
-
-        public static string HtmlEscape(string argument, string[] options)
+        public static string? HtmlEscape(string? argument, string[] options)
         {
-            if (options.Any())
-                return null;
-
-            return Escape(argument, HtmlEntityMap);
+            return options.Any() ? null : Escape(argument, HtmlEntityMap);
         }
 
-        public static string XmlEscape(string argument, string[] options)
+        public static string? XmlEscape(string? argument, string[] options)
         {
-            if (options.Any())
-                return null;
-
-            return Escape(argument, XmlEntityMap);
+            return options.Any() ? null : Escape(argument, XmlEntityMap);
         }
 
-        public static string JsonEscape(string argument, string[] options)
+        public static string? JsonEscape(string? argument, string[] options)
         {
-            if (options.Any())
-                return null;
-
-            return Escape(argument, JsonEntityMap);
+            return options.Any() ? null : Escape(argument, JsonEntityMap);
         }
 
-        public static string YamlSingleQuoteEscape(string argument, string[] options)
+        public static string? YamlSingleQuoteEscape(string? argument, string[] options)
         {
             // https://yaml.org/spec/history/2002-10-31.html#syntax-single
-            
+
             if (argument == null || options.Any())
                 return null;
 
             argument = HandleSingleQuoteYamlNewLines(argument);
-            
+
             return Escape(argument, YamlSingleQuoteMap);
         }
 
-        public static string YamlDoubleQuoteEscape(string argument, string[] options)
+        public static string? YamlDoubleQuoteEscape(string? argument, string[] options)
         {
             if (options.Any())
                 return null;
@@ -53,9 +44,9 @@ namespace Octostache.Templates.Functions
             return Escape(argument, YamlDoubleQuoteMap);
         }
 
-        private static readonly Regex NewLineRegex = new Regex(@"(?:\r?\n)+", RegexOptions.Compiled);
-        
-        private static string HandleSingleQuoteYamlNewLines(string input)
+        static readonly Regex NewLineRegex = new Regex(@"(?:\r?\n)+", RegexOptions.Compiled);
+
+        static string HandleSingleQuoteYamlNewLines(string input)
         {
             // A single newline is parsed by YAML as a space
             // A double newline is parsed by YAML as a single newline
@@ -74,7 +65,7 @@ namespace Octostache.Templates.Functions
             return output;
         }
 
-        public static string PropertiesKeyEscape(string argument, string[] options)
+        public static string? PropertiesKeyEscape(string? argument, string[] options)
         {
             if (options.Any())
                 return null;
@@ -82,7 +73,7 @@ namespace Octostache.Templates.Functions
             return Escape(argument, PropertiesKeyMap);
         }
 
-        public static string PropertiesValueEscape(string argument, string[] options)
+        public static string? PropertiesValueEscape(string? argument, string[] options)
         {
             if (options.Any())
                 return null;
@@ -91,12 +82,12 @@ namespace Octostache.Templates.Functions
         }
 
         [Obsolete("Please use MarkdownToHtml instead.")]
-        public static string Markdown(string argument, string[] options)
+        public static string? Markdown(string? argument, string[] options)
         {
             return MarkdownToHtml(argument, options);
         }
 
-        public static string MarkdownToHtml(string argument, string[] options)
+        public static string? MarkdownToHtml(string? argument, string[] options)
         {
             if (argument == null || options.Any())
                 return null;
@@ -109,7 +100,7 @@ namespace Octostache.Templates.Functions
             return Markdig.Markdown.ToHtml(argument.Trim(), pipeline) + '\n';
         }
 
-        public static string UriStringEscape(string argument, string[] options)
+        public static string? UriStringEscape(string? argument, string[] options)
         {
             if (options.Any())
                 return null;
@@ -120,7 +111,7 @@ namespace Octostache.Templates.Functions
             return Uri.EscapeUriString(argument);
         }
 
-        public static string UriDataStringEscape(string argument, string[] options)
+        public static string? UriDataStringEscape(string? argument, string[] options)
         {
             if (options.Any())
                 return null;
@@ -131,7 +122,8 @@ namespace Octostache.Templates.Functions
             return Uri.EscapeDataString(argument);
         }
 
-        static string Escape(string raw, IDictionary<char, string> entities)
+        [return: NotNullIfNotNull("raw")]
+        static string? Escape(string? raw, IDictionary<char, string> entities)
         {
             if (raw == null)
                 return null;
@@ -145,20 +137,16 @@ namespace Octostache.Templates.Functions
             }));
         }
 
-        static string Escape(string raw, Func<char, string> mapping)
+        [return: NotNullIfNotNull("raw")]
+        static string? Escape(string? raw, Func<char, string> mapping)
         {
-            if (raw == null)
-                return null;
-
-            return string.Join("", raw.Select(mapping));
+            return raw == null ? null : string.Join("", raw.Select(mapping));
         }
 
-        static string Escape(string raw, Func<char, int, string> mapping)
+        [return: NotNullIfNotNull("raw")]
+        static string? Escape(string? raw, Func<char, int, string> mapping)
         {
-            if (raw == null)
-                return null;
-
-            return string.Join("", raw.Select(mapping));
+            return raw == null ? null : string.Join("", raw.Select(mapping));
         }
 
         static readonly IDictionary<char, string> HtmlEntityMap = new Dictionary<char, string>
@@ -189,7 +177,7 @@ namespace Octostache.Templates.Functions
             { '\n', @"\n" },
             { '\\', @"\\" }
         };
-        
+
         static readonly IDictionary<char, string> YamlSingleQuoteMap = new Dictionary<char, string>
         {
             { '\'', "''" }
@@ -204,7 +192,7 @@ namespace Octostache.Templates.Functions
         {
             return ch >= 0x00 && ch < 0xFF;
         }
-        
+
         static string EscapeUnicodeCharForYamlOrProperties(char ch)
         {
             var hex = ((int)ch).ToString("x4");

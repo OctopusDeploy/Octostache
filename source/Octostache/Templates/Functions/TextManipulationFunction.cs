@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,7 @@ namespace Octostache.Templates.Functions
 {
     internal class TextManipulationFunction
     {
-        public static string ToBase64(string argument, string[] options)
+        public static string? ToBase64(string argument, string[] options)
         {
             if (options.Length > 1 || argument == null)
             {
@@ -37,8 +38,8 @@ namespace Octostache.Templates.Functions
             }
             return Convert.ToBase64String(argumentBytes);
         }
-        
-        public static string FromBase64(string argument, string[] options)
+
+        public static string? FromBase64(string argument, string[] options)
         {
             if (options.Length > 1 || argument == null)
             {
@@ -65,7 +66,7 @@ namespace Octostache.Templates.Functions
             }
         }
 
-        public static string Truncate(string argument, string[] options)
+        public static string? Truncate(string argument, string[] options)
         {
             if (argument == null ||
                 !options.Any() ||
@@ -79,7 +80,8 @@ namespace Octostache.Templates.Functions
                 : argument;
         }
 
-        public static string Trim(string argument, string[] options)
+        [return: NotNullIfNotNull("argument")]
+        public static string? Trim(string? argument, string[] options)
         {
             if (argument == null)
                 return null;
@@ -97,7 +99,8 @@ namespace Octostache.Templates.Functions
             }
         }
 
-        public static string UriPart(string argument, string[] options)
+        [return: NotNullIfNotNull("argument")]
+        public static string? UriPart(string? argument, string[] options)
         {
             if (argument == null)
                 return null;
@@ -107,7 +110,7 @@ namespace Octostache.Templates.Functions
 
             if (!Uri.TryCreate(argument, UriKind.RelativeOrAbsolute, out var uri))
                 return argument;
-            
+
             // NOTE: IdnHost property not available in .NET Framework target
 
             try

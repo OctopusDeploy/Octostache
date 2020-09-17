@@ -6,13 +6,12 @@ namespace Octostache.Templates
 {
     static class PropertyListBinder
     {
-        public static Binding CreateFrom(IDictionary<string, string> properties)
+        public static Binding CreateFrom(IDictionary<string, string?> properties)
         {
             var result = new Binding();
             foreach (var property in properties)
             {
-                SymbolExpression pathExpression;
-                if (TemplateParser.TryParseIdentifierPath(property.Key, out pathExpression))
+                if (TemplateParser.TryParseIdentifierPath(property.Key, out var pathExpression))
                 {
                     Add(result, pathExpression.Steps, property.Value ?? "");
                 }
@@ -32,8 +31,7 @@ namespace Octostache.Templates
 
             Binding next;
 
-            var iss = first as Identifier;
-            if (iss != null)
+            if (first is Identifier iss)
             {
                 if (!result.TryGetValue(iss.Text, out next))
                 {
@@ -42,8 +40,7 @@ namespace Octostache.Templates
             }
             else
             {
-                var ix = first as Indexer;
-                if (ix != null)
+                if (first is Indexer ix && ix.Index != null)
                 {
                     if (!result.Indexable.TryGetValue(ix.Index, out next))
                     {

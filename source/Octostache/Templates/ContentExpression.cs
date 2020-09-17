@@ -9,7 +9,7 @@ namespace Octostache.Templates
     /// </summary>
     abstract class ContentExpression : IInputToken
     {
-        public Position InputPosition { get; set; }
+        public Position? InputPosition { get; set; }
         public abstract IEnumerable<string> GetArguments();
     }
 }

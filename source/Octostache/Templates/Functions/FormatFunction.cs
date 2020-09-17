@@ -7,7 +7,7 @@ namespace Octostache.Templates.Functions
 {
     internal class FormatFunction
     {
-        public static string Format(string argument, string[] options)
+        public static string? Format(string? argument, string[] options)
         {
             if (argument == null)
                 return null;

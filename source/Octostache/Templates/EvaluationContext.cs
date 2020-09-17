@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Octostache.CustomStringParsers;
 
 namespace Octostache.Templates
@@ -12,17 +11,17 @@ namespace Octostache.Templates
     class EvaluationContext
     {
         readonly Binding binding;
-        readonly EvaluationContext parent;
+        readonly EvaluationContext? parent;
         readonly Stack<SymbolExpression> symbolStack = new Stack<SymbolExpression>();
 
-        public EvaluationContext(Binding binding, TextWriter output, EvaluationContext parent = null)
+        public EvaluationContext(Binding binding, TextWriter? output, EvaluationContext? parent = null)
         {
             this.binding = binding;
-            this.Output = output;
+            Output = output;
             this.parent = parent;
         }
 
-        public TextWriter Output { get; }
+        public TextWriter? Output { get; }
 
         public string Resolve(SymbolExpression expression, out string[] missingTokens)
         {
@@ -44,31 +43,28 @@ namespace Octostache.Templates
             }
         }
 
-        public string ResolveOptional(SymbolExpression expression, out string[] missingTokens)
+        public string? ResolveOptional(SymbolExpression expression, out string[] missingTokens)
         {
             var val = WalkTo(expression, out missingTokens);
-            if (val == null) return null;
-            return val.Item;
+            return val?.Item;
         }
 
-        public Binding Walker(TemplateToken token, out string[] missingTokens)
+        public Binding? Walker(TemplateToken token, out string[]? missingTokens)
         {
-            
             missingTokens = null;
             return null;
         }
 
-        Binding WalkTo(SymbolExpression expression, out string[] missingTokens)
+        Binding? WalkTo(SymbolExpression expression, out string[] missingTokens)
         {
             ValidateThatRecursionIsNotOccuring(expression);
             symbolStack.Push(expression);
 
             try
             {
-                var val = binding;
+                Binding? val = binding;
                 missingTokens = new string[0];
 
-                
                 expression = CopyExpression(expression);
 
                 foreach (var step in expression.Steps)
@@ -76,7 +72,7 @@ namespace Octostache.Templates
                     var iss = step as Identifier;
                     if (iss != null)
                     {
-                        Binding newVal;
+                        Binding? newVal;
                         if (val.TryGetValue(iss.Text, out newVal))
                         {
                             val = newVal;
@@ -91,31 +87,28 @@ namespace Octostache.Templates
                     }
                     else
                     {
-                        var ix = step as Indexer;
-                        if (ix != null)
+                        if (step is Indexer ix)
                         {
-                            if (ix.IsSymbol)
+                            if (ix.IsSymbol || ix.Index == null)
                             {
-                                // Substitution should have taken place in previous CopyExpression above. 
+                                // Substitution should have taken place in previous CopyExpression above.
                                 // If not then it must not be found.
                                 return null;
                             }
 
-                            if (ix.Index == "*" && val.Indexable.Count > 0)
+                            if (ix.Index == "*" && val?.Indexable.Count > 0)
                             {
                                 val = val.Indexable.First().Value;
                                 continue;
                             }
 
-
-                            Binding newVal;
-                            if (val.Indexable.TryGetValue(ix.Index, out newVal))
+                            if (val != null && val.Indexable.TryGetValue(ix.Index, out Binding? newVal))
                             {
                                 val = newVal;
                                 continue;
                             }
 
-                            if (TryCustomParsers(val, ix.Index, out newVal))
+                            if (val != null && TryCustomParsers(val, ix.Index, out newVal))
                             {
                                 val = newVal;
                                 continue;
@@ -143,11 +136,9 @@ namespace Octostache.Templates
 
         Binding ParseTemplate(Binding b, out string[] missingTokens)
         {
-            if (b?.Item != null)
+            if (b.Item != null)
             {
-                Template template;
-                string error;
-                if (TemplateParser.TryParseTemplate(b.Item, out template, out error))
+                if (TemplateParser.TryParseTemplate(b.Item, out var template, out string _))
                 {
                     using (var x = new StringWriter())
                     {
@@ -163,20 +154,18 @@ namespace Octostache.Templates
             return b;
         }
 
-        bool TryCustomParsers(Binding parentBinding, string property, out Binding subBinding)
+        bool TryCustomParsers(Binding parentBinding, string property, [NotNullWhen(true)] out Binding? subBinding)
         {
 
             subBinding = null;
             if (string.IsNullOrEmpty(parentBinding.Item) || string.IsNullOrEmpty(property))
                 return false;
 
-
             if (parentBinding.Item.Contains("#{")) //Shortcut the inner variable replacement if no templates are detected
             {
                 try
                 {
-                    string[] missingTokens;
-                    parentBinding = ParseTemplate(parentBinding, out missingTokens);
+                    parentBinding = ParseTemplate(parentBinding, out string[] _);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -195,14 +184,12 @@ namespace Octostache.Templates
             //take a copy so the lookup version remains for later use
             return new SymbolExpression(expression.Steps.Select(s =>
             {
-                var indexer = s as Indexer;
-                if (indexer != null && indexer.IsSymbol)
+                if (s is Indexer indexer && indexer.IsSymbol)
                 {
-                    string[] missing;
-                    var index = WalkTo(indexer.Symbol, out missing);
-                    
+                    var index = WalkTo(indexer.Symbol!, out string[] _);
+
                     return index == null
-                        ? new Indexer(CopyExpression(indexer.Symbol))
+                        ? new Indexer(CopyExpression(indexer.Symbol!))
                         : new Indexer(index.Item);
                 }
                 return s;
@@ -221,8 +208,7 @@ namespace Octostache.Templates
             if (val.Item == null)
                 return Enumerable.Empty<Binding>();
 
-            Binding[] bindings;
-            if (JsonParser.TryParse(new Binding(val.Item), out bindings))
+            if (JsonParser.TryParse(new Binding(val.Item), out Binding[] bindings))
             {
                 return bindings;
             }

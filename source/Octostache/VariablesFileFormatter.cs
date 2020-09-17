@@ -7,10 +7,10 @@ namespace Octostache
 {
     static class VariablesFileFormatter
     {
-        static readonly JsonSerializer serializer = new JsonSerializer { Formatting = Formatting.Indented };
-        static readonly Encoding fileEncoding = Encoding.UTF8;
+        static readonly JsonSerializer Serializer = new JsonSerializer { Formatting = Formatting.Indented };
+        static readonly Encoding FileEncoding = Encoding.UTF8;
 
-        public static void Populate(Dictionary<string, string> variables, string variablesFilePath)
+        public static void Populate(Dictionary<string, string?> variables, string variablesFilePath)
         {
             var fullPath = Path.GetFullPath(variablesFilePath);
             if (!File.Exists(fullPath))
@@ -18,20 +18,20 @@ namespace Octostache
 
             using (var sourceStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                using (var reader = new JsonTextReader(new StreamReader(sourceStream, fileEncoding)))
+                using (var reader = new JsonTextReader(new StreamReader(sourceStream, FileEncoding)))
                 {
-                    serializer.Populate(reader, variables);
+                    Serializer.Populate(reader, variables);
                 }
             }
         }
 
-        public static void Persist(Dictionary<string, string> variables, TextWriter output)
+        public static void Persist(Dictionary<string, string?> variables, TextWriter output)
         {
-            serializer.Serialize(new JsonTextWriter(output), variables);
+            Serializer.Serialize(new JsonTextWriter(output), variables);
             output.Flush();
         }
 
-        public static void Persist(Dictionary<string, string> variables, string variablesFilePath)
+        public static void Persist(Dictionary<string, string?> variables, string variablesFilePath)
         {
             var fullPath = Path.GetFullPath(variablesFilePath);
             var parentDirectory = Path.GetDirectoryName(fullPath);
@@ -42,7 +42,7 @@ namespace Octostache
 
             using (var targetStream = new FileStream(variablesFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
-                using (var writer = new StreamWriter(targetStream, fileEncoding))
+                using (var writer = new StreamWriter(targetStream, FileEncoding))
                 {
                     Persist(variables, writer);
                 }

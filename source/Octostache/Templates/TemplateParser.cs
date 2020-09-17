@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 #if NET40
 using System.Runtime.Caching;
@@ -51,7 +52,7 @@ namespace Octostache.Templates
         static readonly Parser<Indexer> SymbolIndexer =
             (from index in Substitution.Token()
              where index.Expression is SymbolExpression
-             select new Indexer(index.Expression as SymbolExpression))
+             select new Indexer((index.Expression as SymbolExpression)!))
                 .WithPosition();
 
         static readonly Parser<Indexer> Indexer =
@@ -72,7 +73,7 @@ namespace Octostache.Templates
         static readonly Parser<SymbolExpression> Symbol =
             (from first in Identifier
              from rest in TrailingStep.Many()
-             
+
              select new SymbolExpression(new[] { first }.Concat(rest)))
                 .WithPosition();
 
@@ -288,12 +289,12 @@ namespace Octostache.Templates
              //todo: there is currently no support for naming the cache
              Cache = new MemoryCache(new MemoryCacheOptions());
          }
- 
+
          private static void AddToCache(string template, Template cached)
          {
              Cache.Set(template, cached, new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(10) });
          }
-         private static Template GetFromCache(string template)
+         private static Template? GetFromCache(string template)
          {
              return Cache.Get(template) as Template;
          }
@@ -329,7 +330,7 @@ namespace Octostache.Templates
         }
 
 
-        public static bool TryParseTemplate(string template, out Template result, out string error, bool haltOnError = true)
+        public static bool TryParseTemplate(string template, [NotNullWhen(true)] out Template? result, [NotNullWhen(false)] out string? error, bool haltOnError = true)
         {
             var parser = haltOnError ? Template : ContinueOnErrorsTemplate;
 
@@ -355,7 +356,7 @@ namespace Octostache.Templates
             return true;
         }
 
-        internal static bool TryParseIdentifierPath(string path, out SymbolExpression expression)
+        internal static bool TryParseIdentifierPath(string path, [NotNullWhen(true)] out SymbolExpression? expression)
         {
             var result = Symbol.TryParse(path);
             if (result.WasSuccessful)

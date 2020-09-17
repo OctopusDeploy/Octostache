@@ -10,13 +10,12 @@ namespace Octostache.Templates
     /// </summary>
     class FunctionCallExpression : ContentExpression
     {
-        
-        readonly bool _filterSyntax;
+        readonly bool filterSyntax;
 
         public FunctionCallExpression(bool filterSyntax, string function, ContentExpression argument, params TemplateToken[] options)
         {
             Options = options;
-            _filterSyntax = filterSyntax;
+            this.filterSyntax = filterSyntax;
             Function = function;
             Argument = argument;
         }
@@ -29,7 +28,7 @@ namespace Octostache.Templates
         IInputToken[] GetAllArguments()
         {
             var tokens = new List<IInputToken>();
-            if(Argument.InputPosition != null)
+            if (Argument.InputPosition != null)
                 tokens.Add(Argument);
 
             tokens.AddRange(Options);
@@ -38,9 +37,9 @@ namespace Octostache.Templates
 
         public override string ToString()
         {
-            if (_filterSyntax)
+            if (filterSyntax)
                 return $"{Argument} | {Function}{(Options.Any() ? " " : "")}{string.Join(" ", Options.Select(t => t.ToString()))}";
-                    
+
 
             return $"{Function} ({string.Join(", ", GetAllArguments().Select(t => t.ToString()))})";
         }

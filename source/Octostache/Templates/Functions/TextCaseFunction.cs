@@ -2,14 +2,14 @@
 
 namespace Octostache.Templates.Functions
 {
-    internal class TextCaseFunction
+    class TextCaseFunction
     {
-        public static string ToUpper(string argument, string[] options)
+        public static string? ToUpper(string? argument, string[] options)
         {
             return options.Any() ? null : argument?.ToUpper();
         }
 
-        public static string ToLower(string argument, string[] options)
+        public static string? ToLower(string? argument, string[] options)
         {
             return options.Any() ? null : argument?.ToLower();
         }
