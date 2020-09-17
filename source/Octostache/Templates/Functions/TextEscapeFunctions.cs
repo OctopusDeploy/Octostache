@@ -81,12 +81,6 @@ namespace Octostache.Templates.Functions
             return Escape(argument, PropertiesValueMap);
         }
 
-        [Obsolete("Please use MarkdownToHtml instead.")]
-        public static string? Markdown(string? argument, string[] options)
-        {
-            return MarkdownToHtml(argument, options);
-        }
-
         public static string? MarkdownToHtml(string? argument, string[] options)
         {
             if (argument == null || options.Any())

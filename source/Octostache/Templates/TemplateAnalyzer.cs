@@ -6,12 +6,7 @@ namespace Octostache.Templates
 {
     static class TemplateAnalyzer
     {
-        public static IEnumerable<string> GetDependencies(Template template)
-        {
-            return GetDependencies(template.Tokens, new AnalysisContext());  
-        }
-
-        static IEnumerable<string> GetDependencies(IEnumerable<TemplateToken> tokens, AnalysisContext context) 
+        static IEnumerable<string> GetDependencies(IEnumerable<TemplateToken> tokens, AnalysisContext context)
         {
             foreach (var token in tokens)
             {

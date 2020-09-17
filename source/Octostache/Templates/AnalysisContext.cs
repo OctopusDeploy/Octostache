@@ -6,11 +6,9 @@ namespace Octostache.Templates
 {
     class AnalysisContext
     {
-        readonly AnalysisContext? parent;
-        readonly Identifier? identifier;
-        readonly SymbolExpression? expansion;
-
-        public AnalysisContext() {}
+        readonly AnalysisContext parent;
+        readonly Identifier identifier;
+        readonly SymbolExpression expansion;
 
         AnalysisContext(AnalysisContext parent, Identifier identifier, SymbolExpression expansion)
         {
@@ -27,16 +25,13 @@ namespace Octostache.Templates
         public IEnumerable<SymbolExpressionStep> Expand(IEnumerable<SymbolExpressionStep> expression)
         {
             var nodes = expression.ToArray();
-            if (identifier != null
-                && expansion != null
-                && nodes.FirstOrDefault() is Identifier first
-                && string.Compare(first.Text, identifier.Text, StringComparison.OrdinalIgnoreCase) == 0)
+            if (nodes.FirstOrDefault() is Identifier first
+                && string.Equals(first.Text, identifier.Text, StringComparison.OrdinalIgnoreCase))
             {
-                nodes = expansion.Steps.Concat(new [] { new DependencyWildcard() }).Concat(nodes.Skip(1)).ToArray();
+                nodes = expansion.Steps.Concat(new[] { new DependencyWildcard() }).Concat(nodes.Skip(1)).ToArray();
             }
 
-            if (parent != null)
-                nodes = parent.Expand(nodes).ToArray();
+            nodes = parent.Expand(nodes).ToArray();
 
             return nodes;
         }
