@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 #if NET40
+using System.Reflection;
 using System.Runtime.Caching;
-#else
-using Microsoft.Extensions.Caching.Memory;
 #endif
 
 namespace Octostache.Tests

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 #if NET40
+using System.Collections.Specialized;
 using System.Runtime.Caching;
 #else
 using Microsoft.Extensions.Caching.Memory;
