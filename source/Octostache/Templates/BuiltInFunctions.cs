@@ -6,7 +6,7 @@ namespace Octostache.Templates
 {
     static class BuiltInFunctions
     {
-        static readonly IDictionary<string, Func<string, string[], string?>> Extensions = new Dictionary<string, Func<string, string[], string?>>(StringComparer.OrdinalIgnoreCase)
+        static readonly IDictionary<string, Func<string?, string[], string?>> Extensions = new Dictionary<string, Func<string?, string[], string?>>(StringComparer.OrdinalIgnoreCase)
         {
             {"tolower", TextCaseFunction.ToLower },
             {"toupper", TextCaseFunction.ToUpper },
@@ -34,7 +34,7 @@ namespace Octostache.Templates
         };
 
         // Configuration should be done at startup, this isn't thread-safe.
-        public static void Register(string name, Func<string, string[], string> implementation)
+        public static void Register(string name, Func<string?, string[], string?> implementation)
         {
             var functionName = name.ToLowerInvariant();
 
@@ -44,9 +44,6 @@ namespace Octostache.Templates
 
         public static string? InvokeOrNull(string function, string? argument, string[] options)
         {
-            if (argument == null)
-                return null;
-
             var functionName = function.ToLowerInvariant();
 
             if (Extensions.TryGetValue(functionName, out var ext))

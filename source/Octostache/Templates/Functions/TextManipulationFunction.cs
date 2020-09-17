@@ -8,7 +8,7 @@ namespace Octostache.Templates.Functions
 {
     internal class TextManipulationFunction
     {
-        public static string? ToBase64(string argument, string[] options)
+        public static string? ToBase64(string? argument, string[] options)
         {
             if (options.Length > 1 || argument == null)
             {
@@ -39,7 +39,7 @@ namespace Octostache.Templates.Functions
             return Convert.ToBase64String(argumentBytes);
         }
 
-        public static string? FromBase64(string argument, string[] options)
+        public static string? FromBase64(string? argument, string[] options)
         {
             if (options.Length > 1 || argument == null)
             {
@@ -66,7 +66,7 @@ namespace Octostache.Templates.Functions
             }
         }
 
-        public static string? Truncate(string argument, string[] options)
+        public static string? Truncate(string? argument, string[] options)
         {
             if (argument == null ||
                 !options.Any() ||
