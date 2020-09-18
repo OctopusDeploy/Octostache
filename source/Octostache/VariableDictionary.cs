@@ -336,8 +336,7 @@ namespace Octostache
             return GetEnumerator();
         }
 
-
-        public void Add(string key, string value)
+        public void Add(string key, string? value)
         {
             Set(key, value);
         }
