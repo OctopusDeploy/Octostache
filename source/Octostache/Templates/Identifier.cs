@@ -18,15 +18,15 @@ namespace Octostache.Templates
 
         public override IEnumerable<string> GetArguments() => new[] {Text};
 
-        public override bool Equals(SymbolExpressionStep other) => Equals(other as Identifier);
+        public override bool Equals(SymbolExpressionStep? other) => Equals(other as Identifier);
 
 
-        protected bool Equals(Identifier other)
+        protected bool Equals(Identifier? other)
         {
-            return base.Equals(other) && string.Equals(Text, other.Text);
+            return base.Equals(other) && string.Equals(Text, other?.Text);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;

@@ -9,35 +9,29 @@ namespace Octostache
 {
     public class VariableDictionary : IEnumerable<KeyValuePair<string, string>>
     {
-        readonly Dictionary<string, string> variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        string storageFilePath;
-        Binding binding;
+        readonly Dictionary<string, string?> variables = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        string? storageFilePath;
+        Binding? binding;
 
         public VariableDictionary() : this(null)
         {
         }
 
-        public VariableDictionary(string storageFilePath)
+        public VariableDictionary(string? storageFilePath)
         {
             if (string.IsNullOrWhiteSpace(storageFilePath)) return;
             this.storageFilePath = Path.GetFullPath(storageFilePath);
             Reload();
         }
 
-        Binding Binding
-        {
-            get
-            {
-                return binding ?? (binding = PropertyListBinder.CreateFrom(variables));
-            }
-        }
+        Binding Binding => binding ?? (binding = PropertyListBinder.CreateFrom(variables));
 
         /// <summary>
         /// Sets a variable value.
         /// </summary>
         /// <param name="name">The name of the variable.</param>
         /// <param name="value">The value of the variable.</param>
-        public void Set(string name, string value)
+        public void Set(string name, string? value)
         {
             if (name == null) return;
             variables[name] = value;
@@ -50,10 +44,10 @@ namespace Octostache
         /// </summary>
         /// <param name="name">The name of the variable to set.</param>
         /// <returns>The current (evaluated) value of the variable.</returns>
-        public string this[string name]
+        public string? this[string name]
         {
-            get { return Get(name); }
-            set { Set(name, value); }
+            get => Get(name);
+            set => Set(name, value);
         }
 
         /// <summary>
@@ -118,10 +112,9 @@ namespace Octostache
         /// </summary>
         /// <param name="variableName">Name of the variable.</param>
         /// <returns>The value of the variable, or null if one is not defined.</returns>
-        public string GetRaw(string variableName)
+        public string? GetRaw(string variableName)
         {
-            string variable;
-            if (variables.TryGetValue(variableName, out variable) && variable != null)
+            if (variables.TryGetValue(variableName, out string? variable) && variable != null)
                 return variable;
 
             return null;
@@ -133,10 +126,9 @@ namespace Octostache
         /// <param name="variableName">The name of the variable.</param>
         /// <param name="defaultValue">The default value to return.</param>
         /// <returns>The value of the variable, or the default value if the variable is not defined.</returns>
-        public string Get(string variableName, string defaultValue = null)
+        public string? Get(string variableName, string? defaultValue = null)
         {
-            string error;
-            return Get(variableName, out error, defaultValue);
+            return Get(variableName, out string _, defaultValue);
         }
 
         /// <summary>
@@ -146,11 +138,10 @@ namespace Octostache
         /// <param name="error">Any parsing errors silently found.</param>
         /// <param name="defaultValue">The default value to return.</param>
         /// <returns>The value of the variable, or the default value if the variable is not defined.</returns>
-        public string Get(string variableName, out string error, string defaultValue = null)
+        public string? Get(string variableName, out string? error, string? defaultValue = null)
         {
             error = null;
-            string variable;
-            if (!variables.TryGetValue(variableName, out variable) || variable == null)
+            if (!variables.TryGetValue(variableName, out string? variable) || variable == null)
                 return defaultValue;
 
             return Evaluate(variable, out error);
@@ -163,7 +154,7 @@ namespace Octostache
         /// <param name="error">Any parsing errors silently found.</param>
         /// <param name="haltOnError">Stop parsing if an error is found.</param>
         /// <returns>The result of the expression.</returns>
-        public string Evaluate(string expressionOrVariableOrText, out string error, bool haltOnError = true)
+        public string? Evaluate(string? expressionOrVariableOrText, out string? error, bool haltOnError = true)
         {
             error = null;
             if (expressionOrVariableOrText == null) return null;
@@ -171,14 +162,12 @@ namespace Octostache
             if (CanEvaluationBeSkippedForExpression(expressionOrVariableOrText))
                 return expressionOrVariableOrText;
 
-            Template template;
-            if (!TemplateParser.TryParseTemplate(expressionOrVariableOrText, out template, out error, haltOnError))
+            if (!TemplateParser.TryParseTemplate(expressionOrVariableOrText, out var template, out error, haltOnError))
                 return expressionOrVariableOrText;
 
             using (var writer = new StringWriter())
             {
-                string[] missingTokens;
-                TemplateEvaluator.Evaluate(template, Binding, writer, out missingTokens);
+                TemplateEvaluator.Evaluate(template, Binding, writer, out var missingTokens);
                 if (missingTokens.Any())
                 {
                     var tokenList = string.Join(", ", missingTokens.Select(token => "'" + token + "'"));
@@ -195,10 +184,9 @@ namespace Octostache
         /// </summary>
         /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>
         /// <returns>Whether the expression evaluates with no errors and the result is truthy (Not empty, 0 or false).</returns>
-        public bool EvaluateTruthy(string expressionOrVariableOrText)
+        public bool EvaluateTruthy(string? expressionOrVariableOrText)
         {
-            string error;
-            var result = Evaluate(expressionOrVariableOrText, out error);
+            var result = Evaluate(expressionOrVariableOrText, out var error);
             return string.IsNullOrWhiteSpace(error) && result != null && TemplateEvaluator.IsTruthy(result);
         }
 
@@ -207,10 +195,9 @@ namespace Octostache
         /// </summary>
         /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>
         /// <returns>The result of the expression.</returns>
-        public string Evaluate(string expressionOrVariableOrText)
+        public string? Evaluate(string? expressionOrVariableOrText)
         {
-            string error;
-            return Evaluate(expressionOrVariableOrText, out error);
+            return Evaluate(expressionOrVariableOrText, out string _);
         }
 
         /// <summary>
@@ -321,9 +308,10 @@ namespace Octostache
             if (!TemplateParser.TryParseIdentifierPath(variableCollectionName, out var symbolExpression))
                 throw new Exception($"Could not evaluate indexes for path {variableCollectionName}");
 
-            var context = new EvaluationContext(Binding, null);
-            var bindings = context.ResolveAll(symbolExpression, out var missingTokens);
-            return bindings.Select(b => b.Item).ToList();
+            var context = new EvaluationContext(Binding, TextWriter.Null);
+            var bindings = context.ResolveAll(symbolExpression, out _);
+            // ReSharper disable once RedundantEnumerableCastCall
+            return bindings.Select(b => b.Item).Where(x => x != null).Cast<string>().ToList();
 
         }
 

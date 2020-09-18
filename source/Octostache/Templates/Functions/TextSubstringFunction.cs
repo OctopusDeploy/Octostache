@@ -4,7 +4,7 @@ namespace Octostache.Templates.Functions
 {
     internal static class TextSubstringFunction
     {
-        public static string Substring(string argument, string[] options)
+        public static string? Substring(string? argument, string[] options)
         {
             if (argument == null ||
                 options.Length == 0 ||

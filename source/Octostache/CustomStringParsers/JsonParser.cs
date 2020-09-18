@@ -1,14 +1,14 @@
-﻿using System.Linq;
-using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Octostache.Templates;
 
 namespace Octostache.CustomStringParsers
 {
-    internal static class JsonParser
+    static class JsonParser
     {
-        internal static bool TryParse(Binding parentBinding, string property, out Binding subBinding)
+        internal static bool TryParse(Binding parentBinding, string property, [NotNullWhen(true)] out Binding? subBinding)
         {
             subBinding = null;
 
@@ -16,8 +16,7 @@ namespace Octostache.CustomStringParsers
             {
                 var obj = JsonConvert.DeserializeObject(parentBinding.Item);
 
-                var jvalue = obj as JValue;
-                if (jvalue != null)
+                if (obj is JValue jvalue)
                 {
                     return TryParseJValue(jvalue, out subBinding);
                 }
@@ -100,7 +99,7 @@ namespace Octostache.CustomStringParsers
             return true;
         }
 
-        private static bool TryParseJArray(JArray jarray, string property, out Binding subBinding)
+        private static bool TryParseJArray(JArray jarray, string property, [NotNullWhen(true)] out Binding? subBinding)
         {
             int index;
             subBinding = null;

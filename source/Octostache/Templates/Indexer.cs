@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Octostache.Templates
 {
     class Indexer : SymbolExpressionStep
     {
-        public Indexer(string index)
+        public Indexer(string? index)
         {
             Index = index;
         }
@@ -14,9 +15,9 @@ namespace Octostache.Templates
             Symbol = expression;
         }
 
-        public string Index { get; }
+        public string? Index { get; }
 
-        public SymbolExpression Symbol { get; }
+        public SymbolExpression? Symbol { get; }
 
         public bool IsSymbol => Symbol != null; 
 
@@ -27,14 +28,14 @@ namespace Octostache.Templates
 
         public override IEnumerable<string> GetArguments() => Symbol?.GetArguments() ?? new string[0];
 
-        public override bool Equals(SymbolExpressionStep other) => Equals(other as Indexer);
+        public override bool Equals(SymbolExpressionStep? other) => other != null && Equals((other as Indexer)!);
 
         protected bool Equals(Indexer other)
         {
             return base.Equals(other) && string.Equals(Index, other.Index) && Equals(Symbol, other.Symbol);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;

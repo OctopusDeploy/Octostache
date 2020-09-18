@@ -4,7 +4,7 @@ namespace Octostache.Templates.Functions
 {
     internal static class TextReplaceFunction
     {
-        public static string Replace(string argument, string[] options)
+        public static string? Replace(string? argument, string[] options)
         {
             if (argument == null || options.Length == 0)
                 return null;
