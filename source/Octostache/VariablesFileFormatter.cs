@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Octostache
 {
-    static class VariablesFileFormatter
+    public static class VariablesFileFormatter
     {
         static readonly JsonSerializer Serializer = new JsonSerializer { Formatting = Formatting.Indented };
         static readonly Encoding FileEncoding = Encoding.UTF8;

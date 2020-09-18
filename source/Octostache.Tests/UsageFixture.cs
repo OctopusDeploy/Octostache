@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using Octostache.Templates;
 using Xunit;
 
@@ -448,38 +447,6 @@ namespace Octostache.Tests
             raw.Should().Be("http://#{Server | ToLower}:#{Port}");
             eval.Should().Be("http://web01:10933/foo");
             error.Should().NotBeNull();
-        }
-
-        [Fact]
-        public void ShouldSupportRoundTripping()
-        {
-            var temp = Path.GetTempFileName();
-
-            var parent = new VariableDictionary();
-            parent.Set("Name", "Web01");
-            parent.Set("Port", "10933");
-            parent.Set("Hello world", "This is a \"string\"!@#$");
-
-            parent.Save(temp);
-
-            var child = new VariableDictionary(temp);
-            child["Name"].Should().Be("Web01");
-            child["Port"].Should().Be("10933");
-            child["Hello world"].Should().Be("This is a \"string\"!@#$");
-
-            // Since this variable dictionary was loaded from disk, setting variables
-            // will automatically persist the change
-            child["SomeVariable"] = "Hello";
-
-            parent["SomeVariable"].Should().BeNull();
-
-            // If one process calls another (using the same variables file), the parent process should
-            // reload its variables once the child finishes.
-            parent.Reload();
-
-            parent["SomeVariable"].Should().Be("Hello");
-
-            File.Delete(temp);
         }
 
         [Fact]

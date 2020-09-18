@@ -10,19 +10,7 @@ namespace Octostache
     public class VariableDictionary : IEnumerable<KeyValuePair<string, string>>
     {
         readonly Dictionary<string, string?> variables = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        string? storageFilePath;
         Binding? binding;
-
-        public VariableDictionary() : this(null)
-        {
-        }
-
-        public VariableDictionary(string? storageFilePath)
-        {
-            if (string.IsNullOrWhiteSpace(storageFilePath)) return;
-            this.storageFilePath = Path.GetFullPath(storageFilePath);
-            Reload();
-        }
 
         Binding Binding => binding ?? (binding = PropertyListBinder.CreateFrom(variables));
 
@@ -36,7 +24,6 @@ namespace Octostache
             if (name == null) return;
             variables[name] = value;
             binding = null;
-            Save();
         }
 
         /// <summary>
@@ -70,32 +57,6 @@ namespace Octostache
         public void SetPaths(string variableName, IEnumerable<string> values)
         {
             SetStrings(variableName, values, Environment.NewLine);
-        }
-
-        /// <summary>
-        /// If this variable dictionary was read from a file, reloads all variables from the file.
-        /// </summary>
-        public void Reload()
-        {
-            if (!string.IsNullOrWhiteSpace(storageFilePath))
-            {
-                VariablesFileFormatter.Populate(variables, storageFilePath);
-                binding = null;
-            }
-        }
-
-        public void Save(string path)
-        {
-            storageFilePath = Path.GetFullPath(path);
-            Save();
-        }
-
-        public void Save()
-        {
-            if (!string.IsNullOrWhiteSpace(storageFilePath))
-            {
-                VariablesFileFormatter.Persist(variables, storageFilePath);
-            }
         }
 
         public string SaveAsString()
