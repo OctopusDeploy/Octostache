@@ -36,6 +36,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Octopus.Versioning" Version="4.1.8" />
     <PackageReference Include="Sprache" Version="2.1.0" />
     <PackageReference Include="Markdig" Version="0.10.4" />
   </ItemGroup>
