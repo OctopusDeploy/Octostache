@@ -26,6 +26,7 @@ namespace Octostache.Tests
         [InlineData("284.0.0-debian_component_based", "284", "0", "0", "0", "debian_component_based", "debian", "component_based", "")]
         [InlineData("latest", "0", "0", "0", "0", "latest", "latest", "", "")]
         [InlineData("v1", "1", "0", "0", "0", "", "", "", "")]
+        [InlineData("v1.2.3", "1", "2", "3", "0", "", "", "", "")]
         public void TestVersionMajor(string version, string major, string minor, string patch, string revision, string release, string releasePrefix, string releaseCounter, string metadata)
         {
             var variables =  new Dictionary<string, string>
