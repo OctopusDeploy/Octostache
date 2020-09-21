@@ -4,73 +4,52 @@ using Xunit;
 
 namespace Octostache.Tests
 {
-    public class MavenFixture : BaseFixture
+    public class VersionFixture : BaseFixture
     {
-        const string Version = "1.2.3-4branch";
-        
-        [Fact]
-        public void TestMavenMajor()
+        [Theory]
+        [InlineData("", "0", "0", "0", "0", "", "", "", "")]
+        [InlineData("1", "1", "0", "0", "0", "", "", "", "")]
+        [InlineData("1.2", "1", "2", "0", "0", "", "", "", "")]
+        [InlineData("1.2.3", "1", "2", "3", "0", "", "", "", "")]
+        [InlineData("1.2.3.4", "1", "2", "3", "4", "", "", "", "")]
+        [InlineData("1-2", "1", "2", "0", "0", "", "", "", "")]
+        [InlineData("1-2-3", "1", "2", "3", "0", "", "", "", "")]
+        [InlineData("1-2-3-4", "1", "2", "3", "4", "", "", "", "")]
+        [InlineData("1.2.3.4-branch.1", "1", "2", "3", "4", "branch.1", "branch", "1", "")]
+        [InlineData("1.2.3.4-branch.1+meta", "1", "2", "3", "4", "branch.1", "branch", "1", "meta")]
+        [InlineData("v1.2.3.4-branch.1+meta", "1", "2", "3", "4", "branch.1", "branch", "1", "meta")]
+        [InlineData("V1.2.3.4-branch.1+meta", "1", "2", "3", "4", "branch.1", "branch", "1", "meta")]
+        [InlineData("V1.2.3.4-branch.hithere+meta", "1", "2", "3", "4", "branch.hithere", "branch", "hithere", "meta")]
+        [InlineData("V1.2.3.4-branch-hithere+meta", "1", "2", "3", "4", "branch-hithere", "branch", "hithere", "meta")]
+        [InlineData("V1.2.3.4-branch_hithere+meta", "1", "2", "3", "4", "branch_hithere", "branch", "hithere", "meta")]
+        [InlineData("19.0.0.Final", "19", "0", "0", "0", "Final", "Final", "", "")]
+        [InlineData("284.0.0-debian_component_based", "284", "0", "0", "0", "debian_component_based", "debian", "component_based", "")]
+        [InlineData("latest", "0", "0", "0", "0", "latest", "latest", "", "")]
+        [InlineData("v1", "1", "0", "0", "0", "", "", "", "")]
+        public void TestVersionMajor(string version, string major, string minor, string patch, string revision, string release, string releasePrefix, string releaseCounter, string metadata)
         {
-            var result = Evaluate(
-                                  "#{Version | MavenMajor}", 
-                                  new Dictionary<string, string>
-                                  {
-                                      {"Version", Version}
-                                  });
+            var variables =  new Dictionary<string, string>
+            {
+                {"Version", version}
+            };
 
-            result.Should().Be("1");
-        }
-        
-        [Fact]
-        public void TestMavenMinor()
-        {
-            var result = Evaluate(
-                                  "#{Version | MavenMinor}", 
-                                  new Dictionary<string, string>
-                                  {
-                                      {"Version", Version}
-                                  });
+            var majorResult = Evaluate("#{Version | VersionMajor}", variables);
+            var minorResult = Evaluate("#{Version | VersionMinor}", variables);
+            var patchResult = Evaluate("#{Version | VersionPatch}", variables);
+            var revisionResult = Evaluate("#{Version | VersionRevision}", variables);
+            var releaseResult = Evaluate("#{Version | VersionRelease}", variables);
+            var releasePrefixResult = Evaluate("#{Version | VersionReleasePrefix}", variables);
+            var releaseCounterResult = Evaluate("#{Version | VersionReleaseCounter}", variables);
+            var metadataResult = Evaluate("#{Version | VersionMetadata}", variables);
 
-            result.Should().Be("2");
-        }
-        
-        [Fact]
-        public void TestMavenPatch()
-        {
-            var result = Evaluate(
-                                  "#{Version | MavenPatch}", 
-                                  new Dictionary<string, string>
-                                  {
-                                      {"Version", Version}
-                                  });
-
-            result.Should().Be("3");
-        }
-        
-        [Fact]
-        public void TestMavenRevision()
-        {
-            var result = Evaluate(
-                                  "#{Version | MavenRevision}", 
-                                  new Dictionary<string, string>
-                                  {
-                                      {"Version", Version}
-                                  });
-
-            result.Should().Be("4");
-        }
-        
-        [Fact]
-        public void TestMavenRelease()
-        {
-            var result = Evaluate(
-                                  "#{Version | MavenRelease}", 
-                                  new Dictionary<string, string>
-                                  {
-                                      {"Version", Version}
-                                  });
-
-            result.Should().Be("branch");
+            majorResult.Should().Be(major);
+            minorResult.Should().Be(minor);
+            patchResult.Should().Be(patch);
+            revisionResult.Should().Be(revision);
+            releaseResult.Should().Be(release);
+            releasePrefixResult.Should().Be(releasePrefix);
+            releaseCounterResult.Should().Be(releaseCounter);
+            metadataResult.Should().Be(metadata);
         }
     }
 }

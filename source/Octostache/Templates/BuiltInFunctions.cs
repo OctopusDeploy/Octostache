@@ -31,17 +31,14 @@ namespace Octostache.Templates
             {"truncate", TextManipulationFunction.Truncate},
             {"trim", TextManipulationFunction.Trim},
             {"uripart", TextManipulationFunction.UriPart},
-            {"semvermajor", SemverParseFunction.SemverMajor},
-            {"semverminor", SemverParseFunction.SemverMinor},
-            {"semverpatch", SemverParseFunction.SemverPatch},
-            {"semverrelease", SemverParseFunction.SemverRelease},
-            {"semverrevision", SemverParseFunction.SemverRevision},
-            {"semvermetadata", SemverParseFunction.SemverMetadata},
-            {"mavenmajor", MavenParseFunction.MavenMajor},
-            {"mavenminor", MavenParseFunction.MavenMinor},
-            {"mavenpatch", MavenParseFunction.MavenPatch},
-            {"mavenrelease", MavenParseFunction.MavenRelease},
-            {"mavenrevision", MavenParseFunction.MavenRevision},
+            {"versionmajor", VersionParseFunction.VersionMajor},
+            {"versionminor", VersionParseFunction.VersionMinor},
+            {"versionpatch", VersionParseFunction.VersionPatch},
+            {"versionrelease", VersionParseFunction.VersionRelease},
+            {"versionreleaseprefix", VersionParseFunction.VersionReleasePrefix},
+            {"versionreleasecounter", VersionParseFunction.VersionReleaseCounter},
+            {"versionrevision", VersionParseFunction.VersionRevision},
+            {"versionmetadata", VersionParseFunction.VersionMetadata}
         };
 
         public static string? InvokeOrNull(string function, string? argument, string[] options)
