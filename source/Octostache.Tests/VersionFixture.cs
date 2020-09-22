@@ -38,9 +38,9 @@ namespace Octostache.Tests
             var minorResult = Evaluate("#{Version | VersionMinor}", variables);
             var patchResult = Evaluate("#{Version | VersionPatch}", variables);
             var revisionResult = Evaluate("#{Version | VersionRevision}", variables);
-            var releaseResult = Evaluate("#{Version | VersionRelease}", variables);
-            var releasePrefixResult = Evaluate("#{Version | VersionReleasePrefix}", variables);
-            var releaseCounterResult = Evaluate("#{Version | VersionReleaseCounter}", variables);
+            var releaseResult = Evaluate("#{Version | VersionPreRelease}", variables);
+            var releasePrefixResult = Evaluate("#{Version | VersionPreReleasePrefix}", variables);
+            var releaseCounterResult = Evaluate("#{Version | VersionPreReleaseCounter}", variables);
             var metadataResult = Evaluate("#{Version | VersionMetadata}", variables);
 
             majorResult.Should().Be(major);

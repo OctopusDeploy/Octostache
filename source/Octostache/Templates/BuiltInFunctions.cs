@@ -34,9 +34,9 @@ namespace Octostache.Templates
             {"versionmajor", VersionParseFunction.VersionMajor},
             {"versionminor", VersionParseFunction.VersionMinor},
             {"versionpatch", VersionParseFunction.VersionPatch},
-            {"versionrelease", VersionParseFunction.VersionRelease},
-            {"versionreleaseprefix", VersionParseFunction.VersionReleasePrefix},
-            {"versionreleasecounter", VersionParseFunction.VersionReleaseCounter},
+            {"versionprerelease", VersionParseFunction.VersionRelease},
+            {"versionprereleaseprefix", VersionParseFunction.VersionReleasePrefix},
+            {"versionprereleasecounter", VersionParseFunction.VersionReleaseCounter},
             {"versionrevision", VersionParseFunction.VersionRevision},
             {"versionmetadata", VersionParseFunction.VersionMetadata}
         };
