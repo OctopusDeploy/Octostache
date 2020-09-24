@@ -30,7 +30,15 @@ namespace Octostache.Templates
             {"substring", TextSubstringFunction.Substring},
             {"truncate", TextManipulationFunction.Truncate},
             {"trim", TextManipulationFunction.Trim},
-            {"uripart", TextManipulationFunction.UriPart}
+            {"uripart", TextManipulationFunction.UriPart},
+            {"versionmajor", VersionParseFunction.VersionMajor},
+            {"versionminor", VersionParseFunction.VersionMinor},
+            {"versionpatch", VersionParseFunction.VersionPatch},
+            {"versionprerelease", VersionParseFunction.VersionRelease},
+            {"versionprereleaseprefix", VersionParseFunction.VersionReleasePrefix},
+            {"versionprereleasecounter", VersionParseFunction.VersionReleaseCounter},
+            {"versionrevision", VersionParseFunction.VersionRevision},
+            {"versionmetadata", VersionParseFunction.VersionMetadata}
         };
 
         public static string? InvokeOrNull(string function, string? argument, string[] options)
