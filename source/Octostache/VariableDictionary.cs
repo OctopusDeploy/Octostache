@@ -2,6 +2,7 @@ using Octostache.Templates;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -126,6 +127,7 @@ namespace Octostache
         /// <param name="variableName">The name of the variable.</param>
         /// <param name="defaultValue">The default value to return.</param>
         /// <returns>The value of the variable, or the default value if the variable is not defined.</returns>
+        [return: NotNullIfNotNull("defaultValue")]
         public string? Get(string variableName, string? defaultValue = null)
         {
             return Get(variableName, out string _, defaultValue);
@@ -138,6 +140,7 @@ namespace Octostache
         /// <param name="error">Any parsing errors silently found.</param>
         /// <param name="defaultValue">The default value to return.</param>
         /// <returns>The value of the variable, or the default value if the variable is not defined.</returns>
+        [return: NotNullIfNotNull("defaultValue")]
         public string? Get(string variableName, out string? error, string? defaultValue = null)
         {
             error = null;
@@ -154,6 +157,7 @@ namespace Octostache
         /// <param name="error">Any parsing errors silently found.</param>
         /// <param name="haltOnError">Stop parsing if an error is found.</param>
         /// <returns>The result of the expression.</returns>
+        [return: NotNullIfNotNull("expressionOrVariableOrText")]
         public string? Evaluate(string? expressionOrVariableOrText, out string? error, bool haltOnError = true)
         {
             error = null;
@@ -195,6 +199,7 @@ namespace Octostache
         /// </summary>
         /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>
         /// <returns>The result of the expression.</returns>
+        [return: NotNullIfNotNull("expressionOrVariableOrText")]
         public string? Evaluate(string? expressionOrVariableOrText)
         {
             return Evaluate(expressionOrVariableOrText, out string _);
