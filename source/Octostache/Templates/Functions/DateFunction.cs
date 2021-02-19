@@ -7,10 +7,26 @@ namespace Octostache.Templates.Functions
     {
         public static string? NowDate(string? argument, string[] options)
         {
-            if (argument != null || options.Length > 1)
+            if (argument != null || options.Length > 2)
                 return null;
 
-            return DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified).ToString(options.Any() ? options[0] : "O");
+            string? formatString = null;
+            TimeZoneInfo? tz = null;
+
+            foreach (var option in options)
+            {
+                try
+                {
+                    tz = TimeZoneInfo.FindSystemTimeZoneById(option);
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    formatString = option;
+                }
+            }
+
+            var dt = (tz == null) ? DateTime.Now : TimeZoneInfo.ConvertTime(DateTime.Now, tz);
+            return dt.ToString(formatString ?? "O");
         }
 
         public static string? NowDateUtc(string? argument, string[] options)
