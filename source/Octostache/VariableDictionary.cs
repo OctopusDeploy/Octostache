@@ -13,6 +13,7 @@ namespace Octostache
         readonly Dictionary<string, string?> variables = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         string? storageFilePath;
         Binding? binding;
+        Dictionary<string, Func<string?, string[], string?>> extensions = new Dictionary<string, Func<string?, string[], string?>>();
 
         public VariableDictionary() : this(null)
         {
@@ -171,7 +172,7 @@ namespace Octostache
 
             using (var writer = new StringWriter())
             {
-                TemplateEvaluator.Evaluate(template, Binding, writer, out var missingTokens);
+                TemplateEvaluator.Evaluate(template, Binding, writer, extensions, out var missingTokens);
                 if (missingTokens.Any())
                 {
                     var tokenList = string.Join(", ", missingTokens.Select(token => "'" + token + "'"));
@@ -344,6 +345,17 @@ namespace Octostache
         public void Add(string key, string? value)
         {
             Set(key, value);
+        }
+
+        /// <summary>
+        /// Adds a custom extension function
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="func"></param>
+        public void AddExtension(string name, Func<string?, string[], string?> func)
+        {
+            // Naming conflicts with BuiltInFunctions?
+            extensions[name.ToLowerInvariant()] = func;
         }
     }
 }
