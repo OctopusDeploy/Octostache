@@ -678,5 +678,108 @@ namespace Octostache.Tests
             var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputUrl } });
             result.Should().Be(expectedOutput);
         }
+
+        [Theory]
+        [InlineData("abc def", "Match abc", "true", "Substring in string")]
+        [InlineData("abc def", "Match cba", "false", "Substring not in string")]
+        [InlineData("abc def", "Match", "#{foo | Match}", "No argument provided")]
+        [InlineData("abc def", "Match a b", "#{foo | Match a b}", "Too many arguments provided")]
+        [InlineData("abc def", "Match ABC", "false", "Match is case sensitive")]
+        [InlineData("abc def", @"Match ""abc def""", "true", "Match can handle spaces")]
+        [InlineData("abc'def", @"Match ""abc'def""", "true", "Match can handle single quotes")]
+        [InlineData("abc def", @"Match "".*""", "true", "Regex wildcard should match")]
+        [InlineData("abc def1", @"Match ""[0-9]+""", "true", "Regex range should match")]
+        [InlineData("abc(def", @"Match ""c\(d""", "true", "Escaping regex special character should match")]
+        public void Match(string inputValue, string inputFilterExpression, string expectedOutput, string because)
+        {
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
+            result.Should().Be(expectedOutput, because);
+        }
+
+        [Fact]
+        public void MatchWithVariableOptions()
+        {
+            var result = Evaluate("#{foo | Match #{regex}}", new Dictionary<string, string>
+            {
+                { "foo", "abc def" },
+                { "regex", "def"}
+            });
+            result.Should().Be("true", "Match can handle variable options");
+        }
+
+        [Theory]
+        [InlineData("abc def", "StartsWith abc", "true", "Variable starts with argument")]
+        [InlineData("abc def", "StartsWith bc", "false", "Variable does not start with argument")]
+        [InlineData("abc def", "StartsWith", "#{foo | StartsWith}", "No argument provided")]
+        [InlineData("abc def", "StartsWith a b", "#{foo | StartsWith a b}", "Too many arguments provided")]
+        [InlineData("abc def", "StartsWith ABC", "false", "StartsWith is case sensitive")]
+        [InlineData("abc def", @"StartsWith ""abc d""", "true", "StartsWith can handle spaces")]
+        [InlineData("abc'def", @"StartsWith ""abc'""", "true", "StartsWith can handle single quotes")]
+        public void StartsWith(string inputValue, string inputFilterExpression, string expectedOutput, string because)
+        {
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
+            result.Should().Be(expectedOutput, because);
+        }
+
+        [Fact]
+        public void StartsWithWithVariableOptions()
+        {
+            var result = Evaluate("#{foo | StartsWith #{str}}", new Dictionary<string, string>
+            {
+                { "foo", "abc def" },
+                { "str", "abc"}
+            });
+            result.Should().Be("true", "StartsWith can handle variable options");
+        }
+
+        [Theory]
+        [InlineData("abc def", "EndsWith def", "true", "Variable ends with argument")]
+        [InlineData("abc def", "EndsWith de", "false", "Variable does not end with argument")]
+        [InlineData("abc def", "EndsWith", "#{foo | EndsWith}", "No argument provided")]
+        [InlineData("abc def", "EndsWith a b", "#{foo | EndsWith a b}", "Too many arguments provided")]
+        [InlineData("abc def", "EndsWith DEF", "false", "EndsWith is case sensitive")]
+        [InlineData("abc def", @"EndsWith ""c def""", "true", "EndsWith can handle spaces")]
+        [InlineData("abc'def", @"EndsWith ""'def""", "true", "EndsWith can handle single quotes")]
+        public void EndsWith(string inputValue, string inputFilterExpression, string expectedOutput, string because)
+        {
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
+            result.Should().Be(expectedOutput, because);
+        }
+
+        [Fact]
+        public void EndsWithWithWithVariableOptions()
+        {
+            var result = Evaluate("#{foo | EndsWith #{str}}", new Dictionary<string, string>
+            {
+                { "foo", "abc def" },
+                { "str", "def"}
+            });
+            result.Should().Be("true", "EndsWith can handle variable options");
+        }
+        
+        [Theory]
+        [InlineData("abc def", "Contains de", "true", "Variable contains argument")]
+        [InlineData("abc def", "Contains ed", "false", "Variable does not contain argument")]
+        [InlineData("abc def", "Contains", "#{foo | Contains}", "No argument provided")]
+        [InlineData("abc def", "Contains a b", "#{foo | Contains a b}", "Too many arguments provided")]
+        [InlineData("abc def", "Contains ABC", "false", "Contains is case sensitive")]
+        [InlineData("abc def", @"Contains ""c de""", "true", "Contains can handle spaces")]
+        [InlineData("abc'def", @"Contains ""'de""", "true", "Contains can handle single quotes")]
+        public void Contains(string inputValue, string inputFilterExpression, string expectedOutput, string because)
+        {
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
+            result.Should().Be(expectedOutput, because);
+        }
+
+        [Fact]
+        public void ContainsWithWithVariableOptions()
+        {
+            var result = Evaluate("#{foo | Contains #{str}}", new Dictionary<string, string>
+            {
+                { "foo", "abc def" },
+                { "str", "c d"}
+            });
+            result.Should().Be("true", "Contains can handle variable options");
+        }
     }
 }
