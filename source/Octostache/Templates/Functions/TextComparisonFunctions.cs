@@ -1,8 +1,9 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Octostache.Templates.Functions
 {
-    internal static class TextValidationFunction
+    internal static class TextComparisonFunctions
     {
         public static string? Match(string? argument, string[] options)
         {
@@ -17,7 +18,7 @@ namespace Octostache.Templates.Functions
             if (argument == null || options.Length != 1)
                 return null;
 
-            return argument.StartsWith(options[0]).ToString().ToLowerInvariant();
+            return argument.StartsWith(options[0], StringComparison.Ordinal).ToString().ToLowerInvariant();
         }
         
         public static string? EndsWith(string? argument, string[] options)
@@ -25,7 +26,7 @@ namespace Octostache.Templates.Functions
             if (argument == null || options.Length != 1)
                 return null;
 
-            return argument.EndsWith(options[0]).ToString().ToLowerInvariant();
+            return argument.EndsWith(options[0], StringComparison.Ordinal).ToString().ToLowerInvariant();
         }
         
         public static string? Contains(string? argument, string[] options)
