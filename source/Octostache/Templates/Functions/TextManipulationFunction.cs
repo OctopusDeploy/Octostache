@@ -66,6 +66,44 @@ namespace Octostache.Templates.Functions
             }
         }
 
+        public static string? Append(string? argument, string[] options)
+        {
+            if (argument == null)
+            {
+                if (!options.Any())
+                {
+                    return null;
+                }
+
+                return string.Concat(options);
+            }
+            else if (!options.Any())
+            {
+                return null;
+            }
+
+            return argument + string.Concat(options);
+        }
+
+        public static string? Prepend(string? argument, string[] options)
+        {
+            if (argument == null)
+            {
+                if (!options.Any())
+                {
+                    return null;
+                }
+
+                return string.Concat(options);
+            }
+            else if (!options.Any())
+            {
+                return null;
+            }
+
+            return string.Concat(options) + argument;
+        }
+
         public static string? Truncate(string? argument, string[] options)
         {
             if (argument == null ||
