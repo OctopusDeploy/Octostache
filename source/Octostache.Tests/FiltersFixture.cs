@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Xunit;
 using FluentAssertions;
 using YamlDotNet.Serialization;
+using System.Linq;
 
 namespace Octostache.Tests
 {
@@ -647,6 +648,120 @@ namespace Octostache.Tests
         {
             var result = Evaluate(@"#{foo | Trim Both}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
             result.Should().Be("#{foo | Trim Both}");
+        }
+
+        [Fact]
+        public void IndentingAnEmptyStringHasNoEffect()
+        {
+            var result = Evaluate(@"#{foo | Indent}", new Dictionary<string, string> { { "foo", string.Empty } });
+            result.Should().Be(string.Empty);
+        }
+
+        [Fact]
+        public void IndentingDefaultsToFourSpaces()
+        {
+            var result = Evaluate(@"#{foo | Indent}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("    Octopus Deploy");
+        }
+
+        [Fact]
+        public void IndentingDefaultsToFourSpacesAcrossMultipleLines()
+        {
+            var result = Evaluate(@"#{foo | Indent}", new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } });
+            result.Should().Be("    Octopus Deploy\n    Octopus Deploy\n    Octopus Deploy");
+        }
+
+        public void IndentWithCustomSizeAffectsEachLine()
+        {
+            var result = Evaluate(@"#{foo | Indent 2}", new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } });
+            result.Should().Be("  Octopus Deploy\n  Octopus Deploy\n  Octopus Deploy");
+        }
+
+        [Fact]
+        public void IndentOnSubsequentLinesOnly()
+        {
+            var result = Evaluate(@"#{foo | Indent /3}", new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } });
+            result.Should().Be("Octopus Deploy\n   Octopus Deploy\n   Octopus Deploy");
+        }
+
+        [Fact]
+        public void IndentSizeDifferentOnSubsequentLines()
+        {
+            var result = Evaluate(@"#{foo | Indent 3/2}", new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } });
+            result.Should().Be("   Octopus Deploy\n  Octopus Deploy\n  Octopus Deploy");
+        }
+
+        [Fact]
+        public void IndentWithCustomValue()
+        {
+            var result = Evaluate(@"#{foo | Indent //}", new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } });
+            result.Should().Be("//Octopus Deploy\n//Octopus Deploy\n//Octopus Deploy");
+        }
+
+        [Fact]
+        public void IndentWithDifferentOnSubsequentLines()
+        {
+            var result = Evaluate("#{foo | Indent \"/* \" \" * \"}", new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } });
+            result.Should().Be("/* Octopus Deploy\n * Octopus Deploy\n * Octopus Deploy");
+        }
+
+        [Fact]
+        public void IndentHasMaximumSizeOf255()
+        {
+            var d = new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } };
+            var result = Evaluate(@"#{foo | Indent 255}", d);
+            result.Should().Be(string.Join("\n", Enumerable.Repeat(new string(' ', 255) + "Octopus Deploy", 3)));
+
+            var outOfBoundsResult = Evaluate(@"#{foo | Indent 256}", d);
+            outOfBoundsResult.Should().Be(string.Join("\n", Enumerable.Repeat("256Octopus Deploy", 3)));
+        }
+
+        [Fact]
+        public void IndentMaximumAppliesOnSubsequent()
+        {
+            var d = new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } };
+            var result = Evaluate(@"#{foo | Indent /255}", d);
+            result.Should().Be(string.Join("\n", Enumerable.Repeat(new string(' ', 255) + "Octopus Deploy", 3)).TrimStart());
+
+            var outOfBoundsResult = Evaluate(@"#{foo | Indent /256}", d);
+            outOfBoundsResult.Should().Be(string.Join("\n", Enumerable.Repeat("/256Octopus Deploy", 3)));
+        }
+
+        [Fact]
+        public void IndentMaximumAppliesOnInitial()
+        {
+            var d = new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } };
+            var result = Evaluate(@"#{foo | Indent 255/3}", d);
+            result.Should().Be(new string(' ', 252) + string.Join("\n", Enumerable.Repeat("   Octopus Deploy", 3)));
+
+            var outOfBoundsResult = Evaluate(@"#{foo | Indent 256/3}", d);
+            outOfBoundsResult.Should().Be(string.Join("\n", Enumerable.Repeat("256/3Octopus Deploy", 3)));
+        }
+
+        [Fact]
+        public void IndentWithInvalidOptionsDoesNothing()
+        {
+            var template = "#{foo | Indent abc 123 def}";
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "foo" } });
+            result.Should().Be(template);
+        }
+
+        [Fact]
+        public void IndentWithNoArgumentDoesNothing()
+        {
+            var template = "#{ | Indent}";
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "foo" } });
+            result.Should().Be(template);
+        }
+
+        [Fact]
+        public void IndentWithHashCharacter()
+        {
+            // The hash character requires special quoting in filter options
+            var template = "#{ foo | Indent \\\"# \\\"}";
+            var d = new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } };
+            var result = Evaluate(template, d);
+            result.Should().Be(string.Join("\n", Enumerable.Repeat("# Octopus Deploy", 3)));
         }
 
         [Theory]
