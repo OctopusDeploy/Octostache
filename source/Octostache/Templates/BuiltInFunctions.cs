@@ -42,7 +42,14 @@ namespace Octostache.Templates
             { "versionprereleaseprefix", VersionParseFunction.VersionReleasePrefix },
             { "versionprereleasecounter", VersionParseFunction.VersionReleaseCounter },
             { "versionrevision", VersionParseFunction.VersionRevision },
-            { "versionmetadata", VersionParseFunction.VersionMetadata }
+            { "versionmetadata", VersionParseFunction.VersionMetadata },
+            { "append", TextManipulationFunction.Append },
+            { "prepend", TextManipulationFunction.Prepend },
+            { "md5", HashFunction.Md5 },
+            { "sha1", HashFunction.Sha1 },
+            { "sha256", HashFunction.Sha256 },
+            { "sha384", HashFunction.Sha384 },
+            { "sha512", HashFunction.Sha512 },
         };
 
         public static string? InvokeOrNull(string function, string? argument, string[] options)
