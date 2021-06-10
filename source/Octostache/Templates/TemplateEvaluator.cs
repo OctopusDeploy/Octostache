@@ -22,6 +22,12 @@ namespace Octostache.Templates
             Evaluate(template, context, out missingTokens);
         }
 
+        public static void Evaluate(Template template, Binding properties, TextWriter output, Dictionary<string, Func<string?, string[], string?>> extensions, out string[] missingTokens)
+        {
+            var context = new EvaluationContext(properties, output, extensions: extensions);
+            Evaluate(template, context, out missingTokens);
+        }
+
         void Evaluate(IEnumerable<TemplateToken> tokens, EvaluationContext context)
         {
             foreach (var token in tokens)
@@ -169,7 +175,22 @@ namespace Octostache.Templates
 
             var args = fx.Options.Select(opt => Resolve(opt, context)).ToArray();
 
-            return BuiltInFunctions.InvokeOrNull(fx.Function, argument, args);
+            var funcOut = BuiltInFunctions.InvokeOrNull(fx.Function, argument, args);
+            if (funcOut != null)
+            {
+                return funcOut;
+            }
+            return InvokeOrNullExtension(context.Extensions, fx.Function, argument, args);
+        }
+
+        private string? InvokeOrNullExtension(Dictionary<string, Func<string?, string[], string?>> extensions, string function, string? argument, string[] args)
+        {
+            var functionName = function.ToLowerInvariant();
+
+            if (extensions.TryGetValue(functionName, out var ext))
+                return ext(argument, args);
+
+            return null;
         }
 
         string Resolve(TemplateToken token, EvaluationContext context)
