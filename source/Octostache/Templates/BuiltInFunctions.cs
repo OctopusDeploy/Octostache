@@ -34,6 +34,7 @@ namespace Octostache.Templates
             { "substring", TextSubstringFunction.Substring },
             { "truncate", TextManipulationFunction.Truncate },
             { "trim", TextManipulationFunction.Trim },
+            { "indent", TextManipulationFunction.Indent },
             { "uripart", TextManipulationFunction.UriPart },
             { "versionmajor", VersionParseFunction.VersionMajor },
             { "versionminor", VersionParseFunction.VersionMinor },
