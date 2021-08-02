@@ -50,6 +50,8 @@ namespace Octostache.Templates
              select new Indexer((SymbolExpression)index.Expression))
             .WithPosition();
 
+        // Parsing the string of the Index, recursively parse any nested index in the string.
+        // Eg: "Package[containers[0].container].Registry"
         static readonly Parser<Indexer> StringIndexer =
             from open in Parse.Char('[')
             from parts in (from indexer in StringIndexer
@@ -65,10 +67,10 @@ namespace Octostache.Templates
                  (from open in Parse.Char('[')
                   from index in SymbolIndexer.Token()
                   from close in Parse.Char(']')
-                  select index) // NonEmpty Index
+                  select index) // NonEmpty Symbol Index
                  .Or(from index in StringIndexer
                      select index)
-                 .WithPosition()
+                 .WithPosition() // NonEmpty String Index
                  .Or(from open in Parse.Char('[')
                      from close in Parse.Char(']')
                      select new Indexer(string.Empty)) //Empty Index

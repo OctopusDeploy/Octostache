@@ -233,6 +233,28 @@ namespace Octostache.Tests
         }
 
         [Fact]
+        public void NestedIndexersAreSupported()
+        {
+            var result = Evaluate("#{Octopus.Action.Package[containers[0].container].Registry}", new Dictionary<string, string>
+            {
+                { "Octopus.Action.Package[containers[0].container].Registry", "docker.io" },
+            });
+
+            result.Should().Be("docker.io");
+        }
+        
+        [Fact]
+        public void MultipleNestedIndexersAreSupported()
+        {
+            var result = Evaluate("#{Octopus.Action.Package[array[foo].containers[0].container].Registry}", new Dictionary<string, string>
+            {
+                { "Octopus.Action.Package[array[foo].containers[0].container].Registry", "docker.io" },
+            });
+
+            result.Should().Be("docker.io");
+        }
+
+        [Fact]
         public void MissingVariableIndexersFailToEvaluateGracefully()
         {
             var result = Evaluate("#{Octopus.Action[#{Package}].Name}", new Dictionary<string, string>
