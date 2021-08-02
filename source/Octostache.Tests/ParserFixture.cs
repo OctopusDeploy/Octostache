@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Linq;
+using FluentAssertions;
 using Octostache.Templates;
 using Xunit;
 
@@ -38,6 +39,71 @@ namespace Octostache.Tests
             result.Should().NotContain("ignored");
             result.Should().NotContain("item");
             result.Should().NotContain("item.Address");
+        }
+
+        [Fact]
+        public void NestedIndexCanBeExtracted()
+        {
+            var template = "#{Octopus.Action[].Package[containers[1].container].PackageVersion}";
+            var result = TemplateParser.ParseTemplateAndGetArgumentNames(template);
+            result.Should().Contain("[containers[1].container]");
+        }
+        
+        [Fact]
+        public void MultipleNestedIndicesCanBeExtracted()
+        {
+            var template = "#{Octopus.Action[].Package[array[foo].containers[1].container].PackageVersion}";
+            var result = TemplateParser.ParseTemplateAndGetArgumentNames(template);
+            result.Should().Contain("[array[foo].containers[1].container]");
+        }
+        
+        [Fact]
+        public void StepPackageInputsCanBeExtracted()
+        {
+            var template = @"{
+    ""name"": ""myservice"",
+    ""containers"": [
+        {
+            ""containerName"": ""nginx"",
+            ""container"": {
+                ""imageName"": ""nginx"",
+                ""imageTag"": ""#{Octopus.Action.Package[containers[0].container].PackageVersion}"",
+                ""feed"": {
+                    ""url"": ""#{Octopus.Action.Package[containers[0].container].Registry}""
+                }
+            },
+            ""memoryLimitHard"": 0
+        },
+        {
+            ""containerName"": ""busybox"",
+            ""container"": {
+                ""imageName"": ""busybox"",
+                ""imageTag"": ""#{Octopus.Action.Package[containers[1].container].PackageVersion}"",
+                ""feed"": {
+                    ""url"": ""#{Octopus.Action.Package[containers[1].container].Registry}""
+                }
+            },
+            ""memoryLimitHard"": 0
+        }
+    ],
+    ""task"": {
+        ""taskName"": """"
+    },
+    ""networkConfiguration"": {
+        ""securityGroupId"": ""foo"",
+        ""subnetId"": ""foo"",
+        ""autoAssignPublicIp"": true
+    },
+    ""desiredCount"": 1,
+    ""additionalTags"": []
+}";
+
+            // This represents what we do in calamari when processing inputs for a step package in JsonEscapeAllVariablesInOurInputs:
+            // https://github.com/OctopusDeploy/Calamari/blob/cbc46c67aa3b94e7d4b06a69c24694fb50bcb30e/source/Calamari/LaunchTools/NodeExecutor.cs#L70
+            var result = TemplateParser.ParseTemplateAndGetArgumentNames(template);
+
+            result.Should().Contain("[containers[0].container]");
+            result.Should().Contain("[containers[1].container]");
         }
     }
 }
