@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -252,6 +252,19 @@ namespace Octostache.Tests
             });
 
             result.Should().Be("docker.io");
+        }
+
+        [Fact]
+        public void JsonEscapeShouldBeSupported()
+        {
+            var result = Evaluate("#{Octopus.Action.Package[package].ExtractedPath | JsonEscape}", new Dictionary<string, string>
+            {
+                { 
+                    "Octopus.Action.Package[package].ExtractedPath", @"C:\OctopusTest\Api Test\1\Octopus-Primary\Work\20210804020317-7-11\package"
+                },
+            });
+
+            result.Should().Be(@"C:\\OctopusTest\\Api Test\\1\\Octopus-Primary\\Work\\20210804020317-7-11\\package");
         }
 
         [Fact]
