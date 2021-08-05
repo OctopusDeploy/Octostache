@@ -26,7 +26,7 @@ namespace Octostache.Templates
             return "[" + (IsSymbol ? "#{"+ Symbol +"}" : Index) + "]";
         }
 
-        public override IEnumerable<string> GetArguments() => Symbol?.GetArguments() ?? (Index != null ? new string[] { $"[${Index}]" } : new string[0]);
+        public override IEnumerable<string> GetArguments() => Symbol?.GetArguments() ?? (Index != null ? new string[] { $"[{Index}]" } : new string[0]);
 
         public override bool Equals(SymbolExpressionStep? other) => other != null && Equals((other as Indexer)!);
 
