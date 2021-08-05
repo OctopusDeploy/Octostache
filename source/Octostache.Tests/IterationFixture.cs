@@ -94,5 +94,21 @@ namespace Octostache.Tests
 
             result.Should().Be("A First:True Last:False Index:0, B First:False Last:False Index:1, C First:False Last:True Index:2, ");
         }
+
+        [Fact]
+        public void NestedIndexIterationIsSupported()
+        {
+            var result =
+                Evaluate(
+                         "#{each a in Octopus.Action.Package}#{a}: #{a.Name} #{/each}",
+                         new Dictionary<string, string>
+                         {
+                             { "Octopus.Action.Package[container[0]].Name", "A" },
+                             { "Octopus.Action.Package[container[1]].Name", "B" },
+                             { "Octopus.Action.Package[container[2]].Name", "C" },
+                         });
+
+            result.Should().Be("container[0]: A container[1]: B container[2]: C ");
+        }
     }
 }
