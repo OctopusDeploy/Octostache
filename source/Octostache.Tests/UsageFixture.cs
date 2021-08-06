@@ -395,16 +395,33 @@ namespace Octostache.Tests
         }
 
         [Fact]
+        public void NestedIndexingWithASymbolIsSupported()
+        {
+            var result = Evaluate("#{Step[#{action.StepName}]}",
+                              new Dictionary<string, string>
+                              {
+                                  { "action.StepName", "Steps[#{index}].step" },
+                                  { "index", "0" },
+                                  { "Step[Steps[0].step]", "Step 0" },
+                              });
+
+            result.Should().Be("Step 0");
+        }
+
+        [Fact]
         public void IndexingIsSupportedWithWildcards()
         {
             var result = Evaluate("#{Octopus.Action[*].Name}",
                 new Dictionary<string, string>
                 {
-                    {"Octopus.Action[Package A].Name", "A"},
-                    {"Octopus.Action[Package B].Name", "B"}
+                    { "Octopus.Action[Package A].Name", "A" },
+                    { "Octopus.Action[Package B].Name", "B" },
+                    { "Octopus.Action[Package[0]].Name", "C" },
+                    { "Octopus.Action[Package[1].Registry].Name", "D" },
+                    { "Octopus.Action[array[foo].Package[0].Registry].Name", "E" }
                 });
 
-            result.Should().BeOneOf("A", "B");
+            result.Should().BeOneOf("A", "B", "C", "D", "E");
         }
 
         [Fact]
@@ -601,15 +618,21 @@ namespace Octostache.Tests
             {
                 ["Octopus.Action[Package A].Name"] = "A",
                 ["Octopus.Action[Package B].Name"] = "B",
+                ["Octopus.Action[Package[0]].Name"] = "C",
+                ["Octopus.Action[Package[1].Registry].Name"] = "D",
+                ["Octopus.Action[array[foo].Package[0].Registry].Name"] = "E",
                 ["Octopus.Action[].Name"] = "C",
                 ["PackageBName"] = "#{Octopus.Action[Package B].Name}",
             };
 
             var presentIndexes = variableDictionary.GetIndexes("Octopus.Action");
 
-            presentIndexes.Should().HaveCount(3);
+            presentIndexes.Should().HaveCount(6);
             presentIndexes.Should().Contain("Package A");
             presentIndexes.Should().Contain("Package B");
+            presentIndexes.Should().Contain("Package[0]");
+            presentIndexes.Should().Contain("Package[1].Registry");
+            presentIndexes.Should().Contain("array[foo].Package[0].Registry");
             presentIndexes.Should().Contain("");
 
             var absentIndexes = variableDictionary.GetIndexes("Foo.Bar");

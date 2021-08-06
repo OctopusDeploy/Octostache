@@ -19,8 +19,6 @@ namespace Octostache.Tests
                    #{item.Address}
                 #{/each}
                 ##{ignored}
-                #{Octopus.Action[].Package[containers[1].container].PackageVersion}
-                #{Octopus.Action[].Package[array[foo].containers[1].container].PackageVersion}
             ";
 
             var result = TemplateParser.ParseTemplateAndGetArgumentNames(template, true);
@@ -35,8 +33,6 @@ namespace Octostache.Tests
                 "ifnested",
                 "comparison",
                 "List",
-                "[containers[1].container]",
-                "[array[foo].containers[1].container]"
             });
 
             result.Should().NotContain("ignored");
