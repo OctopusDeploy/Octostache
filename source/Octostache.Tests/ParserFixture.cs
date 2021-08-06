@@ -32,7 +32,7 @@ namespace Octostache.Tests
                 "ifvar",
                 "ifnested",
                 "comparison",
-                "List"
+                "List",
             });
 
             result.Should().NotContain("ignored");

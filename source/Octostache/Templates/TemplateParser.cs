@@ -42,27 +42,39 @@ namespace Octostache.Templates
              from expression in Expression.Token()
              from rdelim in RDelim
              select new SubstitutionToken(expression))
-                .WithPosition();
-
-        static readonly Parser<Indexer> StringIndexer =
-            (from index in Parse.CharExcept(']').AtLeastOnce().Text()
-             select new Indexer(index))
-                .WithPosition();
+            .WithPosition();
 
         static readonly Parser<Indexer> SymbolIndexer =
             (from index in Substitution.Token()
              where index.Expression is SymbolExpression
-             select new Indexer((SymbolExpression) index.Expression))
-                .WithPosition();
+             select new Indexer((SymbolExpression)index.Expression))
+            .WithPosition();
+
+        // Parsing the string of the Index, recursively parse any nested index in the string.
+        // Eg: "Package[containers[0].container].Registry"
+        static readonly Parser<Indexer> StringIndexer =
+            from open in Parse.Char('[')
+            from parts in (from indexer in StringIndexer
+                           select indexer.ToString())
+                          .Or(Parse.CharExcept(new[] { ']', '[' }).AtLeastOnce().Text())
+                          .Many()
+                          .Token()
+            from close in Parse.Char(']')
+            select new Indexer(string.Join("", parts));
 
         static readonly Parser<Indexer> Indexer =
-            (from open in Parse.Char('[')
-                from index in (from index in SymbolIndexer.Token().Or(StringIndexer.Token())
-                        from close in Parse.Char(']')
-                        select index) // NonEmpty Index
-                    .Or(from close in Parse.Char(']')
-                        select new Indexer(string.Empty)) //Empty Index
-                select index)
+            (from index in
+                 (from open in Parse.Char('[')
+                  from index in SymbolIndexer.Token()
+                  from close in Parse.Char(']')
+                  select index) // NonEmpty Symbol Index
+                 .Or(from index in StringIndexer
+                     select index)
+                 .WithPosition() // NonEmpty String Index
+                 .Or(from open in Parse.Char('[')
+                     from close in Parse.Char(']')
+                     select new Indexer(string.Empty)) //Empty Index
+             select index)
             .WithPosition()
             .Named("indexer");
 
