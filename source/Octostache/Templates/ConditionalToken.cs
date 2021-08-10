@@ -52,7 +52,7 @@ namespace Octostache.Templates
     {
         public string RightSide { get; }
         public bool Equality { get; }
-        public override string EqualityText => " " + (Equality ? "==" : "!=") + " " + RightSide + " ";
+        public override string EqualityText => " " + (Equality ? "==" : "!=") + " \"" + RightSide + "\" ";
 
         public ConditionalStringExpressionToken(SymbolExpression leftSide, bool eq, string rightSide) : base(leftSide)
         {
