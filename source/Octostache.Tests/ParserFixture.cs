@@ -45,8 +45,8 @@ namespace Octostache.Tests
         [Fact]
         public void ParsedTemplateIsConvertibleBackToString()
         {
-            // This test verifies that it is possible to convert a parsed template ToString
-            // And then find individual tokens within the template by calling ToString on each one individually
+            // This test verifies that it is possible to convert a parsed template to a string
+            // and then find individual tokens within the template by calling ToString on each token individually
             
             var template = @"
                 #{var}
@@ -67,9 +67,11 @@ namespace Octostache.Tests
                 #{MyVar | UriPart IsFile}
             ";
 
-            TemplateParser.TryParseTemplate(template, out var parsedTemplate, out string error).Should().BeTrue();
-            string.IsNullOrEmpty(error).Should().BeTrue();
-            parsedTemplate.Should().NotBeNull();
+            TemplateParser.TryParseTemplate(template, out var parsedTemplate, out string _);
+            parsedTemplate.ToString().Should().NotBeEmpty();
+            
+            // We convert the template back to the string representation and then remove individual parsed expressions until there is nothing left
+            // The purpose is to verify that both methods (on template and tokens) are deterministic and produce equivalent string representations
             string templateConvertedBackToString = parsedTemplate.ToString();
             foreach (var templateToken in parsedTemplate.Tokens)
             {
