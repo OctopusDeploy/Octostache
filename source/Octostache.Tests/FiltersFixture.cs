@@ -33,7 +33,8 @@ namespace Octostache.Tests
         [Fact]
         public void UnknownFiltersWithOptionsAreEchoed()
         {
-            var result = Evaluate("#{Foo | ToBazooka 6}", new Dictionary<string, string> { { "Foo", "Abc" } });
+            var result = Evaluate("#{Foo | ToBazooka 6}", new Dictionary<string, string> { { "Foo", "Abc" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{Foo | ToBazooka 6}");
         }
 
@@ -336,7 +337,8 @@ namespace Octostache.Tests
         {
             var dict = new Dictionary<string, string> { { "Invalid", "hello World" } };
 
-            var result = Evaluate("#{Invalid | Format yyyy}", dict);
+            var result = Evaluate("#{Invalid | Format yyyy}", dict)
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{Invalid | Format yyyy}");
         }
 
@@ -513,98 +515,112 @@ namespace Octostache.Tests
         [Fact]
         public void SubstringDoesNothing()
         {
-            var result = Evaluate(@"#{foo | Substring}", new Dictionary<string, string> { { "foo" , "ababa" } });
+            var result = Evaluate(@"#{foo | Substring}", new Dictionary<string, string> { { "foo" , "ababa" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring}");
         }
 
         [Fact]
         public void SubstringWithTooManyArgumentsDoesNothing()
         {
-            var result = Evaluate(@"#{foo | Substring 1 2 3}", new Dictionary<string, string> {{"foo", "ababa"}});
+            var result = Evaluate(@"#{foo | Substring 1 2 3}", new Dictionary<string, string> {{"foo", "ababa"}})
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 1 2 3}");
         }
 
         [Fact]
         public void SubstringWithOnlyLength()
         {
-            var result = Evaluate(@"#{foo | Substring 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Substring 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("Octopus");
         }
 
         [Fact]
         public void SubstringWithStartAndLength()
         {
-            var result = Evaluate(@"#{foo | Substring 8 6}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Substring 8 6}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("Deploy");
         }
 
         [Fact]
         public void SubstringHandlesNonNumericLength()
         {
-            var result = Evaluate(@"#{foo | Substring a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Substring a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring a}");
         }
 
         [Fact]
         public void SubstringHandlesNonNumericLengthWithStart()
         {
-            var result = Evaluate(@"#{foo | Substring 0 a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Substring 0 a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 0 a}");
         }
 
         [Fact]
         public void SubstringHandlesLengthIndexOutOfRange()
         {
-            var result = Evaluate(@"#{foo | Substring 20}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Substring 20}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 20}");
         }
 
         [Fact]
         public void SubstringHandlesStartAndLengthIndexOutOfRange()
         {
-            var result = Evaluate(@"#{foo | Substring 8 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Substring 8 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 8 7}");
         }
 
         [Fact]
         public void SubstringHandlesNegativeValueForLength()
         {
-            var result = Evaluate(@"#{foo | Substring -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Substring -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring -1}");
         }
 
         [Fact]
         public void SubstringHandlesNegativeStartAndLength()
         {
-            var result = Evaluate(@"#{foo | Substring 0 -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Substring 0 -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 0 -1}");
         }
 
         [Fact]
         public void TruncateDoesNothing()
         {
-            var result = Evaluate(@"#{foo | Truncate}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Truncate}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Truncate}");
         }
 
         [Fact]
         public void TruncateDoesNothingWithLengthGreaterThanArgumentLength()
         {
-            var result = Evaluate(@"#{foo | Truncate 50}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Truncate 50}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("Octopus Deploy");
         }
 
         [Fact]
         public void TruncateHandlesNonNumericLength()
         {
-            var result = Evaluate(@"#{foo | Truncate a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Truncate a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Truncate a}");
         }
 
         [Fact]
         public void TruncateHandlesNegativeLength()
         {
-            var result = Evaluate(@"#{foo | Truncate -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Truncate -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Truncate -1}");
         }
 
@@ -646,7 +662,8 @@ namespace Octostache.Tests
         [Fact]
         public void TrimWithInvalidOptionDoesNoting()
         {
-            var result = Evaluate(@"#{foo | Trim Both}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            var result = Evaluate(@"#{foo | Trim Both}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Trim Both}");
         }
 
@@ -742,7 +759,8 @@ namespace Octostache.Tests
         public void IndentWithInvalidOptionsDoesNothing()
         {
             var template = "#{foo | Indent abc 123 def}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "foo" } });
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "foo" } })
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -798,7 +816,7 @@ namespace Octostache.Tests
         [InlineData("abc def", "Match abc", "true", "Substring in string")]
         [InlineData("abc def", "Match cba", "false", "Substring not in string")]
         [InlineData("abc def", "Match", "#{foo | Match}", "No argument provided")]
-        [InlineData("abc def", "Match a b", "#{foo | Match a b}", "Too many arguments provided")]
+        [InlineData("abc def", "Match a b", "#{foo | Match \"a\" \"b\"}", "Too many arguments provided")]
         [InlineData("abc def", "Match ABC", "false", "Match is case sensitive")]
         [InlineData("abc def", @"Match ""abc def""", "true", "Match can handle spaces")]
         [InlineData("abc'def", @"Match ""abc'def""", "true", "Match can handle single quotes")]
@@ -826,7 +844,7 @@ namespace Octostache.Tests
         [InlineData("abc def", "StartsWith abc", "true", "Variable starts with argument")]
         [InlineData("abc def", "StartsWith bc", "false", "Variable does not start with argument")]
         [InlineData("abc def", "StartsWith", "#{foo | StartsWith}", "No argument provided")]
-        [InlineData("abc def", "StartsWith a b", "#{foo | StartsWith a b}", "Too many arguments provided")]
+        [InlineData("abc def", "StartsWith a b", "#{foo | StartsWith \"a\" \"b\"}", "Too many arguments provided")]
         [InlineData("abc def", "StartsWith ABC", "false", "StartsWith is case sensitive")]
         [InlineData("abc def", @"StartsWith ""abc d""", "true", "StartsWith can handle spaces")]
         [InlineData("abc'def", @"StartsWith ""abc'""", "true", "StartsWith can handle single quotes")]
@@ -851,7 +869,7 @@ namespace Octostache.Tests
         [InlineData("abc def", "EndsWith def", "true", "Variable ends with argument")]
         [InlineData("abc def", "EndsWith de", "false", "Variable does not end with argument")]
         [InlineData("abc def", "EndsWith", "#{foo | EndsWith}", "No argument provided")]
-        [InlineData("abc def", "EndsWith a b", "#{foo | EndsWith a b}", "Too many arguments provided")]
+        [InlineData("abc def", "EndsWith a b", "#{foo | EndsWith \"a\" \"b\"}", "Too many arguments provided")]
         [InlineData("abc def", "EndsWith DEF", "false", "EndsWith is case sensitive")]
         [InlineData("abc def", @"EndsWith ""c def""", "true", "EndsWith can handle spaces")]
         [InlineData("abc'def", @"EndsWith ""'def""", "true", "EndsWith can handle single quotes")]
@@ -876,7 +894,7 @@ namespace Octostache.Tests
         [InlineData("abc def", "Contains de", "true", "Variable contains argument")]
         [InlineData("abc def", "Contains ed", "false", "Variable does not contain argument")]
         [InlineData("abc def", "Contains", "#{foo | Contains}", "No argument provided")]
-        [InlineData("abc def", "Contains a b", "#{foo | Contains a b}", "Too many arguments provided")]
+        [InlineData("abc def", "Contains a b", "#{foo | Contains \"a\" \"b\"}", "Too many arguments provided")]
         [InlineData("abc def", "Contains ABC", "false", "Contains is case sensitive")]
         [InlineData("abc def", @"Contains ""c de""", "true", "Contains can handle spaces")]
         [InlineData("abc'def", @"Contains ""'de""", "true", "Contains can handle single quotes")]
@@ -969,7 +987,8 @@ namespace Octostache.Tests
         [InlineData("#{ | Md5}")]
         public void Md5HashInvalidTemplate(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }})
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -1041,7 +1060,8 @@ namespace Octostache.Tests
         [InlineData("#{ | Sha1}")]
         public void Sha1HashInvalidTemplate(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }})
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -1113,7 +1133,8 @@ namespace Octostache.Tests
         [InlineData("#{ | Sha256}")]
         public void Sha256HashInvalidTemplate(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }})
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -1185,7 +1206,8 @@ namespace Octostache.Tests
         [InlineData("#{ | Sha384}")]
         public void Sha384HashInvalidTemplate(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }})
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -1257,7 +1279,8 @@ namespace Octostache.Tests
         [InlineData("#{ | Sha512}")]
         public void Sha512HashInvalidTemplate(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }})
+                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
