@@ -1,3 +1,4 @@
 channel "Default" {
     is_default = true
+    lifecycle = "Public Components"
 }
