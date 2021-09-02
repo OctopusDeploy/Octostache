@@ -1,0 +1,9 @@
+channel "Default" {
+    is_default = true
+    lifecycle = "Public Components"
+}
+
+channel "Pre-release" {
+    description = "Pre-releases should only ever go to our internal nuget feed"
+    lifecycle = "Components Internal only"
+}
