@@ -4,6 +4,7 @@ using Nuke.Common.CI;
 using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.NuGet;
 using Nuke.Common.Utilities.Collections;
@@ -16,7 +17,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [ShutdownDotNetAfterServerBuild]
 class Build : NukeBuild
 {
-    public static int Main() => Execute<Build>(x => x.Default);
+    public static int Main() => Execute<Build>(x => x.Publish);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")] readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
@@ -91,18 +92,22 @@ class Build : NukeBuild
 
     Target Publish => _ => _
                            .DependsOn(Pack)
-                           .OnlyWhenStatic(() => !IsLocalBuild)
+                           //.OnlyWhenStatic(() => !IsLocalBuild)
                            .Executes(() =>
                                      {
                                          NuGetTasks.NuGetPush(settings => settings
-                                                                  .SetSource("https://f.feedz.io/octopus-deploy/dependencies/nuget")
-                                                                  .SetApiKey(FeedzApiKey));
+                                                                          .SetTargetPath(ArtifactsDirectory / $"Octostache.{OctoVersion.NuGetVersion}.nupkg")
+                                                                          .SetSource("https://f.feedz.io/octopus-deploy/dependencies/nuget")
+                                                                          .SetApiKey(FeedzApiKey)
+                                                                          .SetProcessArgumentConfigurator(args => args.Add("-SkipDuplicate")));
 
                                          if (OctoVersion.PreReleaseTagWithDash == "")
                                          {
                                              NuGetTasks.NuGetPush(settings => settings
+                                                                              .SetTargetPath(ArtifactsDirectory / $"Octostache.{OctoVersion.NuGetVersion}.nupkg")
                                                                               .SetSource("https://www.nuget.org/api/v2/package")
-                                                                              .SetApiKey(NuGetApiKey));
+                                                                              .SetApiKey(NuGetApiKey)
+                                                                              .SetProcessArgumentConfigurator(args => args.Add("-SkipDuplicate")));
                                          }
                                      });
 
