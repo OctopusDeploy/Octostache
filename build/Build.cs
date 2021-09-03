@@ -92,7 +92,7 @@ class Build : NukeBuild
 
     Target Publish => _ => _
                            .DependsOn(Pack)
-                           //.OnlyWhenStatic(() => !IsLocalBuild)
+                           .OnlyWhenStatic(() => !IsLocalBuild)
                            .Executes(() =>
                                      {
                                          NuGetTasks.NuGetPush(settings => settings
