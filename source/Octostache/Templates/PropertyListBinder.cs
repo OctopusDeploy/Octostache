@@ -11,7 +11,7 @@ namespace Octostache.Templates
             var result = new Binding();
             foreach (var property in properties)
             {
-                if (TemplateParser.TryParseIdentifierPath(property.Key, out var pathExpression))
+                if (TemplateParser.TryParseIdentifierPath(property.Key, out var pathExpression) && pathExpression != null)
                 {
                     Add(result, pathExpression.Steps, property.Value ?? "");
                 }
@@ -19,7 +19,7 @@ namespace Octostache.Templates
             return result;
         }
 
-        static void Add(Binding result, IEnumerable<SymbolExpressionStep> steps, string value)
+        static void Add(Binding result, IList<SymbolExpressionStep> steps, string value)
         {
             var first = steps.FirstOrDefault();
 
@@ -31,29 +31,32 @@ namespace Octostache.Templates
 
             Binding next;
 
-            if (first is Identifier iss)
+            switch (first)
             {
-                if (!result.TryGetValue(iss.Text, out next))
+                case Identifier iss:
                 {
-                    result[iss.Text] = next = new Binding();
+                    if (!result.TryGetValue(iss.Text, out next))
+                    {
+                        result[iss.Text] = next = new Binding();
+                    }
+
+                    break;
                 }
-            }
-            else
-            {
-                if (first is Indexer ix && ix.Index != null)
+                // ReSharper disable once MergeIntoPattern
+                case Indexer ix when ix.Index != null:
                 {
                     if (!result.Indexable.TryGetValue(ix.Index, out next))
                     {
                         result.Indexable[ix.Index] = next = new Binding(ix.Index);
                     }
+
+                    break;
                 }
-                else
-                {
+                default:
                     throw new NotImplementedException("Unknown step type: " + first);
-                }
             }
 
-            Add(next, steps.Skip(1), value);
+            Add(next, steps.Skip(1).ToList(), value);
         }
     }
 }

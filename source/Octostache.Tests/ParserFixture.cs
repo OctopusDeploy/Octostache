@@ -1,13 +1,13 @@
-﻿using System.Linq;
+﻿using System;
+using System.Diagnostics;
 using FluentAssertions;
-using Newtonsoft.Json;
 using Octostache.Templates;
 using Xunit;
 
 namespace Octostache.Tests
 {
     public class ParserFixture : BaseFixture
-    {
+    {   
         [Fact]
         public void AListOfVariablesCanBeExtracted()
         {
@@ -23,7 +23,7 @@ namespace Octostache.Tests
                 ##{ignored}
             ";
 
-            var result = TemplateParser.ParseTemplateAndGetArgumentNames(template, true);
+            var result = TemplateParser.ParseTemplateAndGetArgumentNames(template);
             result.Should().Contain(new[]
             {
                 "var",
@@ -68,11 +68,12 @@ namespace Octostache.Tests
             ";
 
             TemplateParser.TryParseTemplate(template, out var parsedTemplate, out string _);
+            parsedTemplate.Should().NotBeNull();
             parsedTemplate.ToString().Should().NotBeEmpty();
             
             // We convert the template back to the string representation and then remove individual parsed expressions until there is nothing left
             // The purpose is to verify that both methods (on template and tokens) are deterministic and produce equivalent string representations
-            string templateConvertedBackToString = parsedTemplate.ToString();
+            var templateConvertedBackToString = parsedTemplate.ToString();
             foreach (var templateToken in parsedTemplate.Tokens)
             {
                 if (!string.IsNullOrWhiteSpace(templateToken.ToString()))
@@ -81,6 +82,26 @@ namespace Octostache.Tests
 
             templateConvertedBackToString = templateConvertedBackToString.Replace("\r\n", "");
             templateConvertedBackToString.Trim().Should().BeEmpty();
+        }
+        
+        [Fact]
+        protected void EvaluateLotsOfTimesWithSet()
+        {
+            var sw = new Stopwatch();
+            var dictionary = new VariableDictionary();
+            for(var x = 0; x < 5_000; x++)
+                dictionary.Add($"Octopus.Step[{x.ToString("")}].Action[{x.ToString("")}]", "Value");
+
+            sw.Start();
+            for (int x = 0; x < 100; x++)
+            {
+                // The set effectively re-sets the binding, so we can test the cache of the path parsing.
+                dictionary.Set("a", "a");
+                dictionary.Evaluate("#{foo}");
+            }
+            
+            sw.Stop();
+            sw.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(5));
         }
     }
 }
