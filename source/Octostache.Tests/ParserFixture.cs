@@ -101,7 +101,7 @@ namespace Octostache.Tests
             }
             
             sw.Stop();
-            sw.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(5));
+            sw.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(12));
         }
     }
 }
