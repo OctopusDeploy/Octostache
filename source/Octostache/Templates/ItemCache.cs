@@ -11,7 +11,8 @@ namespace Octostache.Templates
     public class ItemCache<T> where T: class
     {
         MemoryCache cache;
-        
+        readonly object nullItem = new object();
+
         public ItemCache(string name, int megabyteLimit, TimeSpan slidingExpiration)
         {
             Name = name;
@@ -33,29 +34,34 @@ namespace Octostache.Templates
         // ReSharper disable once MemberCanBePrivate.Global
         public TimeSpan SlidingExpiration { get; }
         
-        public void Add(string key, T item)
+        // ReSharper disable once MemberCanBePrivate.Global
+        public void Add(string key, T? item)
         {
 #if NET40
-            cache.Set(key, item, new CacheItemPolicy { SlidingExpiration = SlidingExpiration });
+            cache.Set(key, item ?? nullItem, new CacheItemPolicy { SlidingExpiration = SlidingExpiration });
 #else
             // NOTE: Setting the size to the string length, is not quite right, but close enough for our purposes. 
-            cache.Set(key, item, new MemoryCacheEntryOptions { SlidingExpiration = SlidingExpiration, Size = item.ToString().Length });
-#endif            
+            cache.Set(key, item ?? nullItem, new MemoryCacheEntryOptions { SlidingExpiration = SlidingExpiration, Size = item?.ToString().Length ?? 0 });
+#endif
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public T? Get(string key)
         {
             return cache.Get(key) as T;
         }
 
-        public T GetOrAdd(string key, Func<T> getItem)
+        public T? GetOrAdd(string key, Func<T?> getItem)
         {
-            var item = Get(key);
-            if (item == null)
+            var obj = cache.Get(key);
+           
+            if (obj != null)
             {
-                item = getItem();
-                Add(key, item);
+                return obj as T;
             }
+
+            var item = getItem();
+            Add(key, item);
 
             return item;
         }
@@ -66,7 +72,7 @@ namespace Octostache.Templates
             cache = new MemoryCache(Name, new NameValueCollection() { { "CacheMemoryLimitMegabytes", MegabyteLimit.ToString() } });
 #else
             cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = MegabyteLimit * 1024 * 1024 });
-#endif      
+#endif
         }
     }
 }

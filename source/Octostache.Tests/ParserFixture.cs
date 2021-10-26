@@ -69,6 +69,7 @@ namespace Octostache.Tests
 
             TemplateParser.TryParseTemplate(template, out var parsedTemplate, out string _);
             parsedTemplate.Should().NotBeNull();
+            // ReSharper disable once PossibleNullReferenceException - Asserted above
             parsedTemplate.ToString().Should().NotBeEmpty();
             
             // We convert the template back to the string representation and then remove individual parsed expressions until there is nothing left
@@ -82,6 +83,38 @@ namespace Octostache.Tests
 
             templateConvertedBackToString = templateConvertedBackToString.Replace("\r\n", "");
             templateConvertedBackToString.Trim().Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        protected void TryParseWithHaltOnError(bool haltOnError)
+        {
+            var template = @"
+                #{var}
+                #{if ifvar}#{if ifnested}#{else}debug#{/if}#{/if}
+                missing start tag#{/if}
+                ##{ignored}
+                #{MyVar | Match ""a b""}
+            ";
+            
+            TemplateParser.TryParseTemplate(template, out var parsedTemplate1, out string error1, haltOnError);
+            TemplateParser.TryParseTemplate(template, out var parsedTemplate2, out string error2, !haltOnError);
+
+            if (haltOnError)
+            {
+                error1.Should().NotBeNullOrEmpty();
+                parsedTemplate1.Should().BeNull();
+                error2.Should().BeNullOrEmpty();
+                parsedTemplate2.Should().NotBeNull();
+            }
+            else
+            {
+                error1.Should().BeNullOrEmpty();
+                parsedTemplate1.Should().NotBeNull();
+                error2.Should().NotBeNullOrEmpty();
+                parsedTemplate2.Should().BeNull();
+            }
         }
         
         [Fact]

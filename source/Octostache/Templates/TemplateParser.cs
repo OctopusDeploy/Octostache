@@ -271,7 +271,15 @@ namespace Octostache.Templates
             };
         }
 
-        static readonly ItemCache<Template> TemplateCache = new ItemCache<Template>("OctostacheTemplate", 100, TimeSpan.FromMinutes(10));
+        class TemplateWithError
+        {
+            public Template? Result { get; set; }
+            
+            public string? Error { get; set; }
+        }
+        
+        static readonly ItemCache<TemplateWithError> TemplateCache = new ItemCache<TemplateWithError>("OctostacheTemplate", 100, TimeSpan.FromMinutes(10));
+        static readonly ItemCache<TemplateWithError> TemplateContinueCache = new ItemCache<TemplateWithError>("OctostacheTemplate", 100, TimeSpan.FromMinutes(10));
         static readonly ItemCache<SymbolExpression> PathCache = new ItemCache<SymbolExpression>("OctostachePath", 100, TimeSpan.FromMinutes(10));
 
         // ReSharper disable once UnusedMember.Local
@@ -279,6 +287,7 @@ namespace Octostache.Templates
         static void ClearCache()
         {
             TemplateCache.Clear();
+            TemplateContinueCache.Clear();
             PathCache.Clear();
         }
 
@@ -301,49 +310,45 @@ namespace Octostache.Templates
 
         public static Template ParseTemplate(string template)
         {
-            return TemplateCache.GetOrAdd(template, () => new Template(Template.End().Parse(template)));
+            if (TryParseTemplate(template, out var result, out var error))
+            {
+                return result;
+            }
+            
+            throw new ArgumentException($"Invalid template: {error}", nameof(template));
         }
 
 
         public static bool TryParseTemplate(string template, [NotNullWhen(true)] out Template? result, [NotNullWhen(false)] out string? error, bool haltOnError = true)
         {
             var parser = haltOnError ? Template : ContinueOnErrorsTemplate;
+            var cache = haltOnError ? TemplateCache : TemplateContinueCache;
 
-            var cached = TemplateCache.Get(template);
-            if (cached == null)
-            {
-                var tokens = parser.End().TryParse(template);
-                if (tokens.WasSuccessful)
-                {
-                    result = new Template(tokens.Value);
-                    error = null;
-                    cached = new Template(parser.End().Parse(template));
-                    TemplateCache.Add(template, cached);
-                    return true;
-                }
-                result = null;
-                error = tokens.ToString();
-                return false;
-            }
+            var item = cache.GetOrAdd(template,
+                                                () =>
+                                                {
+                                                    var tokens = parser.End().TryParse(template);
+                                                    return new TemplateWithError
+                                                    {
+                                                        Result = tokens.WasSuccessful ? new Template(tokens.Value) : null,
+                                                        Error = tokens.WasSuccessful ? null : tokens.ToString()
+                                                    };
+                                                });
 
-            error = null;
-            result = cached;
-            return true;
+            error = item?.Error;
+            result = item?.Result;
+            return result != null && error == null;
         }
 
         internal static bool TryParseIdentifierPath(string path, [NotNullWhen(true)] out SymbolExpression? expression)
         {
-            expression = PathCache.Get(path);
-            if (expression == null)
-            {
-                var result = Symbol.TryParse(path);
-                if (result.WasSuccessful)
-                {
-                    expression = result.Value;
-                    PathCache.Add(path, expression);
-                }
-            }
-
+            expression = PathCache.GetOrAdd(path,
+                                            () =>
+                                            {
+                                                var result = Symbol.TryParse(path);
+                                                return result.WasSuccessful ? result.Value : null;
+                                            });
+            
             return expression != null;
         }
 
