@@ -688,6 +688,7 @@ namespace Octostache.Tests
             result.Should().Be("    Octopus Deploy\n    Octopus Deploy\n    Octopus Deploy");
         }
 
+        [Fact]
         public void IndentWithCustomSizeAffectsEachLine()
         {
             var result = Evaluate(@"#{foo | Indent 2}", new Dictionary<string, string> { { "foo", "Octopus Deploy\nOctopus Deploy\nOctopus Deploy" } });

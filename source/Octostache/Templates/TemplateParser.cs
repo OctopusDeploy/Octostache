@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 #if NET40
-using System.Runtime.Caching;
 #else
-using Microsoft.Extensions.Caching.Memory;
+using System.Diagnostics.CodeAnalysis;
 #endif
+using System.Linq;
 using Sprache;
 
 namespace Octostache.Templates
@@ -38,9 +35,9 @@ namespace Octostache.Templates
         static readonly Parser<string> RDelim = Parse.String("}").Text();
 
         static readonly Parser<SubstitutionToken> Substitution =
-            (from ldelim in LDelim
+            (from leftDelim in LDelim
              from expression in Expression.Token()
-             from rdelim in RDelim
+             from rightDelim in RDelim
              select new SubstitutionToken(expression))
             .WithPosition();
 
@@ -92,7 +89,7 @@ namespace Octostache.Templates
 
         // Some trickery applied here to prevent a left-recursive definition
         private static readonly Parser<FunctionCallExpression> FilterChain =
-            from symbol in Symbol.Token().Optional().Select(s => s.IsDefined ? s.Get() : new SymbolExpression(new SymbolExpressionStep[0]))
+            from symbol in Symbol.Token().Optional().Select(s => s.IsDefined ? s.Get() : new SymbolExpression(new SymbolExpressionStep[] {}))
             from chain in Parse.Char('|').Then(_ =>
                 from fn in IdentifierWithoutWhitespace.Named("filter").WithPosition().Token()
                 from option in
@@ -117,7 +114,7 @@ namespace Octostache.Templates
         static Parser<T> FollowedBy<T>(this Parser<T> parser, string lookahead)
         {
             if (parser == null)
-                throw new ArgumentNullException("parser");
+                throw new ArgumentNullException(nameof(parser));
 
             return i =>
             {
@@ -129,17 +126,16 @@ namespace Octostache.Templates
                     return Result.Failure<T>(result.Remainder, "end of input reached while expecting lookahead", new[] { lookahead });
 
                 var next = i.Source.Substring(result.Remainder.Position, lookahead.Length);
-                if (next != lookahead)
-                    return Result.Failure<T>(result.Remainder, string.Format("unexpected {0}", next), new[] { lookahead });
-
-                return result;
+                return next != lookahead 
+                    ? Result.Failure<T>(result.Remainder, $"unexpected {next}", new[] { lookahead }) 
+                    : result;
             };
         }
 
         static Parser<char> ExceptWhiteSpaceBeforeKeyword(this Parser<char> parser)
         {
             if (parser == null)
-                throw new ArgumentNullException("parser");
+                throw new ArgumentNullException(nameof(parser));
 
             return i =>
             {
@@ -159,8 +155,7 @@ namespace Octostache.Templates
                     var match = i.Source.Substring(result.Remainder.Position, length);
                     if (match == keyword)
                     {
-                        return Result.Failure<char>(result.Remainder, string.Format("unexpected keyword used {0}", keyword),
-                            new[] { keyword });
+                        return Result.Failure<char>(result.Remainder, $"unexpected keyword used {keyword}", new[] { keyword });
                     }
                 }
 
@@ -174,13 +169,13 @@ namespace Octostache.Templates
         }
 
         static readonly Parser<ConditionalToken> Conditional =
-            (from ldelim in LDelim
+            (from leftDelim in LDelim
              from sp1 in Parse.WhiteSpace.Many()
              from kw in Keyword("if").Or(Keyword("unless"))
              from sp in Parse.WhiteSpace.AtLeastOnce()
              from expression in TokenMatch.Token().Or(StringMatch.Token()).Or(TruthyMatch.Token())
              from sp2 in Parse.WhiteSpace.Many()
-             from rdelim in RDelim
+             from rightDelim in RDelim
              from truthy in Parse.Ref(() => IfTemplate)
              from elseMatch in
                  (from el in Parse.String("#{else}")
@@ -200,28 +195,28 @@ namespace Octostache.Templates
 
         static readonly Parser<ConditionalExpressionToken> TokenMatch =
             (from expression in Symbol.Token()
-             from _eq in Keyword("==").Token().Or(Keyword("!=").Token())
+             from eq in Keyword("==").Token().Or(Keyword("!=").Token())
              from compareTo in QuotedText.Token().Or(EscapedQuotedText.Token())
-             let eq = _eq == "=="
-             select new ConditionalStringExpressionToken(expression, eq, compareTo))
+             let isEq = eq == "=="
+             select new ConditionalStringExpressionToken(expression, isEq, compareTo))
                 .WithPosition();
 
         static readonly Parser<ConditionalExpressionToken> StringMatch =
             (from expression in Symbol.Token()
-             from _eq in Keyword("==").Token().Or(Keyword("!=").Token())
+             from eq in Keyword("==").Token().Or(Keyword("!=").Token())
              from compareTo in Symbol.Token()
-             let eq = _eq == "=="
-             select new ConditionalSymbolExpressionToken(expression, eq, compareTo))
+             let isEq = eq == "=="
+             select new ConditionalSymbolExpressionToken(expression, isEq, compareTo))
                 .WithPosition();
 
         static readonly Parser<RepetitionToken> Repetition =
-            (from ldelim in LDelim
-             from _if in Keyword("each")
+            (from leftDelim in LDelim
+             from keyEach in Keyword("each")
              from sp in Parse.WhiteSpace.AtLeastOnce()
              from enumerator in Identifier.Token()
-             from _in in Keyword("in").Token()
+             from keyIn in Keyword("in").Token()
              from expression in Symbol.Token()
-             from rdelim in RDelim
+             from rightDelim in RDelim
              from body in Parse.Ref(() => Template)
              from end in Parse.String("#{/each}")
              select new RepetitionToken(expression, enumerator, body))
@@ -269,52 +264,36 @@ namespace Octostache.Templates
             {
                 var r = parser(i);
                 if (r.WasSuccessful)
+                    // ReSharper disable once PossibleStructMemberModificationOfNonVariableStruct
                     r.Value.InputPosition = new Position(i.Position, i.Line, i.Column);
 
                 return r;
             };
         }
 
-        static readonly MemoryCache Cache;
-
-
-#if NET40
-        static TemplateParser()
+        class TemplateWithError
         {
-            Cache = new MemoryCache("Octostache", new NameValueCollection() { { "CacheMemoryLimitMegabytes", (20 * 1024).ToString() } });
+            public Template? Result { get; set; }
+            
+            public string? Error { get; set; }
         }
+        
+        static readonly ItemCache<TemplateWithError> TemplateCache = new ItemCache<TemplateWithError>("OctostacheTemplate", 100, TimeSpan.FromMinutes(10));
+        static readonly ItemCache<TemplateWithError> TemplateContinueCache = new ItemCache<TemplateWithError>("OctostacheTemplate", 100, TimeSpan.FromMinutes(10));
+        static readonly ItemCache<SymbolExpression> PathCache = new ItemCache<SymbolExpression>("OctostachePath", 100, TimeSpan.FromMinutes(10));
 
-        private static void AddToCache(string template, Template cached)
+        // ReSharper disable once UnusedMember.Local
+        // Used by the Test framework, to clear the caches before each test - as it is a static collection.
+        static void ClearCache()
         {
-            Cache.Set(template, cached, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(10) });
+            TemplateCache.Clear();
+            TemplateContinueCache.Clear();
+            PathCache.Clear();
         }
-
-        private static Template GetFromCache(string template)
-        {
-            return Cache.Get(template) as Template;
-        }
-
-#else
-         static TemplateParser()
-         {
-             //todo: there is currently no support for CacheMemoryLimitMegabytes or similar
-             //todo: there is currently no support for naming the cache
-             Cache = new MemoryCache(new MemoryCacheOptions());
-         }
-
-         private static void AddToCache(string template, Template cached)
-         {
-             Cache.Set(template, cached, new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(10) });
-         }
-         private static Template? GetFromCache(string template)
-         {
-             return Cache.Get(template) as Template;
-         }
-#endif
 
         /// <summary>
         /// Gets the names of variable replacement arguments that are resolvable by inspection of the template.
-        /// This excludes variables referenced inside and itterator (foreach) as the items cannot be determined without the
+        /// This excludes variables referenced inside and iterator (foreach) as the items cannot be determined without the
         /// actual variable collection. The collection itself is returned.
         /// </summary>
         /// <param name="template"></param>
@@ -331,60 +310,54 @@ namespace Octostache.Templates
 
         public static Template ParseTemplate(string template)
         {
-            var cached = GetFromCache(template);
-            if (cached == null)
+            if (TryParseTemplate(template, out var result, out var error))
             {
-                cached = new Template(Template.End().Parse(template));
-                AddToCache(template, cached);
+                return result;
             }
-
-            return cached;
+            
+            throw new ArgumentException($"Invalid template: {error}", nameof(template));
         }
 
 
         public static bool TryParseTemplate(string template, [NotNullWhen(true)] out Template? result, [NotNullWhen(false)] out string? error, bool haltOnError = true)
         {
             var parser = haltOnError ? Template : ContinueOnErrorsTemplate;
+            var cache = haltOnError ? TemplateCache : TemplateContinueCache;
 
-            var cached = GetFromCache(template);
-            if (cached == null)
-            {
-                var tokens = parser.End().TryParse(template);
-                if (tokens.WasSuccessful)
-                {
-                    result = new Template(tokens.Value);
-                    error = null;
-                    cached = new Template(parser.End().Parse(template));
-                    AddToCache(template, cached);
-                    return true;
-                }
-                result = null;
-                error = tokens.ToString();
-                return false;
-            }
+            var item = cache.GetOrAdd(template,
+                                                () =>
+                                                {
+                                                    var tokens = parser.End().TryParse(template);
+                                                    return new TemplateWithError
+                                                    {
+                                                        Result = tokens.WasSuccessful ? new Template(tokens.Value) : null,
+                                                        Error = tokens.WasSuccessful ? null : tokens.ToString()
+                                                    };
+                                                });
 
-            error = null;
-            result = cached;
-            return true;
+            error = item?.Error;
+            result = item?.Result;
+            return result != null && error == null;
         }
 
         internal static bool TryParseIdentifierPath(string path, [NotNullWhen(true)] out SymbolExpression? expression)
         {
-            var result = Symbol.TryParse(path);
-            if (result.WasSuccessful)
-            {
-                expression = result.Value;
-                return true;
-            }
-            expression = null;
-            return false;
+            expression = PathCache.GetOrAdd(path,
+                                            () =>
+                                            {
+                                                var result = Symbol.TryParse(path);
+                                                return result.WasSuccessful ? result.Value : null;
+                                            });
+            
+            return expression != null;
         }
 
         // A copy of Sprache's built in Many but when it hits an error the unparsed text is returned
         // as a text token and we continue
+        // ReSharper disable once MemberCanBePrivate.Global
         public static Parser<IEnumerable<TemplateToken>> ContinueMany(this Parser<TemplateToken> parser)
         {
-            if (parser == null) throw new ArgumentNullException("parser");
+            if (parser == null) throw new ArgumentNullException(nameof(parser));
 
             return i =>
             {
@@ -414,6 +387,7 @@ namespace Octostache.Templates
             };
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public static string Consumed(IInput before, IInput after)
         {
             return before.Source.Substring(before.Position, after.Position - before.Position);
