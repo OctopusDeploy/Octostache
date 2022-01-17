@@ -1,28 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-#if NET40
-using System.Runtime.Caching;
-#else
-using Microsoft.Extensions.Caching.Memory;
-#endif
 
 namespace Octostache.Tests
 {
     public abstract class BaseFixture
     {
-        public BaseFixture()
+        protected BaseFixture()
         {
-#if NET40
-            //The TemplateParser Cache is retained between tests. A little hackery to clear it.
+            // The TemplateParser Cache is retained between tests. A little reflection to clear it.
             var parser = typeof(VariableDictionary).Assembly.GetType("Octostache.Templates.TemplateParser");
-            var cache = (MemoryCache)parser.GetField("Cache", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
-
-            foreach (var item in cache)
-            {
-                cache.Remove(item.Key);
-            }
-#endif
+            var clearMethod = parser?.GetMethod("ClearCache", BindingFlags.NonPublic | BindingFlags.Static);
+            clearMethod?.Invoke(null, new object[] {});
         }
 
         protected string Evaluate(string template, IDictionary<string, string> variables, bool haltOnError = true)
@@ -32,8 +22,8 @@ namespace Octostache.Tests
             {
                 dictionary[pair.Key] = pair.Value;
             }
-            string error;
-            return dictionary.Evaluate(template, out error, haltOnError);
+
+            return dictionary.Evaluate(template, out _, haltOnError);
         }
 
         protected bool EvaluateTruthy(string template, IDictionary<string, string> variables)

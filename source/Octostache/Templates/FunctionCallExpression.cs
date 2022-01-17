@@ -38,7 +38,7 @@ namespace Octostache.Templates
         public override string ToString()
         {
             if (filterSyntax)
-                return $"{Argument} | {Function}{(Options.Any() ? " " : "")}{string.Join(" ", Options.Select(t => t.ToString()))}";
+                return $"{Argument} | {Function}{(Options.Any() ? " " : "")}{string.Join(" ", Options.Select(t => t is TextToken ? $"\"{t.ToString()}\"" : t.ToString()))}";
 
 
             return $"{Function} ({string.Join(", ", GetAllArguments().Select(t => t.ToString()))})";
