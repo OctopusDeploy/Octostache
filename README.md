@@ -1,6 +1,6 @@
 Octostache is the variable substitution syntax for Octopus Deploy. 
 
-Octopus allows you to [define variables](http://docs.octopusdeploy.com/display/OD/Variables), which can then be referenced from deployment steps and in scripts using the following syntax:
+Octopus allows you to [define variables](http://g.octopushq.com/DocumentationVariables), which can then be referenced from deployment steps and in scripts using the following syntax:
 
 ```
 #{MyVariable}
