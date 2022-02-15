@@ -7,7 +7,6 @@ namespace Octostache.Tests
     public class VersionFixture : BaseFixture
     {
         [Theory]
-        [InlineData("", "0", "0", "0", "0", "", "", "", "")]
         [InlineData("1", "1", "0", "0", "0", "", "", "", "")]
         [InlineData("1.2", "1", "2", "0", "0", "", "", "", "")]
         [InlineData("1.2.3", "1", "2", "3", "0", "", "", "", "")]
