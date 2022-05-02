@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 #module nuget:?package=Cake.DotNetTool.Module&version=0.4.0
 #tool "dotnet:?package=GitVersion.Tool&version=5.3.6"
+#tool "nuget:?package=OctopusTools&version=9.0.0"
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -116,20 +117,21 @@ Task("Publish")
     .WithCriteria(BuildSystem.IsRunningOnTeamCity)
     .Does(() =>
 {
-    NuGetPush($"{artifactsDir}Octostache.{nugetVersion}.nupkg", new NuGetPushSettings {
-        Source = "https://f.feedz.io/octopus-deploy/dependencies/nuget",
-        ApiKey = EnvironmentVariable("FeedzIoApiKey"),
-        SkipDuplicate = true,
-    });
+    var octopusServer = EnvironmentVariable("OctopusServerUrl");
+    var octopusApiKey = EnvironmentVariable("OctopusServerApiKey");
+    var space = EnvironmentVariable("OctopusServerSpaceName");
 
-    if (gitVersionInfo.PreReleaseTagWithDash == "")
+    var nugetPackage = GetFiles($"{artifactsDir}Octostache.{nugetVersion}.nupkg");
+
+    // Current config for this repo doesn't generate prerelease tags, even if we're on a development/feature branch.
+    // Using the --overwrite-mode=IgnoreIfExists flag instructs the target Octopus server to ignore any attempted uploads with the same verison number.
+    // This decision is made server-side, so you'll still see log messages indicating the package was uploaded. Never fear, the push is discarded if the version already exists. 
+    // You can verify this by looking at the SHA1 and Published date of the package in the package feed: it won't change on subsequent pushes.
+    OctoPush(octopusServer, octopusApiKey, nugetPackage, new OctopusPushSettings 
     {
-        NuGetPush($"{artifactsDir}Octostache.{nugetVersion}.nupkg", new NuGetPushSettings {
-            Source = "https://www.nuget.org/api/v2/package",
-            ApiKey = EnvironmentVariable("NuGetApiKey"),
-            SkipDuplicate = true,
-        });
-    }
+        ArgumentCustomization = args => args.Append("--overwrite-mode=IgnoreIfExists"),
+        Space = space 
+    });
 });
 
 Task("Default")
