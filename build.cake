@@ -4,6 +4,7 @@
 #module nuget:?package=Cake.DotNetTool.Module&version=0.4.0
 #tool "dotnet:?package=GitVersion.Tool&version=5.3.6"
 #tool "nuget:?package=OctopusTools&version=9.0.0"
+#addin nuget:?package=Cake.Git&version=1.1.0
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -117,9 +118,11 @@ Task("Publish")
     .WithCriteria(BuildSystem.IsRunningOnTeamCity)
     .Does(() =>
 {
+    var currentBranch = GitBranchCurrent(DirectoryPath.FromString(".")).FriendlyName;
     var octopusServer = EnvironmentVariable("OctopusServerUrl");
     var octopusApiKey = EnvironmentVariable("OctopusServerApiKey");
     var space = EnvironmentVariable("OctopusServerSpaceName");
+    var octopusProjectName = "Octostache";
 
     var nugetPackage = GetFiles($"{artifactsDir}Octostache.{nugetVersion}.nupkg");
 
@@ -132,6 +135,20 @@ Task("Publish")
         ArgumentCustomization = args => args.Append("--overwrite-mode=IgnoreIfExists"),
         Space = space 
     });
+
+    // Config-as-Code doesn't yet support Automatic Release Creation, so do it manually
+    OctoCreateRelease(octopusProjectName, new CreateReleaseSettings {
+        ArgumentCustomization = args => args.Append($"--gitRef={currentBranch}"),
+        Server = octopusServer,
+        ApiKey = octopusApiKey,
+        ReleaseNumber = nugetVersion,
+        Space = space,
+        Packages = new Dictionary<string, string>
+        {
+            { "Octostache", nugetVersion }
+        },
+        IgnoreExisting = true
+     });
 });
 
 Task("Default")
