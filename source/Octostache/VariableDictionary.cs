@@ -178,7 +178,6 @@ namespace Octostache
                     error = string.Format("The following tokens were unable to be evaluated: {0}", tokenList);
                 }
 
-
                 return writer.ToString();
             }
         }
@@ -307,7 +306,8 @@ namespace Octostache
         public List<string> GetIndexes(string variableCollectionName)
         {
             if (string.IsNullOrWhiteSpace(variableCollectionName))
-                throw new ArgumentOutOfRangeException(nameof(variableCollectionName),
+                throw new ArgumentOutOfRangeException(
+                    nameof(variableCollectionName),
                     $"{nameof(variableCollectionName)} must not be null or empty");
 
             if (!TemplateParser.TryParseIdentifierPath(variableCollectionName, out var symbolExpression))
@@ -317,7 +317,6 @@ namespace Octostache
             var bindings = context.ResolveAll(symbolExpression, out _);
             // ReSharper disable once RedundantEnumerableCastCall
             return bindings.Select(b => b.Item).Where(x => x != null).Cast<string>().ToList();
-
         }
 
         /// <summary>

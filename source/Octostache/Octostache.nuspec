@@ -11,9 +11,9 @@
     <projectUrl>https://github.com/OctopusDeploy/Octostache/</projectUrl>
     <licenseUrl>https://github.com/OctopusDeploy/Octostache/blob/master/LICENSE</licenseUrl>
     <dependencies>
-      <dependency id="MarkdownSharp" version="" />
-      <dependency id="Sprache" version="" />
-      <dependency id="Newtonsoft.Json" version="" />
+      <dependency id="Markdig" version="0.10.4" />
+      <dependency id="Sprache" version="2.1.0" />
+      <dependency id="Newtonsoft.Json" version="9.0.1" />
     </dependencies>
   </metadata>
   <files>
