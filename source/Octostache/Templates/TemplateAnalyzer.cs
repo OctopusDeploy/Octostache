@@ -9,12 +9,8 @@ namespace Octostache.Templates
         static IEnumerable<string> GetDependencies(IEnumerable<TemplateToken> tokens, AnalysisContext context)
         {
             foreach (var token in tokens)
-            {
-                foreach (var dependency in GetDependencies(token, context))
-                {
-                    yield return dependency;
-                }
-            }
+            foreach (var dependency in GetDependencies(token, context))
+                yield return dependency;
         }
 
         static IEnumerable<string> GetDependencies(TemplateToken token, AnalysisContext context)
@@ -36,13 +32,9 @@ namespace Octostache.Templates
                 yield return context.Expand(ct.Token.LeftSide);
                 var exp = ct.Token as ConditionalSymbolExpressionToken;
                 if (exp != null)
-                {
                     yield return context.Expand(exp.RightSide);
-                }
                 foreach (var templateDependency in GetDependencies(ct.TruthyTemplate.Concat(ct.FalsyTemplate), context))
-                {
                     yield return templateDependency;
-                }
                 yield break;
             }
 
@@ -70,16 +62,10 @@ namespace Octostache.Templates
             {
                 var fx = expression as FunctionCallExpression;
                 if (fx != null)
-                {
                     foreach (var symbol in GetSymbols(fx.Argument))
-                    {
                         yield return symbol;
-                    }
-                }
                 else
-                {
                     throw new NotImplementedException("Unknown expression type: " + expression);
-                }
             }
         }
     }

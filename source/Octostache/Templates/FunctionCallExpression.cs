@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Octostache.Templates
@@ -40,12 +41,13 @@ namespace Octostache.Templates
             if (filterSyntax)
                 return $"{Argument} | {Function}{(Options.Any() ? " " : "")}{string.Join(" ", Options.Select(t => t is TextToken ? $"\"{t.ToString()}\"" : t.ToString()))}";
 
-
             return $"{Function} ({string.Join(", ", GetAllArguments().Select(t => t.ToString()))})";
         }
 
         public override IEnumerable<string> GetArguments()
-            => Argument.GetArguments()
-                .Concat(Options.SelectMany(o => o.GetArguments()));
+        {
+            return Argument.GetArguments()
+                           .Concat(Options.SelectMany(o => o.GetArguments()));
+        }
     }
 }

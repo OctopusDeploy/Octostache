@@ -7,7 +7,7 @@ namespace Octostache.Templates
 {
     class TemplateEvaluator
     {
-        private readonly List<string> missingTokens = new List<string>();
+        readonly List<string> missingTokens = new List<string>();
 
         public static void Evaluate(Template template, EvaluationContext context, out string[] missingTokens)
         {
@@ -25,9 +25,7 @@ namespace Octostache.Templates
         void Evaluate(IEnumerable<TemplateToken> tokens, EvaluationContext context)
         {
             foreach (var token in tokens)
-            {
                 Evaluate(token, context);
-            }
         }
 
         void Evaluate(TemplateToken token, EvaluationContext context)
@@ -76,11 +74,10 @@ namespace Octostache.Templates
 
                 var specials = new Dictionary<string, string?>
                 {
-                    {Constants.Each.Index, i.ToString()},
-                    {Constants.Each.First, i == 0 ? "True" : "False"},
-                    {Constants.Each.Last, i == items.Length - 1 ? "True" : "False"}
+                    { Constants.Each.Index, i.ToString() },
+                    { Constants.Each.First, i == 0 ? "True" : "False" },
+                    { Constants.Each.Last, i == items.Length - 1 ? "True" : "False" }
                 };
-
 
                 var locals = PropertyListBinder.CreateFrom(specials);
 
@@ -102,7 +99,7 @@ namespace Octostache.Templates
             {
                 var comparer = eqToken.Equality ? new Func<string, string, bool>((x, y) => x == y) : (x, y) => x != y;
 
-                if(comparer(leftSide, eqToken.RightSide))
+                if (comparer(leftSide, eqToken.RightSide))
                     Evaluate(ct.TruthyTemplate, context);
                 else
                     Evaluate(ct.FalsyTemplate, context);
@@ -136,18 +133,14 @@ namespace Octostache.Templates
         {
             var value = Calculate(st.Expression, context);
             if (value == null)
-            {
                 missingTokens.Add(st.ToString());
-            }
             context.Output.Write(value ?? st.ToString());
         }
 
         static void EvaluateTextToken(EvaluationContext context, TextToken tt)
         {
             foreach (var text in tt.Text)
-            {
                 context.Output.Write(text);
-            }
         }
 
         string? Calculate(ContentExpression expression, EvaluationContext context)
@@ -161,9 +154,7 @@ namespace Octostache.Templates
 
             var fx = expression as FunctionCallExpression;
             if (fx == null)
-            {
                 throw new NotImplementedException("Unknown expression type: " + expression);
-            }
 
             var argument = Calculate(fx.Argument, context);
 
@@ -185,10 +176,7 @@ namespace Octostache.Templates
 
         internal static bool IsTruthy(string value)
         {
-            return value != "0" &&
-                value != "" &&
-                string.Compare(value.Trim(), "no", StringComparison.OrdinalIgnoreCase) != 0 &&
-                string.Compare(value.Trim(), "false", StringComparison.OrdinalIgnoreCase) != 0;
+            return value != "0" && value != "" && string.Compare(value.Trim(), "no", StringComparison.OrdinalIgnoreCase) != 0 && string.Compare(value.Trim(), "false", StringComparison.OrdinalIgnoreCase) != 0;
         }
     }
 }

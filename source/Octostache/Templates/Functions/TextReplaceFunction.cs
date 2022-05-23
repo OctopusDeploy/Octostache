@@ -1,8 +1,9 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Octostache.Templates.Functions
 {
-    internal static class TextReplaceFunction
+    static class TextReplaceFunction
     {
         public static string? Replace(string? argument, string[] options)
         {

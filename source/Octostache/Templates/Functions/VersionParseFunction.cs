@@ -1,18 +1,16 @@
-﻿using Octopus.Versioning;
+﻿using System;
 using Octopus.Versioning.Octopus;
 
 namespace Octostache.Templates.Functions
 {
-    internal class VersionParseFunction
+    class VersionParseFunction
     {
         static readonly OctopusVersionParser OctopusVersionParser = new OctopusVersionParser();
 
         public static string? VersionMajor(string? argument, string[] options)
         {
             if (argument == null)
-            {
                 return null;
-            }
 
             return OctopusVersionParser.Parse(argument).Major.ToString();
         }
@@ -20,9 +18,7 @@ namespace Octostache.Templates.Functions
         public static string? VersionMinor(string? argument, string[] options)
         {
             if (argument == null)
-            {
                 return null;
-            }
 
             return OctopusVersionParser.Parse(argument).Minor.ToString();
         }
@@ -30,9 +26,7 @@ namespace Octostache.Templates.Functions
         public static string? VersionPatch(string? argument, string[] options)
         {
             if (argument == null)
-            {
                 return null;
-            }
 
             return OctopusVersionParser.Parse(argument).Patch.ToString();
         }
@@ -40,9 +34,7 @@ namespace Octostache.Templates.Functions
         public static string? VersionRevision(string? argument, string[] options)
         {
             if (argument == null)
-            {
                 return null;
-            }
 
             return OctopusVersionParser.Parse(argument).Revision.ToString();
         }
@@ -50,9 +42,7 @@ namespace Octostache.Templates.Functions
         public static string? VersionRelease(string? argument, string[] options)
         {
             if (argument == null)
-            {
                 return null;
-            }
 
             return OctopusVersionParser.Parse(argument).Release;
         }
@@ -60,9 +50,7 @@ namespace Octostache.Templates.Functions
         public static string? VersionReleasePrefix(string? argument, string[] options)
         {
             if (argument == null)
-            {
                 return null;
-            }
 
             return OctopusVersionParser.Parse(argument).ReleasePrefix;
         }
@@ -70,9 +58,7 @@ namespace Octostache.Templates.Functions
         public static string? VersionReleaseCounter(string? argument, string[] options)
         {
             if (argument == null)
-            {
                 return null;
-            }
 
             return OctopusVersionParser.Parse(argument).ReleaseCounter;
         }
@@ -80,9 +66,7 @@ namespace Octostache.Templates.Functions
         public static string? VersionMetadata(string? argument, string[] options)
         {
             if (argument == null)
-            {
                 return null;
-            }
 
             return OctopusVersionParser.Parse(argument).Metadata;
         }

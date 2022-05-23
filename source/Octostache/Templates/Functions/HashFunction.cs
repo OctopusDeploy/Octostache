@@ -34,15 +34,11 @@ namespace Octostache.Templates.Functions
         static string? CalculateHash(Func<HashAlgorithm> algorithm, string? argument, string[] options)
         {
             if (argument == null)
-            {
                 return null;
-            }
 
             var hashOptions = new HashOptions(options);
             if (!hashOptions.IsValid)
-            {
                 return null;
-            }
 
             try
             {
@@ -62,15 +58,11 @@ namespace Octostache.Templates.Functions
         {
             var size = options.DigestSize.GetValueOrDefault(bytes.Length);
             if (size > bytes.Length)
-            {
                 size = bytes.Length;
-            }
             var sb = new StringBuilder(size * 2);
 
             for (var i = 0; i < size; i++)
-            {
                 sb.Append(bytes[i].ToString("x2"));
-            }
 
             return sb.ToString();
         }
@@ -80,9 +72,7 @@ namespace Octostache.Templates.Functions
             public HashOptions(string[] options)
             {
                 if (options.Length == 0)
-                {
                     return;
-                }
                 if (options.Length > 2)
                 {
                     IsValid = false;
@@ -96,37 +86,25 @@ namespace Octostache.Templates.Functions
                     {
                         var encoding = GetEncoding(options[1]);
                         if (encoding == null)
-                        {
                             IsValid = false;
-                        }
                         else
-                        {
                             GetBytes = encoding;
-                        }
                     }
                 }
                 else
                 {
                     var encoding = GetEncoding(options[0]);
                     if (encoding == null)
-                    {
                         IsValid = false;
-                    }
                     else
-                    {
                         GetBytes = encoding;
-                    }
 
                     if (IsValid && options.Length > 1)
                     {
                         if (int.TryParse(options[1], out size) && size > 0)
-                        {
                             DigestSize = size;
-                        }
                         else
-                        {
                             IsValid = false;
-                        }
                     }
                 }
             }

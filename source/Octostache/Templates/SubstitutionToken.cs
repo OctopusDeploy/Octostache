@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Octostache.Templates
 {
@@ -7,23 +8,21 @@ namespace Octostache.Templates
     /// </summary>
     class SubstitutionToken : TemplateToken
     {
-        readonly ContentExpression expression;
-
         public SubstitutionToken(ContentExpression expression)
         {
-            this.expression = expression;
+            Expression = expression;
         }
 
-        public ContentExpression Expression
-        {
-            get { return expression; }
-        }
+        public ContentExpression Expression { get; }
 
         public override string ToString()
         {
             return "#{" + Expression + "}";
         }
 
-        public override IEnumerable<string> GetArguments() => Expression.GetArguments();
+        public override IEnumerable<string> GetArguments()
+        {
+            return Expression.GetArguments();
+        }
     }
 }

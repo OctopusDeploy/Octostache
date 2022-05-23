@@ -27,9 +27,7 @@ namespace Octostache.Templates
             var nodes = expression.ToArray();
             if (nodes.FirstOrDefault() is Identifier first
                 && string.Equals(first.Text, identifier.Text, StringComparison.OrdinalIgnoreCase))
-            {
                 nodes = expansion.Steps.Concat(new[] { new DependencyWildcard() }).Concat(nodes.Skip(1)).ToArray();
-            }
 
             nodes = parent.Expand(nodes).ToArray();
 

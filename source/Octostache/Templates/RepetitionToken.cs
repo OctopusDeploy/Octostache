@@ -1,35 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Octostache.Templates
 {
     class RepetitionToken : TemplateToken
     {
-        readonly SymbolExpression collection;
-        readonly Identifier enumerator;
-        readonly TemplateToken[] template;
-
         public RepetitionToken(SymbolExpression collection, Identifier enumerator, IEnumerable<TemplateToken> template)
         {
-            this.collection = collection;
-            this.enumerator = enumerator;
-            this.template = template.ToArray();
+            Collection = collection;
+            Enumerator = enumerator;
+            Template = template.ToArray();
         }
 
-        public SymbolExpression Collection
-        {
-            get { return collection; }
-        }
+        public SymbolExpression Collection { get; }
 
-        public Identifier Enumerator
-        {
-            get { return enumerator; }
-        }
+        public Identifier Enumerator { get; }
 
-        public TemplateToken[] Template
-        {
-            get { return template; }
-        }
+        public TemplateToken[] Template { get; }
 
         public override string ToString()
         {
@@ -37,6 +25,8 @@ namespace Octostache.Templates
         }
 
         public override IEnumerable<string> GetArguments()
-            => Collection.GetArguments();
+        {
+            return Collection.GetArguments();
+        }
     }
 }

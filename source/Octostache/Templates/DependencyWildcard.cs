@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Octostache.Templates
 {
@@ -9,6 +10,9 @@ namespace Octostache.Templates
             return "*";
         }
 
-        public override IEnumerable<string> GetArguments() => new string[0];
+        public override IEnumerable<string> GetArguments()
+        {
+            return new string[0];
+        }
     }
 }

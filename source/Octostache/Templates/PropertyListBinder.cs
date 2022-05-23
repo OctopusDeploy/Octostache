@@ -10,12 +10,8 @@ namespace Octostache.Templates
         {
             var result = new Binding();
             foreach (var property in properties)
-            {
                 if (TemplateParser.TryParseIdentifierPath(property.Key, out var pathExpression) && pathExpression != null)
-                {
                     Add(result, pathExpression.Steps, property.Value ?? "");
-                }
-            }
             return result;
         }
 
@@ -36,9 +32,7 @@ namespace Octostache.Templates
                 case Identifier iss:
                 {
                     if (!result.TryGetValue(iss.Text, out next))
-                    {
                         result[iss.Text] = next = new Binding();
-                    }
 
                     break;
                 }
@@ -46,9 +40,7 @@ namespace Octostache.Templates
                 case Indexer ix when ix.Index != null:
                 {
                     if (!result.Indexable.TryGetValue(ix.Index, out next))
-                    {
                         result.Indexable[ix.Index] = next = new Binding(ix.Index);
-                    }
 
                     break;
                 }

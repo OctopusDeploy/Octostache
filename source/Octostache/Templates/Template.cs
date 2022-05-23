@@ -1,25 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Octostache.Templates
 {
     public class Template
     {
-        readonly TemplateToken[] tokens;
-
         public Template(IEnumerable<TemplateToken> tokens)
         {
-            this.tokens = tokens.ToArray();
+            Tokens = tokens.ToArray();
         }
 
-        public TemplateToken[] Tokens
-        {
-            get { return tokens; }
-        }
+        public TemplateToken[] Tokens { get; }
 
         public override string ToString()
         {
-            return string.Concat(tokens.Cast<object>());
+            return string.Concat(Tokens.Cast<object>());
         }
     }
 }

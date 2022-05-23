@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Markdig;
@@ -9,6 +8,42 @@ namespace Octostache.Templates.Functions
 {
     class TextEscapeFunctions
     {
+        static readonly Regex NewLineRegex = new Regex(@"(?:\r?\n)+", RegexOptions.Compiled);
+
+        static readonly IDictionary<char, string> HtmlEntityMap = new Dictionary<char, string>
+        {
+            { '&', "&amp;" },
+            { '<', "&lt;" },
+            { '>', "&gt;" },
+            { '"', "&quot;" },
+            { '\'', "&apos;" },
+            { '/', "&#x2F;" }
+        };
+
+        static readonly IDictionary<char, string> XmlEntityMap = new Dictionary<char, string>
+        {
+            { '&', "&amp;" },
+            { '<', "&lt;" },
+            { '>', "&gt;" },
+            { '"', "&quot;" },
+            { '\'', "&apos;" }
+        };
+
+        // This is overly simplistic since Unicode chars also need escaping.
+        static readonly IDictionary<char, string> JsonEntityMap = new Dictionary<char, string>
+        {
+            { '\"', @"\""" },
+            { '\r', @"\r" },
+            { '\t', @"\t" },
+            { '\n', @"\n" },
+            { '\\', @"\\" }
+        };
+
+        static readonly IDictionary<char, string> YamlSingleQuoteMap = new Dictionary<char, string>
+        {
+            { '\'', "''" }
+        };
+
         public static string? HtmlEscape(string? argument, string[] options)
         {
             return options.Any() ? null : Escape(argument, HtmlEntityMap);
@@ -44,8 +79,6 @@ namespace Octostache.Templates.Functions
             return Escape(argument, YamlDoubleQuoteMap);
         }
 
-        static readonly Regex NewLineRegex = new Regex(@"(?:\r?\n)+", RegexOptions.Compiled);
-
         static string HandleSingleQuoteYamlNewLines(string input)
         {
             // A single newline is parsed by YAML as a space
@@ -53,14 +86,15 @@ namespace Octostache.Templates.Functions
             // A triple newline is parsed by YAML as a double newline
             // ...etc
 
-            var output = NewLineRegex.Replace(input, m =>
-            {
-                var newlineToInsert = m.Value.StartsWith("\r")
-                    ? "\r\n"
-                    : "\n";
+            var output = NewLineRegex.Replace(input,
+                                              m =>
+                                              {
+                                                  var newlineToInsert = m.Value.StartsWith("\r")
+                                                      ? "\r\n"
+                                                      : "\n";
 
-                return newlineToInsert + m.Value;
-            });
+                                                  return newlineToInsert + m.Value;
+                                              });
 
             return output;
         }
@@ -87,11 +121,11 @@ namespace Octostache.Templates.Functions
                 return null;
 
             var pipeline = new MarkdownPipelineBuilder()
-                .UsePipeTables()
-                .UseEmphasisExtras() //strike through, subscript, superscript
-                .UseAutoLinks()      //make links for http:// etc
-                .Build();
-            return Markdig.Markdown.ToHtml(argument.Trim(), pipeline) + '\n';
+                           .UsePipeTables()
+                           .UseEmphasisExtras() //strike through, subscript, superscript
+                           .UseAutoLinks() //make links for http:// etc
+                           .Build();
+            return Markdown.ToHtml(argument.Trim(), pipeline) + '\n';
         }
 
         public static string? UriStringEscape(string? argument, string[] options)
@@ -122,13 +156,14 @@ namespace Octostache.Templates.Functions
             if (raw == null)
                 return null;
 
-            return string.Join("", raw.Select(c =>
-            {
-                string entity;
-                if (entities.TryGetValue(c, out entity))
-                    return entity;
-                return c.ToString();
-            }));
+            return string.Join("",
+                               raw.Select(c =>
+                                          {
+                                              string entity;
+                                              if (entities.TryGetValue(c, out entity))
+                                                  return entity;
+                                              return c.ToString();
+                                          }));
         }
 
         [return: NotNullIfNotNull("raw")]
@@ -142,40 +177,6 @@ namespace Octostache.Templates.Functions
         {
             return raw == null ? null : string.Join("", raw.Select(mapping));
         }
-
-        static readonly IDictionary<char, string> HtmlEntityMap = new Dictionary<char, string>
-        {
-            { '&', "&amp;" },
-            { '<', "&lt;" },
-            { '>', "&gt;" },
-            { '"', "&quot;" },
-            { '\'', "&apos;" },
-            { '/', "&#x2F;" }
-        };
-
-        static readonly IDictionary<char, string> XmlEntityMap = new Dictionary<char, string>
-        {
-            { '&', "&amp;" },
-            { '<', "&lt;" },
-            { '>', "&gt;" },
-            { '"', "&quot;" },
-            { '\'', "&apos;" }
-        };
-
-        // This is overly simplistic since Unicode chars also need escaping.
-        static readonly IDictionary<char, string> JsonEntityMap = new Dictionary<char, string>
-        {
-            { '\"', @"\""" },
-            { '\r', @"\r" },
-            { '\t', @"\t" },
-            { '\n', @"\n" },
-            { '\\', @"\\" }
-        };
-
-        static readonly IDictionary<char, string> YamlSingleQuoteMap = new Dictionary<char, string>
-        {
-            { '\'', "''" }
-        };
 
         static bool IsAsciiPrintable(char ch)
         {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using FluentAssertions;
 using Octostache.Templates;
 using Xunit;
@@ -7,7 +6,7 @@ using Xunit;
 namespace Octostache.Tests
 {
     public class ItemCacheFixture : BaseFixture
-    {   
+    {
         [Fact]
         protected void GetWithNullReturnsNull()
         {
@@ -17,7 +16,7 @@ namespace Octostache.Tests
 
             cache.Get("item").Should().BeNull();
         }
-        
+
         [Fact]
         protected void GetOrAddWithNullReturnsNull()
         {
@@ -27,7 +26,7 @@ namespace Octostache.Tests
 
             cache.GetOrAdd("item", () => throw new Exception("Should not re-create null")).Should().BeNull();
         }
-        
+
         [Fact]
         protected void GetOrAddWillAddNullOnce()
         {
@@ -37,7 +36,7 @@ namespace Octostache.Tests
 
             cache.GetOrAdd("item", () => throw new Exception("Should not re-create item")).Should().BeNull();
         }
-        
+
         [Fact]
         protected void GetWithItemReturnsItem()
         {
@@ -47,7 +46,7 @@ namespace Octostache.Tests
 
             cache.Get("item").Should().Be(item);
         }
-        
+
         [Fact]
         protected void GetOrAddWithItemReturnsItem()
         {
@@ -57,7 +56,7 @@ namespace Octostache.Tests
 
             cache.GetOrAdd("item", () => throw new Exception("Should not re-create item")).Should().Be(item);
         }
-        
+
         [Fact]
         protected void GetOrAddWillAddItemOnce()
         {
@@ -67,7 +66,7 @@ namespace Octostache.Tests
 
             cache.GetOrAdd("item", () => throw new Exception("Should not re-create item")).Should().Be(item);
         }
-        
+
         class TestItem
         {
             public string Value { get; set; }

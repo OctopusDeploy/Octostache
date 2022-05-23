@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Octostache.Templates.Functions
 {
-    internal static class TextComparisonFunctions
+    static class TextComparisonFunctions
     {
         public static string? Match(string? argument, string[] options)
         {
@@ -12,7 +12,7 @@ namespace Octostache.Templates.Functions
 
             return Regex.Match(argument, options[0]).Success.ToString().ToLowerInvariant();
         }
-        
+
         public static string? StartsWith(string? argument, string[] options)
         {
             if (argument == null || options.Length != 1)
@@ -20,7 +20,7 @@ namespace Octostache.Templates.Functions
 
             return argument.StartsWith(options[0], StringComparison.Ordinal).ToString().ToLowerInvariant();
         }
-        
+
         public static string? EndsWith(string? argument, string[] options)
         {
             if (argument == null || options.Length != 1)
@@ -28,7 +28,7 @@ namespace Octostache.Templates.Functions
 
             return argument.EndsWith(options[0], StringComparison.Ordinal).ToString().ToLowerInvariant();
         }
-        
+
         public static string? Contains(string? argument, string[] options)
         {
             if (argument == null || options.Length != 1)

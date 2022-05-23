@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Octostache.Templates
 {
@@ -16,10 +17,15 @@ namespace Octostache.Templates
             return Text;
         }
 
-        public override IEnumerable<string> GetArguments() => new[] {Text};
+        public override IEnumerable<string> GetArguments()
+        {
+            return new[] { Text };
+        }
 
-        public override bool Equals(SymbolExpressionStep? other) => Equals(other as Identifier);
-
+        public override bool Equals(SymbolExpressionStep? other)
+        {
+            return Equals(other as Identifier);
+        }
 
         protected bool Equals(Identifier? other)
         {
@@ -30,8 +36,8 @@ namespace Octostache.Templates
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((Identifier) obj);
+            if (obj.GetType() != GetType()) return false;
+            return Equals((Identifier)obj);
         }
 
         public override int GetHashCode()

@@ -1,10 +1,10 @@
 ﻿using System;
-using Xunit;
 using FluentAssertions;
+using Xunit;
 
 namespace Octostache.Tests
 {
-    public class JsonFixture :BaseFixture
+    public class JsonFixture : BaseFixture
     {
         [Fact]
         public void JsonDoesNotOverrideExisting()
@@ -14,7 +14,7 @@ namespace Octostache.Tests
                 ["Test.Hello"] = "Go Away",
                 ["Test"] = "{\"Hello\": \"World\", \"Foo\": \"Bar\", \"Donkey\" : {\"Kong\": 12}}",
                 ["Test[Foo]"] = "Nope",
-                ["Test.Donkey.Kong"] = "MARIO",
+                ["Test.Donkey.Kong"] = "MARIO"
             };
 
             variables.Evaluate("#{Test.Hello}").Should().Be("Go Away");
@@ -29,7 +29,7 @@ namespace Octostache.Tests
             {
                 ["Prop"] = "Foo",
                 ["Val"] = "Bar",
-                ["Test"] = "{#{Prop}: \"#{Val}\"}",
+                ["Test"] = "{#{Prop}: \"#{Val}\"}"
             };
 
             variables.Evaluate("#{Test[Foo]}").Should().Be("Bar");
@@ -45,7 +45,7 @@ namespace Octostache.Tests
         [InlineData("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", "{\"Bar\":\"11\"}", "Raw JSON returned")]
         [InlineData("{Name: \"#{Test.Value}\", Desc: \"Monkey\", Value: 12}", "#{Test.Name}", "12", "Non-Direct inner JSON")]
         public void SuccessfulJsonParsing(string json, string pattern, string expectedResult, string testName)
-        { 
+        {
             var variables = new VariableDictionary
             {
                 ["Test"] = json
@@ -59,7 +59,7 @@ namespace Octostache.Tests
         {
             var variables = new VariableDictionary
             {
-                ["Test"] = "{Name: NoComma}",
+                ["Test"] = "{Name: NoComma}"
             };
 
             variables.Evaluate("#{Test.Name}").Should().Be("#{Test.Name}");
@@ -70,7 +70,7 @@ namespace Octostache.Tests
         {
             var variables = new VariableDictionary
             {
-                ["Test"] = "[2,3,5,8]",
+                ["Test"] = "[2,3,5,8]"
             };
 
             var pattern = "#{each number in Test}#{number}#{if Octopus.Template.Each.Last == \"False\"}-#{/if}#{/each}";
@@ -83,7 +83,7 @@ namespace Octostache.Tests
         {
             var variables = new VariableDictionary
             {
-                ["Test"] = "{Blah: null}",
+                ["Test"] = "{Blah: null}"
             };
 
             var pattern = "Before:#{each number in Test.Blah}#{number}#{/each}:After";
@@ -96,14 +96,13 @@ namespace Octostache.Tests
         {
             var variables = new VariableDictionary
             {
-                ["Octopus.Sizes"] = "{\"Small\": \"11.5\",  Large: 15.21}",
+                ["Octopus.Sizes"] = "{\"Small\": \"11.5\",  Large: 15.21}"
             };
 
             var pattern = @"#{each size in Octopus.Sizes}#{size}:#{size.Value},#{/each}";
 
             variables.Evaluate(pattern).Should().Be("Small:11.5,Large:15.21,");
         }
-
 
         [Fact]
         public void JsonEvaluatesConditionalsWithEscapes()
@@ -118,13 +117,12 @@ namespace Octostache.Tests
             variables.Evaluate(pattern).Should().Be("{\"Bar\":\"Blaa\"}");
         }
 
-
         [Fact]
         public void JsonObjectSupportsIteratorWithInnerSelection()
         {
             var variables = new VariableDictionary
             {
-                ["Octopus.Sizes"] = "{\"X-Large\": {\"Error\": \"Not Stocked\"}}",
+                ["Octopus.Sizes"] = "{\"X-Large\": {\"Error\": \"Not Stocked\"}}"
             };
 
             var pattern = @"#{each size in Octopus.Sizes}#{size.Key} - #{size.Value.Error}#{/each}";
@@ -137,7 +135,7 @@ namespace Octostache.Tests
         {
             var variables = new VariableDictionary
             {
-                ["Foo"] = "{Bar: null}",
+                ["Foo"] = "{Bar: null}"
             };
 
             var pattern = @"Alpha#{Foo.Bar}bet";
@@ -150,7 +148,7 @@ namespace Octostache.Tests
         {
             var variables = new VariableDictionary
             {
-                ["Foo"] = "{Bar: \"ABC\"}",
+                ["Foo"] = "{Bar: \"ABC\"}"
             };
 
             var pattern = @"Alpha#{Foo.NotBar}bet";

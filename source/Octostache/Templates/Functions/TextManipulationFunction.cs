@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -7,14 +6,12 @@ using System.Text.RegularExpressions;
 
 namespace Octostache.Templates.Functions
 {
-    internal class TextManipulationFunction
+    class TextManipulationFunction
     {
         public static string? ToBase64(string? argument, string[] options)
         {
             if (options.Length > 1 || argument == null)
-            {
                 return null;
-            }
 
             var encoding = !options.Any() ? "utf8" : options[0].ToLower();
 
@@ -37,15 +34,14 @@ namespace Octostache.Templates.Functions
                     return null;
                 }
             }
+
             return Convert.ToBase64String(argumentBytes);
         }
 
         public static string? FromBase64(string? argument, string[] options)
         {
             if (options.Length > 1 || argument == null)
-            {
                 return null;
-            }
 
             var encoding = !options.Any() ? "utf8" : options[0].ToLower();
             var argumentBytes = Convert.FromBase64String(argument);
@@ -72,16 +68,13 @@ namespace Octostache.Templates.Functions
             if (argument == null)
             {
                 if (!options.Any())
-                {
                     return null;
-                }
 
                 return string.Concat(options);
             }
-            else if (!options.Any())
-            {
+
+            if (!options.Any())
                 return null;
-            }
 
             return argument + string.Concat(options);
         }
@@ -91,26 +84,20 @@ namespace Octostache.Templates.Functions
             if (argument == null)
             {
                 if (!options.Any())
-                {
                     return null;
-                }
 
                 return string.Concat(options);
             }
-            else if (!options.Any())
-            {
+
+            if (!options.Any())
                 return null;
-            }
 
             return string.Concat(options) + argument;
         }
 
         public static string? Truncate(string? argument, string[] options)
         {
-            if (argument == null ||
-                !options.Any() ||
-                !int.TryParse(options[0], out int _) ||
-                int.Parse(options[0]) < 0)
+            if (argument == null || !options.Any() || !int.TryParse(options[0], out var _) || int.Parse(options[0]) < 0)
                 return null;
 
             var length = int.Parse(options[0]);
@@ -127,7 +114,7 @@ namespace Octostache.Templates.Functions
 
             if (!options.Any()) return argument.Trim();
 
-            switch(options[0].ToLower())
+            switch (options[0].ToLower())
             {
                 case "start":
                     return argument.TrimStart();
@@ -141,91 +128,18 @@ namespace Octostache.Templates.Functions
         public static string? Indent(string? argument, string[] options)
         {
             if (argument == null)
-            {
                 return null;
-            }
 
             if (argument.Length == 0)
-            {
                 // No content, no indenting
                 return string.Empty;
-            }
 
             var indentOptions = new IndentOptions(options);
 
             if (!indentOptions.IsValid)
-            {
                 return null;
-            }
 
             return indentOptions.InitialIndent + argument.Replace("\n", "\n" + indentOptions.SubsequentIndent);
-        }
-
-        private class IndentOptions
-        {
-            private static Regex dualSizeEx = new Regex(@"^((\d{1,3})?/)?(\d{1,3})$", RegexOptions.Compiled);
-            public IndentOptions(string[] options)
-            {
-                if (options.Length == 0)
-                {
-                    SubsequentIndent = InitialIndent = "    ";
-                    return;
-                }
-
-                if (options.Length == 1)
-                {
-                    var dualSize = dualSizeEx.Match(options[0]);
-                    if (dualSize.Success)
-                    {
-                        var separator = dualSize.Groups[1];
-                        var initial = dualSize.Groups[2];
-                        var subsequent = dualSize.Groups[3];
-                        if (separator.Success)
-                        {
-                            // Different sized indents
-                            if (initial.Success)
-                            {
-                                if (byte.TryParse(initial.Value, out var initialIndent) && byte.TryParse(subsequent.Value, out var subsequentIndent))
-                                {
-                                    InitialIndent = new string(' ', initialIndent);
-                                    SubsequentIndent = new string(' ', subsequentIndent);
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                if (byte.TryParse(subsequent.Value, out var subsequentIndent))
-                                {
-                                    InitialIndent = string.Empty;
-                                    SubsequentIndent = new string(' ', subsequentIndent);
-                                    return;
-                                }
-                            }
-                        }
-                        else if (byte.TryParse(subsequent.Value, out var overallIndent))
-                        {
-                            InitialIndent = SubsequentIndent = new string(' ', overallIndent);
-                            return;
-                        }
-                    }
-
-                    InitialIndent = SubsequentIndent = options[0];
-                }
-                else if (options.Length == 2)
-                {
-                    InitialIndent = options[0];
-                    SubsequentIndent = options[1];
-                }
-                else
-                {
-                    InitialIndent = SubsequentIndent = string.Empty;
-                    IsValid = false;
-                }
-            }
-
-            public string InitialIndent { get; }
-            public string SubsequentIndent { get; }
-            public bool IsValid { get; } = true;
         }
 
         [return: NotNullIfNotNull("argument")]
@@ -294,6 +208,74 @@ namespace Octostache.Templates.Functions
             {
                 return $"[{nameof(UriPart)} {options[0]} error: {e.Message}]";
             }
+        }
+
+        class IndentOptions
+        {
+            static readonly Regex dualSizeEx = new Regex(@"^((\d{1,3})?/)?(\d{1,3})$", RegexOptions.Compiled);
+
+            public IndentOptions(string[] options)
+            {
+                if (options.Length == 0)
+                {
+                    SubsequentIndent = InitialIndent = "    ";
+                    return;
+                }
+
+                if (options.Length == 1)
+                {
+                    var dualSize = dualSizeEx.Match(options[0]);
+                    if (dualSize.Success)
+                    {
+                        var separator = dualSize.Groups[1];
+                        var initial = dualSize.Groups[2];
+                        var subsequent = dualSize.Groups[3];
+                        if (separator.Success)
+                        {
+                            // Different sized indents
+                            if (initial.Success)
+                            {
+                                if (byte.TryParse(initial.Value, out var initialIndent) && byte.TryParse(subsequent.Value, out var subsequentIndent))
+                                {
+                                    InitialIndent = new string(' ', initialIndent);
+                                    SubsequentIndent = new string(' ', subsequentIndent);
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (byte.TryParse(subsequent.Value, out var subsequentIndent))
+                                {
+                                    InitialIndent = string.Empty;
+                                    SubsequentIndent = new string(' ', subsequentIndent);
+                                    return;
+                                }
+                            }
+                        }
+                        else if (byte.TryParse(subsequent.Value, out var overallIndent))
+                        {
+                            InitialIndent = SubsequentIndent = new string(' ', overallIndent);
+                            return;
+                        }
+                    }
+
+                    InitialIndent = SubsequentIndent = options[0];
+                }
+                else if (options.Length == 2)
+                {
+                    InitialIndent = options[0];
+                    SubsequentIndent = options[1];
+                }
+                else
+                {
+                    InitialIndent = SubsequentIndent = string.Empty;
+                    IsValid = false;
+                }
+            }
+
+            public string InitialIndent { get; }
+            public string SubsequentIndent { get; }
+            public bool IsValid { get; } = true;
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -36,9 +37,7 @@ namespace Octostache
             var fullPath = Path.GetFullPath(variablesFilePath);
             var parentDirectory = Path.GetDirectoryName(fullPath);
             if (parentDirectory != null && !Directory.Exists(parentDirectory))
-            {
                 Directory.CreateDirectory(parentDirectory);
-            }
 
             using (var targetStream = new FileStream(variablesFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
             {

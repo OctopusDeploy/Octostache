@@ -50,7 +50,7 @@ namespace Octostache.Templates
             { "sha1", HashFunction.Sha1 },
             { "sha256", HashFunction.Sha256 },
             { "sha384", HashFunction.Sha384 },
-            { "sha512", HashFunction.Sha512 },
+            { "sha512", HashFunction.Sha512 }
         };
 
         public static string? InvokeOrNull(string function, string? argument, string[] options)
