@@ -1,36 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Octostache.Templates
 {
     class Identifier : SymbolExpressionStep
     {
+        public string Text { get; }
+
         public Identifier(string text)
         {
             Text = text;
         }
 
-        public string Text { get; }
+        public override string ToString() => Text;
 
-        public override string ToString()
+        public override IEnumerable<string> GetArguments()
         {
-            return Text;
+            return new[] { Text };
         }
-
-        public override IEnumerable<string> GetArguments() => new[] {Text};
 
         public override bool Equals(SymbolExpressionStep? other) => Equals(other as Identifier);
 
-
-        protected bool Equals(Identifier? other)
-        {
-            return base.Equals(other) && string.Equals(Text, other?.Text);
-        }
+        protected bool Equals(Identifier? other) => base.Equals(other) && string.Equals(Text, other?.Text);
 
         public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((Identifier) obj);
         }
 

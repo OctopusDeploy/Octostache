@@ -6,10 +6,10 @@ namespace Octostache.Templates
 {
     public class RecursiveDefinitionException : InvalidOperationException
     {
+        const string MessageTemplate = "An attempt to parse the variable symbol \"{0}\"  appears to have resulted in a self referencing loop ({1} -> {0}). Ensure that recursive loops do not exist in the variable values.";
+
         internal RecursiveDefinitionException(SymbolExpression symbol, Stack<SymbolExpression> ancestorSymbolStack)
-            : base ($"An attempt to parse the variable symbol \"{symbol}\" appears to have resulted in a self referencing " +
-                    $"loop ({string.Join(" -> ", ancestorSymbolStack.Reverse().Select(x => x.ToString()))} -> {symbol}). " +
-                    $"Ensure that recursive loops do not exist in the variable values.")
+            : base(string.Format(MessageTemplate, symbol, string.Join(" -> ", ancestorSymbolStack.Reverse().Select(x => x.ToString()))))
         {
         }
     }

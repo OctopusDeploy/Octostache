@@ -16,6 +16,7 @@ namespace Octostache.Templates
                     Add(result, pathExpression.Steps, property.Value ?? "");
                 }
             }
+
             return result;
         }
 

@@ -6,30 +6,15 @@ namespace Octostache.Templates.Functions
 {
     static class HashFunction
     {
-        public static string? Md5(string? argument, string[] options)
-        {
-            return CalculateHash(MD5.Create, argument, options);
-        }
+        public static string? Md5(string? argument, string[] options) => CalculateHash(MD5.Create, argument, options);
 
-        public static string? Sha1(string? argument, string[] options)
-        {
-            return CalculateHash(SHA1.Create, argument, options);
-        }
+        public static string? Sha1(string? argument, string[] options) => CalculateHash(SHA1.Create, argument, options);
 
-        public static string? Sha256(string? argument, string[] options)
-        {
-            return CalculateHash(SHA256.Create, argument, options);
-        }
+        public static string? Sha256(string? argument, string[] options) => CalculateHash(SHA256.Create, argument, options);
 
-        public static string? Sha384(string? argument, string[] options)
-        {
-            return CalculateHash(SHA384.Create, argument, options);
-        }
+        public static string? Sha384(string? argument, string[] options) => CalculateHash(SHA384.Create, argument, options);
 
-        public static string? Sha512(string? argument, string[] options)
-        {
-            return CalculateHash(SHA512.Create, argument, options);
-        }
+        public static string? Sha512(string? argument, string[] options) => CalculateHash(SHA512.Create, argument, options);
 
         static string? CalculateHash(Func<HashAlgorithm> algorithm, string? argument, string[] options)
         {
@@ -65,6 +50,7 @@ namespace Octostache.Templates.Functions
             {
                 size = bytes.Length;
             }
+
             var sb = new StringBuilder(size * 2);
 
             for (var i = 0; i < size; i++)
@@ -77,12 +63,18 @@ namespace Octostache.Templates.Functions
 
         class HashOptions
         {
+            public Func<string, byte[]> GetBytes { get; } = Encoding.UTF8.GetBytes;
+            public int? DigestSize { get; }
+
+            public bool IsValid { get; } = true;
+
             public HashOptions(string[] options)
             {
                 if (options.Length == 0)
                 {
                     return;
                 }
+
                 if (options.Length > 2)
                 {
                     IsValid = false;
@@ -130,11 +122,6 @@ namespace Octostache.Templates.Functions
                     }
                 }
             }
-
-            public Func<string, byte[]> GetBytes { get; } = Encoding.UTF8.GetBytes;
-            public int? DigestSize { get; }
-
-            public bool IsValid { get; } = true;
 
             static Func<string, byte[]>? GetEncoding(string encoding)
             {

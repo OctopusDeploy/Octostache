@@ -1,28 +1,57 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Markdig;
+#if HAS_NULLABLE_REF_TYPES
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Octostache.Templates.Functions
 {
     class TextEscapeFunctions
     {
-        public static string? HtmlEscape(string? argument, string[] options)
-        {
-            return options.Any() ? null : Escape(argument, HtmlEntityMap);
-        }
+        static readonly Regex NewLineRegex = new Regex(@"(?:\r?\n)+", RegexOptions.Compiled);
 
-        public static string? XmlEscape(string? argument, string[] options)
+        static readonly IDictionary<char, string> HtmlEntityMap = new Dictionary<char, string>
         {
-            return options.Any() ? null : Escape(argument, XmlEntityMap);
-        }
+            { '&', "&amp;" },
+            { '<', "&lt;" },
+            { '>', "&gt;" },
+            { '"', "&quot;" },
+            { '\'', "&apos;" },
+            { '/', "&#x2F;" },
+        };
 
-        public static string? JsonEscape(string? argument, string[] options)
+        static readonly IDictionary<char, string> XmlEntityMap = new Dictionary<char, string>
         {
-            return options.Any() ? null : Escape(argument, JsonEntityMap);
-        }
+            { '&', "&amp;" },
+            { '<', "&lt;" },
+            { '>', "&gt;" },
+            { '"', "&quot;" },
+            { '\'', "&apos;" },
+        };
+
+        // This is overly simplistic since Unicode chars also need escaping.
+        static readonly IDictionary<char, string> JsonEntityMap = new Dictionary<char, string>
+        {
+            { '\"', @"\""" },
+            { '\r', @"\r" },
+            { '\t', @"\t" },
+            { '\n', @"\n" },
+            { '\\', @"\\" },
+        };
+
+        static readonly IDictionary<char, string> YamlSingleQuoteMap = new Dictionary<char, string>
+        {
+            { '\'', "''" },
+        };
+
+        public static string? HtmlEscape(string? argument, string[] options) => options.Any() ? null : Escape(argument, HtmlEntityMap);
+
+        public static string? XmlEscape(string? argument, string[] options) => options.Any() ? null : Escape(argument, XmlEntityMap);
+
+        public static string? JsonEscape(string? argument, string[] options) => options.Any() ? null : Escape(argument, JsonEntityMap);
 
         public static string? YamlSingleQuoteEscape(string? argument, string[] options)
         {
@@ -44,8 +73,6 @@ namespace Octostache.Templates.Functions
             return Escape(argument, YamlDoubleQuoteMap);
         }
 
-        static readonly Regex NewLineRegex = new Regex(@"(?:\r?\n)+", RegexOptions.Compiled);
-
         static string HandleSingleQuoteYamlNewLines(string input)
         {
             // A single newline is parsed by YAML as a space
@@ -53,14 +80,15 @@ namespace Octostache.Templates.Functions
             // A triple newline is parsed by YAML as a double newline
             // ...etc
 
-            var output = NewLineRegex.Replace(input, m =>
-            {
-                var newlineToInsert = m.Value.StartsWith("\r")
-                    ? "\r\n"
-                    : "\n";
+            var output = NewLineRegex.Replace(input,
+                m =>
+                {
+                    var newlineToInsert = m.Value.StartsWith("\r")
+                        ? "\r\n"
+                        : "\n";
 
-                return newlineToInsert + m.Value;
-            });
+                    return newlineToInsert + m.Value;
+                });
 
             return output;
         }
@@ -89,9 +117,9 @@ namespace Octostache.Templates.Functions
             var pipeline = new MarkdownPipelineBuilder()
                 .UsePipeTables()
                 .UseEmphasisExtras() //strike through, subscript, superscript
-                .UseAutoLinks()      //make links for http:// etc
+                .UseAutoLinks() //make links for http:// etc
                 .Build();
-            return Markdig.Markdown.ToHtml(argument.Trim(), pipeline) + '\n';
+            return Markdown.ToHtml(argument.Trim(), pipeline) + '\n';
         }
 
         public static string? UriStringEscape(string? argument, string[] options)
@@ -122,74 +150,29 @@ namespace Octostache.Templates.Functions
             if (raw == null)
                 return null;
 
-            return string.Join("", raw.Select(c =>
-            {
-                string entity;
-                if (entities.TryGetValue(c, out entity))
-                    return entity;
-                return c.ToString();
-            }));
+            return string.Join("",
+                raw.Select(c =>
+                {
+                    string entity;
+                    if (entities.TryGetValue(c, out entity))
+                        return entity;
+                    return c.ToString();
+                }));
         }
 
         [return: NotNullIfNotNull("raw")]
-        static string? Escape(string? raw, Func<char, string> mapping)
-        {
-            return raw == null ? null : string.Join("", raw.Select(mapping));
-        }
+        static string? Escape(string? raw, Func<char, string> mapping) => raw == null ? null : string.Join("", raw.Select(mapping));
 
         [return: NotNullIfNotNull("raw")]
-        static string? Escape(string? raw, Func<char, int, string> mapping)
-        {
-            return raw == null ? null : string.Join("", raw.Select(mapping));
-        }
+        static string? Escape(string? raw, Func<char, int, string> mapping) => raw == null ? null : string.Join("", raw.Select(mapping));
 
-        static readonly IDictionary<char, string> HtmlEntityMap = new Dictionary<char, string>
-        {
-            { '&', "&amp;" },
-            { '<', "&lt;" },
-            { '>', "&gt;" },
-            { '"', "&quot;" },
-            { '\'', "&apos;" },
-            { '/', "&#x2F;" }
-        };
+        static bool IsAsciiPrintable(char ch) => ch >= 0x20 && ch <= 0x7E;
 
-        static readonly IDictionary<char, string> XmlEntityMap = new Dictionary<char, string>
-        {
-            { '&', "&amp;" },
-            { '<', "&lt;" },
-            { '>', "&gt;" },
-            { '"', "&quot;" },
-            { '\'', "&apos;" }
-        };
-
-        // This is overly simplistic since Unicode chars also need escaping.
-        static readonly IDictionary<char, string> JsonEntityMap = new Dictionary<char, string>
-        {
-            { '\"', @"\""" },
-            { '\r', @"\r" },
-            { '\t', @"\t" },
-            { '\n', @"\n" },
-            { '\\', @"\\" }
-        };
-
-        static readonly IDictionary<char, string> YamlSingleQuoteMap = new Dictionary<char, string>
-        {
-            { '\'', "''" }
-        };
-
-        static bool IsAsciiPrintable(char ch)
-        {
-            return ch >= 0x20 && ch <= 0x7E;
-        }
-
-        static bool IsIso88591Compatible(char ch)
-        {
-            return ch >= 0x00 && ch < 0xFF;
-        }
+        static bool IsIso88591Compatible(char ch) => ch >= 0x00 && ch < 0xFF;
 
         static string EscapeUnicodeCharForYamlOrProperties(char ch)
         {
-            var hex = ((int)ch).ToString("x4");
+            var hex = ((int) ch).ToString("x4");
             return $"\\u{hex}";
         }
 

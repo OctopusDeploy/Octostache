@@ -39,10 +39,12 @@ namespace Octostache.Templates
                 {
                     yield return context.Expand(exp.RightSide);
                 }
+
                 foreach (var templateDependency in GetDependencies(ct.TruthyTemplate.Concat(ct.FalsyTemplate), context))
                 {
                     yield return templateDependency;
                 }
+
                 yield break;
             }
 

@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 
 namespace Octostache.Templates.Functions
 {
-    internal class FormatFunction
+    class FormatFunction
     {
         public static string? Format(string? argument, string[] options)
         {
@@ -44,11 +41,12 @@ namespace Octostache.Templates.Functions
                 {
                     case "int32":
                     case "int":
-                        Int32 result;
-                        if (Int32.TryParse(argument, out result))
+                        int result;
+                        if (int.TryParse(argument, out result))
                         {
                             return result.ToString(formatString);
                         }
+
                         break;
                     case "double":
                         double dbl;
@@ -56,6 +54,7 @@ namespace Octostache.Templates.Functions
                         {
                             return dbl.ToString(formatString);
                         }
+
                         break;
                     case "decimal":
                         decimal dcml;
@@ -63,6 +62,7 @@ namespace Octostache.Templates.Functions
                         {
                             return dcml.ToString(formatString);
                         }
+
                         break;
                     case "date":
                     case "datetime":
@@ -71,6 +71,7 @@ namespace Octostache.Templates.Functions
                         {
                             return date.ToString(formatString);
                         }
+
                         break;
                     case "datetimeoffset":
                         DateTimeOffset dateOffset;
@@ -78,10 +79,12 @@ namespace Octostache.Templates.Functions
                         {
                             return dateOffset.ToString(formatString);
                         }
+
                         break;
                 }
             }
             catch (FormatException) { }
+
             return null;
         }
     }

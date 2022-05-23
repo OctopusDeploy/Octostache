@@ -1,8 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Octostache.Templates;
+#if HAS_NULLABLE_REF_TYPES
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Octostache.CustomStringParsers
 {
@@ -37,6 +40,7 @@ namespace Octostache.CustomStringParsers
             {
                 return false;
             }
+
             return false;
         }
 
@@ -64,6 +68,7 @@ namespace Octostache.CustomStringParsers
             {
                 return false;
             }
+
             return false;
         }
 
@@ -72,10 +77,10 @@ namespace Octostache.CustomStringParsers
             subBindings = jobj.Properties().Select(p =>
             {
                 var b = new Binding(p.Name)
-                        {
-                            { "Key", new Binding(p.Name)},
-                            { "Value", ConvertJTokenToBinding(p.Value)}
-                        };
+                {
+                    { "Key", new Binding(p.Name) },
+                    { "Value", ConvertJTokenToBinding(p.Value) },
+                };
                 return b;
             }).ToArray();
             return true;
@@ -87,19 +92,19 @@ namespace Octostache.CustomStringParsers
             return true;
         }
 
-        private static bool TryParseJValue(JValue jvalue, out Binding subBinding)
+        static bool TryParseJValue(JValue jvalue, out Binding subBinding)
         {
             subBinding = new Binding(jvalue.Value<string>());
             return true;
         }
 
-        private static bool TryParseJObject(JObject jobj, string property, out Binding subBinding)
+        static bool TryParseJObject(JObject jobj, string property, out Binding subBinding)
         {
             subBinding = ConvertJTokenToBinding(jobj[property]);
             return true;
         }
 
-        private static bool TryParseJArray(JArray jarray, string property, [NotNullWhen(true)] out Binding? subBinding)
+        static bool TryParseJArray(JArray jarray, string property, [NotNullWhen(true)] out Binding? subBinding)
         {
             int index;
             subBinding = null;
@@ -113,14 +118,16 @@ namespace Octostache.CustomStringParsers
 
         static Binding ConvertJTokenToBinding(JToken token)
         {
-            if(token == null)
+            if (token == null)
             {
                 return new Binding(string.Empty);
             }
+
             if (token is JValue)
             {
                 return new Binding(token.Value<string>() ?? string.Empty);
             }
+
             return new Binding(JsonConvert.SerializeObject(token));
         }
     }

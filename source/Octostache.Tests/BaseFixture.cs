@@ -12,7 +12,7 @@ namespace Octostache.Tests
             // The TemplateParser Cache is retained between tests. A little reflection to clear it.
             var parser = typeof(VariableDictionary).Assembly.GetType("Octostache.Templates.TemplateParser");
             var clearMethod = parser?.GetMethod("ClearCache", BindingFlags.NonPublic | BindingFlags.Static);
-            clearMethod?.Invoke(null, new object[] {});
+            clearMethod?.Invoke(null, new object[] { });
         }
 
         protected string Evaluate(string template, IDictionary<string, string> variables, bool haltOnError = true)
@@ -33,6 +33,7 @@ namespace Octostache.Tests
             {
                 dictionary[pair.Key] = pair.Value;
             }
+
             return dictionary.EvaluateTruthy(template);
         }
 

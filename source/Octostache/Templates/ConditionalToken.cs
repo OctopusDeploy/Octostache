@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Octostache.Templates
@@ -10,6 +11,10 @@ namespace Octostache.Templates
     /// </summary>
     class ConditionalToken : TemplateToken
     {
+        public ConditionalExpressionToken Token { get; }
+        public TemplateToken[] TruthyTemplate { get; }
+        public TemplateToken[] FalsyTemplate { get; }
+
         public ConditionalToken(ConditionalExpressionToken token, IEnumerable<TemplateToken> truthyBranch, IEnumerable<TemplateToken> falsyBranch)
         {
             Token = token;
@@ -17,21 +22,14 @@ namespace Octostache.Templates
             FalsyTemplate = falsyBranch.ToArray();
         }
 
-        public ConditionalExpressionToken Token { get; }
+        public override string ToString() => "#{if " + Token.LeftSide + Token.EqualityText + "}" + string.Join("", TruthyTemplate.Cast<object>()) + "#{else}" + string.Join("", FalsyTemplate.Cast<object>()) + "#{/if}";
 
-        public TemplateToken[] TruthyTemplate { get; }
-
-        public TemplateToken[] FalsyTemplate { get; }
-
-        public override string ToString()
+        public override IEnumerable<string> GetArguments()
         {
-            return "#{if " + Token.LeftSide + Token.EqualityText + "}" + string.Join("", TruthyTemplate.Cast<object>()) + "#{else}" + string.Join("", FalsyTemplate.Cast<object>()) + "#{/if}";
-        }
-
-        public override IEnumerable<string> GetArguments() 
-            => Token.GetArguments()
+            return Token.GetArguments()
                 .Concat(TruthyTemplate.SelectMany(t => t.GetArguments()))
                 .Concat(FalsyTemplate.SelectMany(t => t.GetArguments()));
+        }
     }
 
     class ConditionalExpressionToken : TemplateToken
@@ -44,8 +42,7 @@ namespace Octostache.Templates
             LeftSide = leftSide;
         }
 
-        public override IEnumerable<string> GetArguments() 
-              => LeftSide.GetArguments();
+        public override IEnumerable<string> GetArguments() => LeftSide.GetArguments();
     }
 
     class ConditionalStringExpressionToken : ConditionalExpressionToken
@@ -61,7 +58,9 @@ namespace Octostache.Templates
         }
 
         public override IEnumerable<string> GetArguments()
-            => base.GetArguments().Concat(new[] {RightSide});
+        {
+            return base.GetArguments().Concat(new[] { RightSide });
+        }
     }
 
     class ConditionalSymbolExpressionToken : ConditionalExpressionToken
@@ -75,8 +74,7 @@ namespace Octostache.Templates
             Equality = eq;
             RightSide = rightSide;
         }
-        
-        public override IEnumerable<string> GetArguments()
-            => base.GetArguments().Concat(RightSide.GetArguments());
+
+        public override IEnumerable<string> GetArguments() => base.GetArguments().Concat(RightSide.GetArguments());
     }
 }

@@ -1,8 +1,8 @@
-using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using FluentAssertions;
 using Octostache.Templates;
 using Xunit;
 
@@ -34,13 +34,12 @@ namespace Octostache.Tests
         {
             var variables = new VariableDictionary
             {
-                {"Foo", "Bar"},
-                {"IsFamous", "True"},
-                {"FriendCount", "99"},
-                {"InstallPath", "C:\\#{Directory}"},
-                {"Directory", "MyDirectory"}
+                { "Foo", "Bar" },
+                { "IsFamous", "True" },
+                { "FriendCount", "99" },
+                { "InstallPath", "C:\\#{Directory}" },
+                { "Directory", "MyDirectory" },
             };
-
 
             variables.Get("InstallPath").Should().Be("C:\\MyDirectory");
             variables.GetRaw("InstallPath").Should().Be("C:\\#{Directory}");
@@ -64,7 +63,6 @@ namespace Octostache.Tests
         [InlineData("#{Foo|ToUpper}", "Foo=#{Bar | ToLower};Bar=Baz", "BAZ")]
         [InlineData("#{Foo | ToUpper}", "Foo=baz", "BAZ")]
         [InlineData("##{Foo}", "foo=Bar", "#{Foo}")]
-
         public void BasicExamples(string template, string variableDefinitions, string expectedResult)
         {
             string error;
@@ -76,7 +74,7 @@ namespace Octostache.Tests
         [Theory]
         [InlineData("#{Foo}", "", "#{Foo}")]
         [InlineData("#{Foo}#{Jazz}", "Foo=#{Bar};Bar=Baz", "Baz#{Jazz}")]
-        [InlineData("#{each a in Action}#{a.Size}#{/each}", "Action[x].Name=Baz;Action[y].Name=Baz", "#{a.Size}#{a.Size}")
+        [InlineData("#{each a in Action}#{a.Size}#{/each}", "Action[x].Name=Baz;Action[y].Name=Baz", "#{a.Size}#{a.Size}"),
         ]
         public void MissingTokenErrorExamples(string template, string variableDefinitions, string expectedResult)
         {
@@ -139,12 +137,14 @@ namespace Octostache.Tests
                   function(e,n,o){""use strict"";var t=o(139),s=function(e){var n=function(e){e.withCredentials=!0;var n=t.getHeaders(new Headers);
                   n.forEach(function(n,o){e.setRequestHeader(o,n)})";
 
-            var result = Evaluate(input, new Dictionary<string, string>
-            {
-                {"Web.Site.Url[A]", "Subbed.Web.Site.A"},
-                {"Web.Root", "Subbed.Web.Root"},
-                {"Wsf.Host", "Subbed.Wsf.Host"}
-            }, haltOnError: false);
+            var result = Evaluate(input,
+                new Dictionary<string, string>
+                {
+                    { "Web.Site.Url[A]", "Subbed.Web.Site.A" },
+                    { "Web.Root", "Subbed.Web.Root" },
+                    { "Wsf.Host", "Subbed.Wsf.Host" },
+                },
+                false);
 
             const string match =
                 @"webpackJsonp([5],{139:function(e,n,o){""use strict"";(function(e){var o=""dev"",t=e?""prod"":o;n.ENV_MODE=t;var s=t===o;n.DEVELOPMENT_MODE=s;var
@@ -165,12 +165,14 @@ namespace Octostache.Tests
                 @"i=""#{Web.Root}"";console.log(i);var l=""#{Wsf.Host}""
                   ;a=function(e){return""#{";
 
-            var result = Evaluate(input, new Dictionary<string, string>
-            {
-                {"Web.Site.Url[A]", "Subbed.Web.Site.A"},
-                {"Web.Root", "Subbed.Web.Root"},
-                {"Wsf.Host", "Subbed.Wsf.Host"}
-            }, haltOnError: false);
+            var result = Evaluate(input,
+                new Dictionary<string, string>
+                {
+                    { "Web.Site.Url[A]", "Subbed.Web.Site.A" },
+                    { "Web.Root", "Subbed.Web.Root" },
+                    { "Wsf.Host", "Subbed.Wsf.Host" },
+                },
+                false);
 
             const string match =
                 @"i=""Subbed.Web.Root"";console.log(i);var l=""Subbed.Wsf.Host""
@@ -178,7 +180,6 @@ namespace Octostache.Tests
 
             result.Should().Be(match);
         }
-
 
         [Fact]
         public void Required()
@@ -212,10 +213,11 @@ namespace Octostache.Tests
         [Fact]
         public void NamedIndexersAreSupported()
         {
-            var result = Evaluate("#{Octopus.Action[Package A].Name}", new Dictionary<string, string>
-            {
-                { "Octopus.Action[Package A].Name", "MyPackage" }
-            });
+            var result = Evaluate("#{Octopus.Action[Package A].Name}",
+                new Dictionary<string, string>
+                {
+                    { "Octopus.Action[Package A].Name", "MyPackage" },
+                });
 
             result.Should().Be("MyPackage");
         }
@@ -223,11 +225,12 @@ namespace Octostache.Tests
         [Fact]
         public void VariableIndexersAreSupported()
         {
-            var result = Evaluate("#{Octopus.Action[#{Package}].Name}", new Dictionary<string, string>
-            {
-                { "Package", "Package A" },
-                { "Octopus.Action[Package A].Name", "MyPackage" },
-            });
+            var result = Evaluate("#{Octopus.Action[#{Package}].Name}",
+                new Dictionary<string, string>
+                {
+                    { "Package", "Package A" },
+                    { "Octopus.Action[Package A].Name", "MyPackage" },
+                });
 
             result.Should().Be("MyPackage");
         }
@@ -235,21 +238,23 @@ namespace Octostache.Tests
         [Fact]
         public void NestedIndexersAreSupported()
         {
-            var result = Evaluate("#{Octopus.Action.Package[containers[0].container].Registry}", new Dictionary<string, string>
-            {
-                { "Octopus.Action.Package[containers[0].container].Registry", "docker.io" },
-            });
+            var result = Evaluate("#{Octopus.Action.Package[containers[0].container].Registry}",
+                new Dictionary<string, string>
+                {
+                    { "Octopus.Action.Package[containers[0].container].Registry", "docker.io" },
+                });
 
             result.Should().Be("docker.io");
         }
-        
+
         [Fact]
         public void MultipleNestedIndexersAreSupported()
         {
-            var result = Evaluate("#{Octopus.Action.Package[array[foo].containers[0].container].Registry}", new Dictionary<string, string>
-            {
-                { "Octopus.Action.Package[array[foo].containers[0].container].Registry", "docker.io" },
-            });
+            var result = Evaluate("#{Octopus.Action.Package[array[foo].containers[0].container].Registry}",
+                new Dictionary<string, string>
+                {
+                    { "Octopus.Action.Package[array[foo].containers[0].container].Registry", "docker.io" },
+                });
 
             result.Should().Be("docker.io");
         }
@@ -257,12 +262,13 @@ namespace Octostache.Tests
         [Fact]
         public void JsonEscapeShouldBeSupported()
         {
-            var result = Evaluate("#{Octopus.Action.Package[package].ExtractedPath | JsonEscape}", new Dictionary<string, string>
-            {
-                { 
-                    "Octopus.Action.Package[package].ExtractedPath", @"C:\OctopusTest\Api Test\1\Octopus-Primary\Work\20210804020317-7-11\package"
-                },
-            });
+            var result = Evaluate("#{Octopus.Action.Package[package].ExtractedPath | JsonEscape}",
+                new Dictionary<string, string>
+                {
+                    {
+                        "Octopus.Action.Package[package].ExtractedPath", @"C:\OctopusTest\Api Test\1\Octopus-Primary\Work\20210804020317-7-11\package"
+                    },
+                });
 
             result.Should().Be(@"C:\\OctopusTest\\Api Test\\1\\Octopus-Primary\\Work\\20210804020317-7-11\\package");
         }
@@ -270,10 +276,11 @@ namespace Octostache.Tests
         [Fact]
         public void MissingVariableIndexersFailToEvaluateGracefully()
         {
-            var result = Evaluate("#{Octopus.Action[#{Package}].Name}", new Dictionary<string, string>
-            {
-                { "Octopus.Action[Package A].Name", "MyPackage" },
-            });
+            var result = Evaluate("#{Octopus.Action[#{Package}].Name}",
+                new Dictionary<string, string>
+                {
+                    { "Octopus.Action[Package A].Name", "MyPackage" },
+                });
 
             result.Should().Be("#{Octopus.Action[#{Package}].Name}");
         }
@@ -281,14 +288,14 @@ namespace Octostache.Tests
         [Fact]
         public void MissingIndexedVariableWhenTheIndexerIsAValidVariableAndTheVariableNameIsTheSameAsTheIndexedVariableName()
         {
-            var result = Evaluate("#{MY_VAR}", new Dictionary<string, string>
-            {
-                { "MY_VAR", "#{MY_VAR[#{foo}]}" },
-                { "foo", "bar" },
-            });
+            var result = Evaluate("#{MY_VAR}",
+                new Dictionary<string, string>
+                {
+                    { "MY_VAR", "#{MY_VAR[#{foo}]}" },
+                    { "foo", "bar" },
+                });
             result.Should().Be("#{MY_VAR[#{foo}]}");
         }
-
 
         [Fact]
         public void IterationOverAnEmptyCollectionIsFine()
@@ -305,10 +312,10 @@ namespace Octostache.Tests
                 "#{each a in Octopus.Action}#{each tr in a.TargetRoles}#{a.Name}#{tr}#{/each}#{/each}",
                 new Dictionary<string, string>
                 {
-                    {"Octopus.Action[Package A].Name", "A"},
-                    {"Octopus.Action[Package A].TargetRoles", "a,b"},
-                    {"Octopus.Action[Package B].Name", "B"},
-                    {"Octopus.Action[Package B].TargetRoles", "c"}
+                    { "Octopus.Action[Package A].Name", "A" },
+                    { "Octopus.Action[Package A].TargetRoles", "a,b" },
+                    { "Octopus.Action[Package B].Name", "B" },
+                    { "Octopus.Action[Package B].TargetRoles", "c" },
                 });
 
             result.Should().Be("AaAbBc");
@@ -320,10 +327,10 @@ namespace Octostache.Tests
             var result = Evaluate("#{each a in Octopus.Action}#{a.Name}#{/each}",
                 new Dictionary<string, string>
                 {
-                    {"PackageA_Name", "A"},
-                    {"PackageB_Name", "B"},
-                    {"Octopus.Action[Package A].Name", "#{PackageA_Name}"},
-                    {"Octopus.Action[Package B].Name", "#{PackageB_Name}"},
+                    { "PackageA_Name", "A" },
+                    { "PackageB_Name", "B" },
+                    { "Octopus.Action[Package A].Name", "#{PackageA_Name}" },
+                    { "Octopus.Action[Package B].Name", "#{PackageB_Name}" },
                 });
 
             result.Should().Be("AB");
@@ -337,12 +344,12 @@ namespace Octostache.Tests
                     "#{each action in Octopus.Action}#{if Octopus.Step[#{action.StepName}].Status != \"Skipped\"}#{Octopus.Step[#{action.StepName}].Details}#{/if}#{/each}",
                     new Dictionary<string, string>
                     {
-                        {"Octopus.Action[Action 1].StepName", "Step 1"},
-                        {"Octopus.Action[Action 2].StepName", "Step 2"},
-                        {"Octopus.Step[Step 1].Details", "Step 1 Details"},
-                        {"Octopus.Step[Step 2].Details", "Step 2 Details"},
-                        {"Octopus.Step[Step 1].Status", "Skipped"},
-                        {"Octopus.Step[Step 2].Status", "Running"},
+                        { "Octopus.Action[Action 1].StepName", "Step 1" },
+                        { "Octopus.Action[Action 2].StepName", "Step 2" },
+                        { "Octopus.Step[Step 1].Details", "Step 1 Details" },
+                        { "Octopus.Step[Step 2].Details", "Step 2 Details" },
+                        { "Octopus.Step[Step 1].Status", "Skipped" },
+                        { "Octopus.Step[Step 2].Status", "Running" },
                     });
 
             result.Should().Be("Step 2 Details");
@@ -371,11 +378,11 @@ namespace Octostache.Tests
                     "#{each action in Octopus.Action}#{if Octopus.Step[#{SomeOtherVariable}].Status == \"Skipped\"}#{Octopus.Step[#{SomeOtherVariable}].Details}#{/if}#{/each}",
                     new Dictionary<string, string>
                     {
-                        {"Octopus.Action[Action 1].StepName", "Step 1"},
-                        {"Octopus.Action[Action 2].StepName", "Step 2"},
-                        {"Octopus.Step[OtherVariableValue].Details", "Octopus"},
-                        {"Octopus.Step[OtherVariableValue].Status", "Skipped"},
-                        {"SomeOtherVariable", "OtherVariableValue"}
+                        { "Octopus.Action[Action 1].StepName", "Step 1" },
+                        { "Octopus.Action[Action 2].StepName", "Step 2" },
+                        { "Octopus.Step[OtherVariableValue].Details", "Octopus" },
+                        { "Octopus.Step[OtherVariableValue].Status", "Skipped" },
+                        { "SomeOtherVariable", "OtherVariableValue" },
                     });
 
             result.Should().Be("OctopusOctopus");
@@ -387,8 +394,8 @@ namespace Octostache.Tests
             var result = Evaluate("#{Step[#{action.StepName}]}",
                 new Dictionary<string, string>
                 {
-                    {"action.StepName", "Step 1"},
-                    {"Step[Step 1]", "Running"},
+                    { "action.StepName", "Step 1" },
+                    { "Step[Step 1]", "Running" },
                 });
 
             result.Should().Be("Running");
@@ -398,12 +405,12 @@ namespace Octostache.Tests
         public void NestedIndexingWithASymbolIsSupported()
         {
             var result = Evaluate("#{Step[#{action.StepName}]}",
-                              new Dictionary<string, string>
-                              {
-                                  { "action.StepName", "Steps[#{index}].step" },
-                                  { "index", "0" },
-                                  { "Step[Steps[0].step]", "Step 0" },
-                              });
+                new Dictionary<string, string>
+                {
+                    { "action.StepName", "Steps[#{index}].step" },
+                    { "index", "0" },
+                    { "Step[Steps[0].step]", "Step 0" },
+                });
 
             result.Should().Be("Step 0");
         }
@@ -418,10 +425,14 @@ namespace Octostache.Tests
                     { "Octopus.Action[Package B].Name", "B" },
                     { "Octopus.Action[Package[0]].Name", "C" },
                     { "Octopus.Action[Package[1].Registry].Name", "D" },
-                    { "Octopus.Action[array[foo].Package[0].Registry].Name", "E" }
+                    { "Octopus.Action[array[foo].Package[0].Registry].Name", "E" },
                 });
 
-            result.Should().BeOneOf("A", "B", "C", "D", "E");
+            result.Should().BeOneOf("A",
+                "B",
+                "C",
+                "D",
+                "E");
         }
 
         [Fact]
@@ -430,8 +441,8 @@ namespace Octostache.Tests
             var result = Evaluate("#{each a in Octopus.Action}#{a}|#{/each}",
                 new Dictionary<string, string>
                 {
-                    {"Octopus.Action[Package A].Name", "A"},
-                    {"Octopus.Action[Package B].Name", "B"},
+                    { "Octopus.Action[Package A].Name", "A" },
+                    { "Octopus.Action[Package B].Name", "B" },
                 });
 
             result.Should().Be("Package A|Package B|");
@@ -443,7 +454,6 @@ namespace Octostache.Tests
             var result = Evaluate("#{foo}", new Dictionary<string, string>());
             result.Should().Be("#{foo}");
         }
-
 
         [Fact]
         public void DoubleHashEscapesToken()
@@ -541,21 +551,17 @@ namespace Octostache.Tests
             variables.Set("Name", "Web01");
             variables.Set("Port", "10933");
 
-            variables.SaveAsString().Should().Be("{" + Environment.NewLine +
-                            "  \"Name\": \"Web01\"," + Environment.NewLine +
-                            "  \"Port\": \"10933\"" + Environment.NewLine +
-                            "}");
+            variables.SaveAsString().Should().Be("{" + Environment.NewLine + "  \"Name\": \"Web01\"," + Environment.NewLine + "  \"Port\": \"10933\"" + Environment.NewLine + "}");
         }
 
         [Theory]
         [InlineData("{Sizes: {Small: \"#{Test.Sizes.Large.Price}\", Large: \"15\"}}\", Desc: \"Monkey\", Value: 12}", "#{Test.Sizes.Small.Price}", "#{Test.Sizes.Small.Price}", "Direct inner JSON")]
         [InlineData("#{Test.Something}", "#{Test}", "#{Test.Something}", "Missing replacement")]
-
         public void VariablesThatResolveToUnresolvableReturnError(string variable, string pattern, string expectedResult, string testName)
         {
             var variables = new VariableDictionary
             {
-                ["Test"] = variable
+                ["Test"] = variable,
             };
 
             string err;
@@ -567,10 +573,10 @@ namespace Octostache.Tests
         public void ShouldEvaluateTrueToTrue()
         {
             var result = EvaluateTruthy("#{truthy}",
-               new Dictionary<string, string>
-               {
-                    {"truthy", "true"}
-               });
+                new Dictionary<string, string>
+                {
+                    { "truthy", "true" },
+                });
 
             result.Should().BeTrue();
         }
@@ -579,10 +585,10 @@ namespace Octostache.Tests
         public void ShouldEvaluateFalseToFalse()
         {
             var result = EvaluateTruthy("#{falsey}",
-               new Dictionary<string, string>
-               {
-                    {"falsey", "false"}
-               });
+                new Dictionary<string, string>
+                {
+                    { "falsey", "false" },
+                });
 
             result.Should().BeFalse();
         }
@@ -591,10 +597,10 @@ namespace Octostache.Tests
         public void ShouldEvaluateMissingToFalse()
         {
             var result = EvaluateTruthy("#{missing}",
-               new Dictionary<string, string>
-               {
-                    {"truthy", "true"}
-               });
+                new Dictionary<string, string>
+                {
+                    { "truthy", "true" },
+                });
 
             result.Should().BeFalse();
         }
@@ -603,10 +609,10 @@ namespace Octostache.Tests
         public void ShouldEvaluateExistsToTrue()
         {
             var result = EvaluateTruthy("#{exists}",
-               new Dictionary<string, string>
-               {
-                    {"exists", "exists"}
-               });
+                new Dictionary<string, string>
+                {
+                    { "exists", "exists" },
+                });
 
             result.Should().BeTrue();
         }
