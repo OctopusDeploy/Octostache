@@ -70,6 +70,9 @@ namespace Octostache.Templates
             var items = context.ResolveAll(rt.Collection, out innerTokens).ToArray();
             missingTokens.AddRange(innerTokens);
 
+            if (rt.Reversed)
+                items = items.Reverse().ToArray();
+
             for (var i = 0; i < items.Length; ++i)
             {
                 var item = items[i];

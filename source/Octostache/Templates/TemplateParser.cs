@@ -154,11 +154,12 @@ namespace Octostache.Templates
                 from sp in Parse.WhiteSpace.AtLeastOnce()
                 from enumerator in Identifier.Token()
                 from keyIn in Keyword("in").Token()
+                from keyReversed in Keyword("reversed").Token().Optional()
                 from expression in Symbol.Token()
                 from rightDelim in RDelim
                 from body in Parse.Ref(() => Template)
                 from end in Parse.String("#{/each}")
-                select new RepetitionToken(expression, enumerator, body))
+                select new RepetitionToken(expression, enumerator, body, keyReversed.GetOrElse(null)))
             .WithPosition();
 
         static readonly Parser<TextToken> Text =

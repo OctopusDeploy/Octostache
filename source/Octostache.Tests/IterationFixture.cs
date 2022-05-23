@@ -109,5 +109,19 @@ namespace Octostache.Tests
 
             result.Should().Be("container[0]: A container[1]: B container[2]: C ");
         }
+
+        [Fact]
+        public void ReverseIterationIsSupported()
+        {
+            var variables = new Dictionary<string, string>
+            {
+                { "List[0]", "a" },
+                { "List[1]", "b" },
+                { "List[2]", "c" },
+            };
+
+            var result = Evaluate("#{each item in reversed List}#{item}#{/each}", variables);
+            result.Should().Be("cba");
+        }
     }
 }
