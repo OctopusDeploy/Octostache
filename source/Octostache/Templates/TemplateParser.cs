@@ -212,7 +212,8 @@ namespace Octostache.Templates
                 if (!result.WasSuccessful)
                     return result;
 
-                if (result.Remainder.Position >= i.Source.Length - lookahead.Length)
+                // ReSharper disable once ArrangeRedundantParentheses
+                if (result.Remainder.Position >= (i.Source.Length - lookahead.Length))
                     return Result.Failure<T>(result.Remainder, "end of input reached while expecting lookahead", new[] { lookahead });
 
                 var next = i.Source.Substring(result.Remainder.Position, lookahead.Length);
