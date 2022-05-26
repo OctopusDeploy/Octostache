@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Octostache.CustomStringParsers;
+#if HAS_NULLABLE_REF_TYPES
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Octostache.Templates
 {
-
     class EvaluationContext
     {
+        public TextWriter Output { get; }
+
         readonly Binding binding;
         readonly EvaluationContext? parent;
         readonly Stack<SymbolExpression> symbolStack = new Stack<SymbolExpression>();
@@ -21,8 +24,6 @@ namespace Octostache.Templates
             this.parent = parent;
         }
 
-        public TextWriter Output { get; }
-
         public string Resolve(SymbolExpression expression, out string[] missingTokens)
         {
             var val = WalkTo(expression, out missingTokens);
@@ -30,15 +31,16 @@ namespace Octostache.Templates
             return val.Item ?? "";
         }
 
-        private void ValidateThatRecursionIsNotOccuring(SymbolExpression expression)
+        void ValidateThatRecursionIsNotOccuring(SymbolExpression expression)
         {
             var ancestor = this;
-            while(ancestor != null)
+            while (ancestor != null)
             {
                 if (ancestor.symbolStack.Contains(expression, SymbolExpression.StepsComparer))
                 {
                     throw new RecursiveDefinitionException(expression, ancestor.symbolStack);
                 }
+
                 ancestor = ancestor.parent;
             }
         }
@@ -62,7 +64,7 @@ namespace Octostache.Templates
 
             try
             {
-                Binding? val = binding;
+                var val = binding;
                 missingTokens = new string[0];
 
                 expression = CopyExpression(expression);
@@ -102,7 +104,7 @@ namespace Octostache.Templates
                                 continue;
                             }
 
-                            if (val != null && val.Indexable.TryGetValue(ix.Index, out Binding? newVal))
+                            if (val != null && val.Indexable.TryGetValue(ix.Index, out var newVal))
                             {
                                 val = newVal;
                                 continue;
@@ -125,6 +127,7 @@ namespace Octostache.Templates
 
                     return parent.WalkTo(expression, out missingTokens);
                 }
+
                 return ParseTemplate(val, out missingTokens);
             }
             finally
@@ -133,12 +136,11 @@ namespace Octostache.Templates
             }
         }
 
-
         Binding ParseTemplate(Binding b, out string[] missingTokens)
         {
             if (b.Item != null)
             {
-                if (TemplateParser.TryParseTemplate(b.Item, out var template, out string _))
+                if (TemplateParser.TryParseTemplate(b.Item, out var template, out var _))
                 {
                     using (var x = new StringWriter())
                     {
@@ -150,13 +152,13 @@ namespace Octostache.Templates
                     }
                 }
             }
+
             missingTokens = new string[0];
             return b;
         }
 
         bool TryCustomParsers(Binding parentBinding, string property, [NotNullWhen(true)] out Binding? subBinding)
         {
-
             subBinding = null;
             if (string.IsNullOrEmpty(parentBinding.Item) || string.IsNullOrEmpty(property))
                 return false;
@@ -165,20 +167,19 @@ namespace Octostache.Templates
             {
                 try
                 {
-                    parentBinding = ParseTemplate(parentBinding, out string[] _);
+                    parentBinding = ParseTemplate(parentBinding, out var _);
                 }
                 catch (InvalidOperationException ex)
                 {
-                    if(ex.Message.Contains("self referencing loop"))
+                    if (ex.Message.Contains("self referencing loop"))
                         return false;
                 }
             }
 
-
             return JsonParser.TryParse(parentBinding, property, out subBinding);
         }
 
-        private SymbolExpression CopyExpression(SymbolExpression expression)
+        SymbolExpression CopyExpression(SymbolExpression expression)
         {
             //any indexers that are lookups, do them now so we are in the right context
             //take a copy so the lookup version remains for later use
@@ -186,12 +187,13 @@ namespace Octostache.Templates
             {
                 if (s is Indexer indexer && indexer.IsSymbol)
                 {
-                    var index = WalkTo(indexer.Symbol!, out string[] _);
+                    var index = WalkTo(indexer.Symbol!, out var _);
 
                     return index == null
                         ? new Indexer(CopyExpression(indexer.Symbol!))
                         : new Indexer(index.Item);
                 }
+
                 return s;
             }));
         }
@@ -208,7 +210,7 @@ namespace Octostache.Templates
             if (val.Item == null)
                 return Enumerable.Empty<Binding>();
 
-            if (JsonParser.TryParse(new Binding(val.Item), out Binding[] bindings))
+            if (JsonParser.TryParse(new Binding(val.Item), out var bindings))
             {
                 return bindings;
             }
@@ -216,9 +218,6 @@ namespace Octostache.Templates
             return val.Item.Split(',').Select(s => new Binding(s));
         }
 
-        public EvaluationContext BeginChild(Binding locals)
-        {
-            return new EvaluationContext(locals, Output, this);
-        }
+        public EvaluationContext BeginChild(Binding locals) => new EvaluationContext(locals, Output, this);
     }
 }

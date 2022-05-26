@@ -1,4 +1,6 @@
-﻿namespace Octostache.Templates
+﻿using System;
+
+namespace Octostache.Templates
 {
     class Constants
     {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -12,16 +13,12 @@ namespace Octostache.Templates
     /// </summary>
     class SymbolExpression : ContentExpression
     {
-        readonly SymbolExpressionStep[] steps;
+        public SymbolExpressionStep[] Steps { get; }
+        public static IEqualityComparer<SymbolExpression> StepsComparer { get; } = new StepsEqualityComparer();
 
         public SymbolExpression(IEnumerable<SymbolExpressionStep> steps)
         {
-            this.steps = steps.ToArray();
-        }
-
-        public SymbolExpressionStep[] Steps
-        {
-            get { return steps; }
+            Steps = steps.ToArray();
         }
 
         public override string ToString()
@@ -41,7 +38,12 @@ namespace Octostache.Templates
             return result.ToString();
         }
 
-        private sealed class StepsEqualityComparer : IEqualityComparer<SymbolExpression>
+        public override IEnumerable<string> GetArguments()
+        {
+            return Steps.SelectMany(s => s.GetArguments());
+        }
+
+        sealed class StepsEqualityComparer : IEqualityComparer<SymbolExpression>
         {
             public bool Equals(SymbolExpression x, SymbolExpression y)
             {
@@ -49,17 +51,10 @@ namespace Octostache.Templates
                 if (ReferenceEquals(x, null)) return false;
                 if (ReferenceEquals(y, null)) return false;
                 if (x.GetType() != y.GetType()) return false;
-                return x.steps.SequenceEqual(y.steps);
+                return x.Steps.SequenceEqual(y.Steps);
             }
 
-            public int GetHashCode(SymbolExpression obj)
-            {
-                return obj.steps?.GetHashCode() ?? 0;
-            }
+            public int GetHashCode(SymbolExpression obj) => obj.Steps?.GetHashCode() ?? 0;
         }
-
-        public static IEqualityComparer<SymbolExpression> StepsComparer { get; } = new StepsEqualityComparer();
-        public override IEnumerable<string> GetArguments() 
-            => steps.SelectMany(s => s.GetArguments());
     }
 }

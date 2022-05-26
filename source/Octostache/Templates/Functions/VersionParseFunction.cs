@@ -1,9 +1,9 @@
-﻿using Octopus.Versioning;
+﻿using System;
 using Octopus.Versioning.Octopus;
 
 namespace Octostache.Templates.Functions
 {
-    internal class VersionParseFunction
+    class VersionParseFunction
     {
         static readonly OctopusVersionParser OctopusVersionParser = new OctopusVersionParser();
 

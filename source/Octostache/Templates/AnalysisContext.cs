@@ -17,10 +17,7 @@ namespace Octostache.Templates
             this.expansion = expansion;
         }
 
-        public string Expand(SymbolExpression expression)
-        {
-            return new SymbolExpression(Expand(expression.Steps)).ToString();
-        }
+        public string Expand(SymbolExpression expression) => new SymbolExpression(Expand(expression.Steps)).ToString();
 
         public IEnumerable<SymbolExpressionStep> Expand(IEnumerable<SymbolExpressionStep> expression)
         {
@@ -36,9 +33,6 @@ namespace Octostache.Templates
             return nodes;
         }
 
-        public AnalysisContext BeginChild(Identifier ident, SymbolExpression expan)
-        {
-            return new AnalysisContext(this, ident, expan);
-        }
+        public AnalysisContext BeginChild(Identifier ident, SymbolExpression expan) => new AnalysisContext(this, ident, expan);
     }
 }
