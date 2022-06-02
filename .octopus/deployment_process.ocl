@@ -1,3 +1,16 @@
+step "Approval Required" {
+
+    action {
+        action_type = "Octopus.Manual"
+        environments = ["Components - External"]
+        properties = {
+            Octopus.Action.Manual.BlockConcurrentDeployments = "False"
+            Octopus.Action.Manual.Instructions = "Please approve release before it is promoted to NuGet"
+        }
+        worker_pool_variable = ""
+    }
+}
+
 step "NuGet Push" {
 
     action {
