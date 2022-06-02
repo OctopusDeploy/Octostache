@@ -24,7 +24,7 @@ var eval = variables.Evaluate("#{Url}/foo");  // http://web01:10933/foo
 More examples can be found in [UsageFixture](https://github.com/OctopusDeploy/Octostache/blob/master/source/Octostache.Tests/UsageFixture.cs). 
 
 ## Contributing
-We welcome Pull Requests 🐙❤️🧑‍💻
+🐙 We welcome Pull Requests ❤️🧑‍💻
 
 ### Code Cleanup
 The first stage of our CI/CD pipeline for Octostache runs a ReSharper code cleanup, to keep everything neat and tidy.
