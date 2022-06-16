@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Octostache.Templates
@@ -10,6 +11,10 @@ namespace Octostache.Templates
     /// </summary>
     class FunctionCallExpression : ContentExpression
     {
+        public TemplateToken[] Options { get; }
+        public string Function { get; }
+        public ContentExpression Argument { get; }
+
         readonly bool filterSyntax;
 
         public FunctionCallExpression(bool filterSyntax, string function, ContentExpression argument, params TemplateToken[] options)
@@ -19,11 +24,6 @@ namespace Octostache.Templates
             Function = function;
             Argument = argument;
         }
-
-        public TemplateToken[] Options { get; }
-        public string Function { get; }
-
-        public ContentExpression Argument { get; }
 
         IInputToken[] GetAllArguments()
         {
@@ -40,12 +40,13 @@ namespace Octostache.Templates
             if (filterSyntax)
                 return $"{Argument} | {Function}{(Options.Any() ? " " : "")}{string.Join(" ", Options.Select(t => t is TextToken ? $"\"{t.ToString()}\"" : t.ToString()))}";
 
-
             return $"{Function} ({string.Join(", ", GetAllArguments().Select(t => t.ToString()))})";
         }
 
         public override IEnumerable<string> GetArguments()
-            => Argument.GetArguments()
+        {
+            return Argument.GetArguments()
                 .Concat(Options.SelectMany(o => o.GetArguments()));
+        }
     }
 }

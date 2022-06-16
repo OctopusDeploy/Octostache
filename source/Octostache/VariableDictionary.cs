@@ -1,10 +1,12 @@
-using Octostache.Templates;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using Octostache.Templates;
+#if HAS_NULLABLE_REF_TYPES
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Octostache
 {
@@ -29,6 +31,17 @@ namespace Octostache
         Binding Binding => binding ?? (binding = PropertyListBinder.CreateFrom(variables));
 
         /// <summary>
+        /// Gets or sets a variable by name.
+        /// </summary>
+        /// <param name="name">The name of the variable to set.</param>
+        /// <returns>The current (evaluated) value of the variable.</returns>
+        public string? this[string name]
+        {
+            get => Get(name);
+            set => Set(name, value);
+        }
+
+        /// <summary>
         /// Sets a variable value.
         /// </summary>
         /// <param name="name">The name of the variable.</param>
@@ -39,17 +52,6 @@ namespace Octostache
             variables[name] = value;
             binding = null;
             Save();
-        }
-
-        /// <summary>
-        /// Gets or sets a variable by name.
-        /// </summary>
-        /// <param name="name">The name of the variable to set.</param>
-        /// <returns>The current (evaluated) value of the variable.</returns>
-        public string? this[string name]
-        {
-            get => Get(name);
-            set => Set(name, value);
         }
 
         /// <summary>
@@ -116,7 +118,7 @@ namespace Octostache
         /// <returns>The value of the variable, or null if one is not defined.</returns>
         public string? GetRaw(string variableName)
         {
-            if (variables.TryGetValue(variableName, out string? variable) && variable != null)
+            if (variables.TryGetValue(variableName, out var variable) && variable != null)
                 return variable;
 
             return null;
@@ -129,10 +131,7 @@ namespace Octostache
         /// <param name="defaultValue">The default value to return.</param>
         /// <returns>The value of the variable, or the default value if the variable is not defined.</returns>
         [return: NotNullIfNotNull("defaultValue")]
-        public string? Get(string variableName, string? defaultValue = null)
-        {
-            return Get(variableName, out string _, defaultValue);
-        }
+        public string? Get(string variableName, string? defaultValue = null) => Get(variableName, out var _, defaultValue);
 
         /// <summary>
         /// Gets the value of a variable, or returns a default value if the variable is not defined. If the variable contains an expression, it will be evaluated first.
@@ -145,7 +144,7 @@ namespace Octostache
         public string? Get(string variableName, out string? error, string? defaultValue = null)
         {
             error = null;
-            if (!variables.TryGetValue(variableName, out string? variable) || variable == null)
+            if (!variables.TryGetValue(variableName, out var variable) || variable == null)
                 return defaultValue;
 
             return Evaluate(variable, out error);
@@ -179,7 +178,6 @@ namespace Octostache
                     error = string.Format("The following tokens were unable to be evaluated: {0}", tokenList);
                 }
 
-
                 return writer.ToString();
             }
         }
@@ -201,10 +199,7 @@ namespace Octostache
         /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>
         /// <returns>The result of the expression.</returns>
         [return: NotNullIfNotNull("expressionOrVariableOrText")]
-        public string? Evaluate(string? expressionOrVariableOrText)
-        {
-            return Evaluate(expressionOrVariableOrText, out string _);
-        }
+        public string? Evaluate(string? expressionOrVariableOrText) => Evaluate(expressionOrVariableOrText, out var _);
 
         /// <summary>
         /// Gets a list of strings, assuming each path is separated by commas or some other separator character. If the variable contains an expression, it will be evaluated first.
@@ -233,10 +228,7 @@ namespace Octostache
         /// </summary>
         /// <param name="variableName">The name of the variable to find.</param>
         /// <returns>The list of strings, or an empty list if the value is null or empty.</returns>
-        public List<string> GetPaths(string variableName)
-        {
-            return GetStrings(variableName, '\r', '\n');
-        }
+        public List<string> GetPaths(string variableName) => GetStrings(variableName, '\r', '\n');
 
         /// <summary>
         /// Gets a given variable by name. If the variable contains an expression, it will be evaluated. Converts the variable to a boolean using <code>bool.TryParse()</code>. Returns a given
@@ -276,7 +268,7 @@ namespace Octostache
         }
 
         /// <summary>
-        /// Gets a given variable by name. If the variable contains an expression, it will be evaluated. Throws an <see cref="ArgumentOutOfRangeException"/> if the variable is not defined.
+        /// Gets a given variable by name. If the variable contains an expression, it will be evaluated. Throws an <see cref="ArgumentOutOfRangeException" /> if the variable is not defined.
         /// </summary>
         /// <param name="name">The name of the variable to find.</param>
         /// <returns>The value </returns>
@@ -293,10 +285,7 @@ namespace Octostache
         /// Gets the names of all variables in this dictionary.
         /// </summary>
         /// <returns>A list of variable names.</returns>
-        public List<string> GetNames()
-        {
-            return variables.Keys.ToList();
-        }
+        public List<string> GetNames() => variables.Keys.ToList();
 
         /// <summary>
         /// Returns any index values for a collection.
@@ -318,7 +307,6 @@ namespace Octostache
             var bindings = context.ResolveAll(symbolExpression, out _);
             // ReSharper disable once RedundantEnumerableCastCall
             return bindings.Select(b => b.Item).Where(x => x != null).Cast<string>().ToList();
-
         }
 
         /// <summary>
@@ -329,18 +317,11 @@ namespace Octostache
         /// </summary>
         /// <param name="expressionOrVariableOrText">The variable to evaluate</param>
         /// <returns>False if the variable contains something that looks like a substitution tokens, otherwise true</returns>
-        public static bool CanEvaluationBeSkippedForExpression(string expressionOrVariableOrText)
-            => expressionOrVariableOrText == null || !expressionOrVariableOrText.Contains("#{");
+        public static bool CanEvaluationBeSkippedForExpression(string expressionOrVariableOrText) => expressionOrVariableOrText == null || !expressionOrVariableOrText.Contains("#{");
 
-        public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
-        {
-            return variables.GetEnumerator();
-        }
+        public IEnumerator<KeyValuePair<string, string>> GetEnumerator() => variables.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public void Add(string key, string? value)
         {

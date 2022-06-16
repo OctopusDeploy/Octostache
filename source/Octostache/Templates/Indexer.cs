@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Octostache.Templates
 {
     class Indexer : SymbolExpressionStep
     {
+        public string? Index { get; }
+        public SymbolExpression? Symbol { get; }
+        public bool IsSymbol => Symbol != null;
+
         public Indexer(string? index)
         {
             Index = index;
@@ -15,31 +19,19 @@ namespace Octostache.Templates
             Symbol = expression;
         }
 
-        public string? Index { get; }
-
-        public SymbolExpression? Symbol { get; }
-
-        public bool IsSymbol => Symbol != null; 
-
-        public override string ToString()
-        {
-            return "[" + (IsSymbol ? "#{"+ Symbol +"}" : Index) + "]";
-        }
+        public override string ToString() => "[" + (IsSymbol ? "#{" + Symbol + "}" : Index) + "]";
 
         public override IEnumerable<string> GetArguments() => Symbol?.GetArguments() ?? new string[0];
 
         public override bool Equals(SymbolExpressionStep? other) => other != null && Equals((other as Indexer)!);
 
-        protected bool Equals(Indexer other)
-        {
-            return base.Equals(other) && string.Equals(Index, other.Index) && Equals(Symbol, other.Symbol);
-        }
+        protected bool Equals(Indexer other) => base.Equals(other) && string.Equals(Index, other.Index) && Equals(Symbol, other.Symbol);
 
         public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((Indexer) obj);
         }
 
@@ -47,6 +39,7 @@ namespace Octostache.Templates
         {
             unchecked
             {
+                // ReSharper disable once SuggestVarOrType_BuiltInTypes
                 int hashCode = base.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Index != null ? Index.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Symbol != null ? Symbol.GetHashCode() : 0);

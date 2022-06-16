@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Xunit;
-using FluentAssertions;
-using YamlDotNet.Serialization;
 using System.Linq;
+using FluentAssertions;
+using Xunit;
+using YamlDotNet.Serialization;
 
 namespace Octostache.Tests
 {
@@ -34,7 +34,7 @@ namespace Octostache.Tests
         public void UnknownFiltersWithOptionsAreEchoed()
         {
             var result = Evaluate("#{Foo | ToBazooka 6}", new Dictionary<string, string> { { "Foo", "Abc" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{Foo | ToBazooka 6}");
         }
 
@@ -126,11 +126,6 @@ namespace Octostache.Tests
             result.Should().Be(expectedResult);
         }
 
-        private class TestDocument
-        {
-            public string Key { get; set; }
-        }
-        
         [Theory]
         [InlineData("")]
         [InlineData("a")]
@@ -194,7 +189,7 @@ namespace Octostache.Tests
 
             // Yamldotnet normalises \r\n in single quoted scalars to \n.
             var normalisedExpected = expected.Replace("\r\n", "\n");
-            
+
             doc.Key.Should().Be(normalisedExpected);
         }
 
@@ -214,7 +209,7 @@ namespace Octostache.Tests
         [InlineData("÷ü", "÷ü")]
         public void PropertiesKeyIsEscaped(string input, string expected)
         {
-            var result = Evaluate("#{Foo | PropertiesKeyEscape}", new Dictionary<string, string> {{"Foo", input}});
+            var result = Evaluate("#{Foo | PropertiesKeyEscape}", new Dictionary<string, string> { { "Foo", input } });
             result.Should().Be(expected);
         }
 
@@ -235,7 +230,7 @@ namespace Octostache.Tests
         [InlineData("÷ü", "÷ü")]
         public void PropertiesValueIsEscaped(string input, string expected)
         {
-            var result = Evaluate("#{Foo | PropertiesValueEscape}", new Dictionary<string, string> {{"Foo", input}});
+            var result = Evaluate("#{Foo | PropertiesValueEscape}", new Dictionary<string, string> { { "Foo", input } });
             result.Should().Be(expected);
         }
 
@@ -264,10 +259,15 @@ namespace Octostache.Tests
         [InlineData("#{Foo | MarkdownToHtml}")]
         public void MarkdownTablesAreProcessed(string input)
         {
-            var dictionary = new Dictionary<string, string> { {"Foo",
-@"|Header1|Header2|
+            var dictionary = new Dictionary<string, string>
+            {
+                {
+                    "Foo",
+                    @"|Header1|Header2|
 |-|-|
-|Cell1|Cell2|" }};
+|Cell1|Cell2|"
+                },
+            };
             var result = Evaluate(input, dictionary);
             result.Trim().Should().Be("<table>\n<thead>\n<tr>\n<th>Header1</th>\n<th>Header2</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Cell1</td>\n<td>Cell2</td>\n</tr>\n</tbody>\n</table>");
         }
@@ -293,7 +293,7 @@ namespace Octostache.Tests
         [Fact]
         public void GenericConverterAcceptsDouble()
         {
-            var dict = new Dictionary<string, string> { { "Cash", "23.4" }};
+            var dict = new Dictionary<string, string> { { "Cash", "23.4" } };
 
             var result = Evaluate("#{Cash | Format Double C}", dict);
             result.Should().Be(23.4.ToString("C"));
@@ -310,7 +310,7 @@ namespace Octostache.Tests
         [Fact]
         public void EscaoedFilterStringAccepted()
         {
-            var dict = new Dictionary<string, string> { { "MyDate", "2030/05/22 09:05:00" }};
+            var dict = new Dictionary<string, string> { { "MyDate", "2030/05/22 09:05:00" } };
             var result = Evaluate("#{MyDate | Format DateTime \\\"HH dd-MMM-yyyy\\\" }", dict);
             result.Should().Be("09 22-May-2030");
         }
@@ -338,14 +338,14 @@ namespace Octostache.Tests
             var dict = new Dictionary<string, string> { { "Invalid", "hello World" } };
 
             var result = Evaluate("#{Invalid | Format yyyy}", dict)
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{Invalid | Format yyyy}");
         }
 
         [Fact]
         public void NowDateReturnsNow()
         {
-            var result = Evaluate("#{ | NowDate}", new Dictionary<string, string> ());
+            var result = Evaluate("#{ | NowDate}", new Dictionary<string, string>());
             DateTime.Parse(result).Should().BeCloseTo(DateTime.Now, 60000);
         }
 
@@ -398,7 +398,7 @@ namespace Octostache.Tests
         public void StringsCanBeBase64Encoded()
         {
             var dict = new Dictionary<string, string> { { "String", "Foo Bar" } };
-            var result = Evaluate("#{String | tobase64}",dict);
+            var result = Evaluate("#{String | tobase64}", dict);
             result.Should().Be("Rm9vIEJhcg==");
         }
 
@@ -440,27 +440,28 @@ namespace Octostache.Tests
         [Fact]
         public void ReplaceWorksWithVariableOptions()
         {
-            var result = Evaluate("#{foo | Replace #{regex}#{replacement}}", new Dictionary<string, string>
-            {
-                { "foo", "abc" },
-                { "regex", "b"},
-                { "replacement", "x"}
-            });
+            var result = Evaluate("#{foo | Replace #{regex}#{replacement}}",
+                new Dictionary<string, string>
+                {
+                    { "foo", "abc" },
+                    { "regex", "b" },
+                    { "replacement", "x" },
+                });
             result.Should().Be(@"axc");
         }
 
         [Fact]
         public void ReplaceHandlesDoubleQuotesViaNestedSubsitution()
         {
-            var result = Evaluate("#{foo | Replace #{regex}#{replacement}}", new Dictionary<string, string>
-            {
-                { "foo", @"a""b" },
-                { "regex", @"a"""},
-                { "replacement", @"""c"}
-            });
+            var result = Evaluate("#{foo | Replace #{regex}#{replacement}}",
+                new Dictionary<string, string>
+                {
+                    { "foo", @"a""b" },
+                    { "regex", @"a""" },
+                    { "replacement", @"""c" },
+                });
             result.Should().Be(@"""cb");
         }
-
 
         [Fact]
         public void ReplaceHandlesSingleQuotes()
@@ -497,7 +498,6 @@ namespace Octostache.Tests
             result.Should().Be("xbxbx");
         }
 
-
         [Fact]
         public void ReplaceAtStartOfLine()
         {
@@ -515,16 +515,16 @@ namespace Octostache.Tests
         [Fact]
         public void SubstringDoesNothing()
         {
-            var result = Evaluate(@"#{foo | Substring}", new Dictionary<string, string> { { "foo" , "ababa" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            var result = Evaluate(@"#{foo | Substring}", new Dictionary<string, string> { { "foo", "ababa" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring}");
         }
 
         [Fact]
         public void SubstringWithTooManyArgumentsDoesNothing()
         {
-            var result = Evaluate(@"#{foo | Substring 1 2 3}", new Dictionary<string, string> {{"foo", "ababa"}})
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            var result = Evaluate(@"#{foo | Substring 1 2 3}", new Dictionary<string, string> { { "foo", "ababa" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 1 2 3}");
         }
 
@@ -532,7 +532,7 @@ namespace Octostache.Tests
         public void SubstringWithOnlyLength()
         {
             var result = Evaluate(@"#{foo | Substring 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("Octopus");
         }
 
@@ -540,7 +540,7 @@ namespace Octostache.Tests
         public void SubstringWithStartAndLength()
         {
             var result = Evaluate(@"#{foo | Substring 8 6}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("Deploy");
         }
 
@@ -548,7 +548,7 @@ namespace Octostache.Tests
         public void SubstringHandlesNonNumericLength()
         {
             var result = Evaluate(@"#{foo | Substring a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring a}");
         }
 
@@ -556,7 +556,7 @@ namespace Octostache.Tests
         public void SubstringHandlesNonNumericLengthWithStart()
         {
             var result = Evaluate(@"#{foo | Substring 0 a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 0 a}");
         }
 
@@ -564,7 +564,7 @@ namespace Octostache.Tests
         public void SubstringHandlesLengthIndexOutOfRange()
         {
             var result = Evaluate(@"#{foo | Substring 20}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 20}");
         }
 
@@ -572,7 +572,7 @@ namespace Octostache.Tests
         public void SubstringHandlesStartAndLengthIndexOutOfRange()
         {
             var result = Evaluate(@"#{foo | Substring 8 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 8 7}");
         }
 
@@ -580,7 +580,7 @@ namespace Octostache.Tests
         public void SubstringHandlesNegativeValueForLength()
         {
             var result = Evaluate(@"#{foo | Substring -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring -1}");
         }
 
@@ -588,7 +588,7 @@ namespace Octostache.Tests
         public void SubstringHandlesNegativeStartAndLength()
         {
             var result = Evaluate(@"#{foo | Substring 0 -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 0 -1}");
         }
 
@@ -596,7 +596,7 @@ namespace Octostache.Tests
         public void TruncateDoesNothing()
         {
             var result = Evaluate(@"#{foo | Truncate}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Truncate}");
         }
 
@@ -604,7 +604,7 @@ namespace Octostache.Tests
         public void TruncateDoesNothingWithLengthGreaterThanArgumentLength()
         {
             var result = Evaluate(@"#{foo | Truncate 50}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("Octopus Deploy");
         }
 
@@ -612,7 +612,7 @@ namespace Octostache.Tests
         public void TruncateHandlesNonNumericLength()
         {
             var result = Evaluate(@"#{foo | Truncate a}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Truncate a}");
         }
 
@@ -620,7 +620,7 @@ namespace Octostache.Tests
         public void TruncateHandlesNegativeLength()
         {
             var result = Evaluate(@"#{foo | Truncate -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Truncate -1}");
         }
 
@@ -663,7 +663,7 @@ namespace Octostache.Tests
         public void TrimWithInvalidOptionDoesNoting()
         {
             var result = Evaluate(@"#{foo | Trim Both}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Trim Both}");
         }
 
@@ -761,7 +761,7 @@ namespace Octostache.Tests
         {
             var template = "#{foo | Indent abc 123 def}";
             var result = Evaluate(template, new Dictionary<string, string> { { "foo", "foo" } })
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -833,11 +833,12 @@ namespace Octostache.Tests
         [Fact]
         public void MatchWithVariableOptions()
         {
-            var result = Evaluate("#{foo | Match #{regex}}", new Dictionary<string, string>
-            {
-                { "foo", "abc def" },
-                { "regex", "def"}
-            });
+            var result = Evaluate("#{foo | Match #{regex}}",
+                new Dictionary<string, string>
+                {
+                    { "foo", "abc def" },
+                    { "regex", "def" },
+                });
             result.Should().Be("true", "Match can handle variable options");
         }
 
@@ -858,11 +859,12 @@ namespace Octostache.Tests
         [Fact]
         public void StartsWithWithVariableOptions()
         {
-            var result = Evaluate("#{foo | StartsWith #{str}}", new Dictionary<string, string>
-            {
-                { "foo", "abc def" },
-                { "str", "abc"}
-            });
+            var result = Evaluate("#{foo | StartsWith #{str}}",
+                new Dictionary<string, string>
+                {
+                    { "foo", "abc def" },
+                    { "str", "abc" },
+                });
             result.Should().Be("true", "StartsWith can handle variable options");
         }
 
@@ -883,14 +885,15 @@ namespace Octostache.Tests
         [Fact]
         public void EndsWithWithWithVariableOptions()
         {
-            var result = Evaluate("#{foo | EndsWith #{str}}", new Dictionary<string, string>
-            {
-                { "foo", "abc def" },
-                { "str", "def"}
-            });
+            var result = Evaluate("#{foo | EndsWith #{str}}",
+                new Dictionary<string, string>
+                {
+                    { "foo", "abc def" },
+                    { "str", "def" },
+                });
             result.Should().Be("true", "EndsWith can handle variable options");
         }
-        
+
         [Theory]
         [InlineData("abc def", "Contains de", "true", "Variable contains argument")]
         [InlineData("abc def", "Contains ed", "false", "Variable does not contain argument")]
@@ -908,11 +911,12 @@ namespace Octostache.Tests
         [Fact]
         public void ContainsWithWithVariableOptions()
         {
-            var result = Evaluate("#{foo | Contains #{str}}", new Dictionary<string, string>
-            {
-                { "foo", "abc def" },
-                { "str", "c d"}
-            });
+            var result = Evaluate("#{foo | Contains #{str}}",
+                new Dictionary<string, string>
+                {
+                    { "foo", "abc def" },
+                    { "str", "c d" },
+                });
             result.Should().Be("true", "Contains can handle variable options");
         }
 
@@ -928,7 +932,7 @@ namespace Octostache.Tests
         [InlineData("#{ | Append}")]
         public void AppendRequiresAnOption(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" } });
             result.Should().Be(template);
         }
 
@@ -940,7 +944,7 @@ namespace Octostache.Tests
         public void OptionsAreAppended(string options, string expectedToAppend)
         {
             var template = $"#{{foo | Append {options}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" } });
             var expectedResult = $"bar{expectedToAppend}";
             result.Should().Be(expectedResult);
         }
@@ -957,7 +961,7 @@ namespace Octostache.Tests
         [InlineData("#{ | Prepend}")]
         public void PrependRequiresAnOption(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" } });
             result.Should().Be(template);
         }
 
@@ -969,7 +973,7 @@ namespace Octostache.Tests
         public void OptionsArePrepended(string options, string expectedToPrepend)
         {
             var template = $"#{{foo | Prepend {options}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" } });
             var expectedResult = $"{expectedToPrepend}bar";
             result.Should().Be(expectedResult);
         }
@@ -988,8 +992,8 @@ namespace Octostache.Tests
         [InlineData("#{ | Md5}")]
         public void Md5HashInvalidTemplate(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }})
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -1000,7 +1004,7 @@ namespace Octostache.Tests
         public void Md5Hash(string input, string expectedHash)
         {
             var template = "#{foo | Md5}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1011,7 +1015,7 @@ namespace Octostache.Tests
         public void Md5HashWithSize(string input, string expectedHash, int size)
         {
             var template = $"#{{foo | Md5 {size}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1025,7 +1029,7 @@ namespace Octostache.Tests
         public void Md5HashWithEncoding(string input, string expectedHash, string encoding)
         {
             var template = $"#{{foo | Md5 {encoding}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1038,12 +1042,12 @@ namespace Octostache.Tests
         public void Md5HashWithEncodingAndSize(string input, string expectedHash, string encoding, int size)
         {
             var template = $"#{{foo | Md5 {encoding} {size}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
 
             // Reversing the order of the options is supported
             var templateReversed = $"#{{foo | Md5 {size} {encoding}}}";
-            var resultReversed = Evaluate(templateReversed, new Dictionary<string, string> { { "foo", input }});
+            var resultReversed = Evaluate(templateReversed, new Dictionary<string, string> { { "foo", input } });
             resultReversed.Should().Be(expectedHash);
         }
 
@@ -1061,8 +1065,8 @@ namespace Octostache.Tests
         [InlineData("#{ | Sha1}")]
         public void Sha1HashInvalidTemplate(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }})
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -1073,7 +1077,7 @@ namespace Octostache.Tests
         public void Sha1Hash(string input, string expectedHash)
         {
             var template = "#{foo | Sha1}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1084,7 +1088,7 @@ namespace Octostache.Tests
         public void Sha1HashWithSize(string input, string expectedHash, int size)
         {
             var template = $"#{{foo | Sha1 {size}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1098,7 +1102,7 @@ namespace Octostache.Tests
         public void Sha1HashWithEncoding(string input, string expectedHash, string encoding)
         {
             var template = $"#{{foo | Sha1 {encoding}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1111,12 +1115,12 @@ namespace Octostache.Tests
         public void Sha1HashWithEncodingAndSize(string input, string expectedHash, string encoding, int size)
         {
             var template = $"#{{foo | Sha1 {encoding} {size}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
 
             // Reversing the order of the options is supported
             var templateReversed = $"#{{foo | Sha1 {size} {encoding}}}";
-            var resultReversed = Evaluate(templateReversed, new Dictionary<string, string> { { "foo", input }});
+            var resultReversed = Evaluate(templateReversed, new Dictionary<string, string> { { "foo", input } });
             resultReversed.Should().Be(expectedHash);
         }
 
@@ -1134,8 +1138,8 @@ namespace Octostache.Tests
         [InlineData("#{ | Sha256}")]
         public void Sha256HashInvalidTemplate(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }})
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -1146,7 +1150,7 @@ namespace Octostache.Tests
         public void Sha256Hash(string input, string expectedHash)
         {
             var template = "#{foo | Sha256}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1157,7 +1161,7 @@ namespace Octostache.Tests
         public void Sha256HashWithSize(string input, string expectedHash, int size)
         {
             var template = $"#{{foo | Sha256 {size}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1171,7 +1175,7 @@ namespace Octostache.Tests
         public void Sha256HashWithEncoding(string input, string expectedHash, string encoding)
         {
             var template = $"#{{foo | Sha256 {encoding}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1184,12 +1188,12 @@ namespace Octostache.Tests
         public void Sha256HashWithEncodingAndSize(string input, string expectedHash, string encoding, int size)
         {
             var template = $"#{{foo | Sha256 {encoding} {size}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
 
             // Reversing the order of the options is supported
             var templateReversed = $"#{{foo | Sha256 {size} {encoding}}}";
-            var resultReversed = Evaluate(templateReversed, new Dictionary<string, string> { { "foo", input }});
+            var resultReversed = Evaluate(templateReversed, new Dictionary<string, string> { { "foo", input } });
             resultReversed.Should().Be(expectedHash);
         }
 
@@ -1207,8 +1211,8 @@ namespace Octostache.Tests
         [InlineData("#{ | Sha384}")]
         public void Sha384HashInvalidTemplate(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }})
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -1219,7 +1223,7 @@ namespace Octostache.Tests
         public void Sha384Hash(string input, string expectedHash)
         {
             var template = "#{foo | Sha384}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1230,7 +1234,7 @@ namespace Octostache.Tests
         public void Sha384HashWithSize(string input, string expectedHash, int size)
         {
             var template = $"#{{foo | Sha384 {size}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1244,7 +1248,7 @@ namespace Octostache.Tests
         public void Sha384HashWithEncoding(string input, string expectedHash, string encoding)
         {
             var template = $"#{{foo | Sha384 {encoding}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1257,12 +1261,12 @@ namespace Octostache.Tests
         public void Sha384HashWithEncodingAndSize(string input, string expectedHash, string encoding, int size)
         {
             var template = $"#{{foo | Sha384 {encoding} {size}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
 
             // Reversing the order of the options is supported
             var templateReversed = $"#{{foo | Sha384 {size} {encoding}}}";
-            var resultReversed = Evaluate(templateReversed, new Dictionary<string, string> { { "foo", input }});
+            var resultReversed = Evaluate(templateReversed, new Dictionary<string, string> { { "foo", input } });
             resultReversed.Should().Be(expectedHash);
         }
 
@@ -1280,8 +1284,8 @@ namespace Octostache.Tests
         [InlineData("#{ | Sha512}")]
         public void Sha512HashInvalidTemplate(string template)
         {
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" }})
-                .Replace("\"",""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be(template);
         }
 
@@ -1292,7 +1296,7 @@ namespace Octostache.Tests
         public void Sha512Hash(string input, string expectedHash)
         {
             var template = "#{foo | Sha512}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1303,7 +1307,7 @@ namespace Octostache.Tests
         public void Sha512HashWithSize(string input, string expectedHash, int size)
         {
             var template = $"#{{foo | Sha512 {size}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1317,7 +1321,7 @@ namespace Octostache.Tests
         public void Sha512HashWithEncoding(string input, string expectedHash, string encoding)
         {
             var template = $"#{{foo | Sha512 {encoding}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
         }
 
@@ -1330,13 +1334,18 @@ namespace Octostache.Tests
         public void Sha512HashWithEncodingAndSize(string input, string expectedHash, string encoding, int size)
         {
             var template = $"#{{foo | Sha512 {encoding} {size}}}";
-            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input }});
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
             result.Should().Be(expectedHash);
 
             // Reversing the order of the options is supported
             var templateReversed = $"#{{foo | Sha512 {size} {encoding}}}";
-            var resultReversed = Evaluate(templateReversed, new Dictionary<string, string> { { "foo", input }});
+            var resultReversed = Evaluate(templateReversed, new Dictionary<string, string> { { "foo", input } });
             resultReversed.Should().Be(expectedHash);
+        }
+
+        class TestDocument
+        {
+            public string Key { get; set; }
         }
     }
 }

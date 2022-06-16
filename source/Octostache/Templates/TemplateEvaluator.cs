@@ -7,7 +7,7 @@ namespace Octostache.Templates
 {
     class TemplateEvaluator
     {
-        private readonly List<string> missingTokens = new List<string>();
+        readonly List<string> missingTokens = new List<string>();
 
         public static void Evaluate(Template template, EvaluationContext context, out string[] missingTokens)
         {
@@ -82,11 +82,10 @@ namespace Octostache.Templates
 
                 var specials = new Dictionary<string, string?>
                 {
-                    {Constants.Each.Index, i.ToString()},
-                    {Constants.Each.First, i == 0 ? "True" : "False"},
-                    {Constants.Each.Last, i == items.Length - 1 ? "True" : "False"}
+                    { Constants.Each.Index, i.ToString() },
+                    { Constants.Each.First, i == 0 ? "True" : "False" },
+                    { Constants.Each.Last, i == items.Length - 1 ? "True" : "False" },
                 };
-
 
                 var locals = PropertyListBinder.CreateFrom(specials);
 
@@ -108,7 +107,7 @@ namespace Octostache.Templates
             {
                 var comparer = eqToken.Equality ? new Func<string, string, bool>((x, y) => x == y) : (x, y) => x != y;
 
-                if(comparer(leftSide, eqToken.RightSide))
+                if (comparer(leftSide, eqToken.RightSide))
                     Evaluate(ct.TruthyTemplate, context);
                 else
                     Evaluate(ct.FalsyTemplate, context);
@@ -145,6 +144,7 @@ namespace Octostache.Templates
             {
                 missingTokens.Add(st.ToString());
             }
+
             context.Output.Write(value ?? st.ToString());
         }
 
@@ -204,12 +204,7 @@ namespace Octostache.Templates
             }
         }
 
-        internal static bool IsTruthy(string value)
-        {
-            return value != "0" &&
-                value != "" &&
-                string.Compare(value.Trim(), "no", StringComparison.OrdinalIgnoreCase) != 0 &&
-                string.Compare(value.Trim(), "false", StringComparison.OrdinalIgnoreCase) != 0;
-        }
+        internal static bool IsTruthy(string value) => value != "0" && value != "" && !StringEqual(value.Trim(), "no") && !StringEqual(value.Trim(), "false");
+        static bool StringEqual(string a, string b) => string.Compare(a, b, StringComparison.OrdinalIgnoreCase) == 0;
     }
 }

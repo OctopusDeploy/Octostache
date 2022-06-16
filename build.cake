@@ -3,6 +3,8 @@
 //////////////////////////////////////////////////////////////////////
 #module nuget:?package=Cake.DotNetTool.Module&version=0.4.0
 #tool "dotnet:?package=GitVersion.Tool&version=5.3.6"
+#tool "nuget:?package=OctopusTools&version=9.0.0"
+#addin nuget:?package=Cake.Git&version=1.1.0
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -28,9 +30,6 @@ Setup(context =>
     gitVersionInfo = GitVersion(new GitVersionSettings {
         OutputType = GitVersionOutput.Json
     });
-
-    if(BuildSystem.IsRunningOnTeamCity)
-        BuildSystem.TeamCity.SetBuildNumber(gitVersionInfo.NuGetVersion);
 
     nugetVersion = gitVersionInfo.NuGetVersion;
 
@@ -111,29 +110,8 @@ Task("CopyToLocalPackages")
     CopyFileToDirectory($"{artifactsDir}/Octostache.{nugetVersion}.nupkg", localPackagesDir);
 });
 
-Task("Publish")
-    .IsDependentOn("Pack")
-    .WithCriteria(BuildSystem.IsRunningOnTeamCity)
-    .Does(() =>
-{
-    NuGetPush($"{artifactsDir}Octostache.{nugetVersion}.nupkg", new NuGetPushSettings {
-        Source = "https://f.feedz.io/octopus-deploy/dependencies/nuget",
-        ApiKey = EnvironmentVariable("FeedzIoApiKey"),
-        SkipDuplicate = true,
-    });
-
-    if (gitVersionInfo.PreReleaseTagWithDash == "")
-    {
-        NuGetPush($"{artifactsDir}Octostache.{nugetVersion}.nupkg", new NuGetPushSettings {
-            Source = "https://www.nuget.org/api/v2/package",
-            ApiKey = EnvironmentVariable("NuGetApiKey"),
-            SkipDuplicate = true,
-        });
-    }
-});
-
 Task("Default")
-    .IsDependentOn("Publish")
+    .IsDependentOn("Pack")
     .IsDependentOn("CopyToLocalPackages");
 
 //////////////////////////////////////////////////////////////////////

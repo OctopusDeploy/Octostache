@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using Xunit;
 
@@ -6,8 +7,8 @@ namespace Octostache.Tests
 {
     public class VersionFixture : BaseFixture
     {
+        // @formatter:off
         [Theory]
-        [InlineData("", "0", "0", "0", "0", "", "", "", "")]
         [InlineData("1", "1", "0", "0", "0", "", "", "", "")]
         [InlineData("1.2", "1", "2", "0", "0", "", "", "", "")]
         [InlineData("1.2.3", "1", "2", "3", "0", "", "", "", "")]
@@ -28,7 +29,7 @@ namespace Octostache.Tests
         {
             var variables =  new Dictionary<string, string>
             {
-                {"Version", version}
+                { "Version", version },
             };
 
             var majorResult = Evaluate("#{Version | VersionMajor}", variables);
@@ -49,5 +50,6 @@ namespace Octostache.Tests
             releaseCounterResult.Should().Be(releaseCounter);
             metadataResult.Should().Be(metadata);
         }
+        // @formatter:on
     }
 }

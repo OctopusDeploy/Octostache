@@ -1,0 +1,37 @@
+step "Approval Required" {
+
+    action {
+        action_type = "Octopus.Manual"
+        environments = ["Components - External"]
+        properties = {
+            Octopus.Action.Manual.BlockConcurrentDeployments = "False"
+            Octopus.Action.Manual.Instructions = "Please approve release before it is promoted to NuGet"
+        }
+        worker_pool_variable = ""
+    }
+}
+
+step "NuGet Push" {
+
+    action {
+        properties = {
+            NuGetPush.ApiKey = "#{NugetApiKey}"
+            NuGetPush.Source.Package = "{\"PackageId\":\"Octostache\",\"FeedId\":\"Octopus Server (built-in)\"}"
+            NuGetPush.Target.Url = "#{NugetUrl}"
+            Octopus.Action.Template.Id = "ActionTemplates-1241"
+            Octopus.Action.Template.Version = "0"
+        }
+        worker_pool = "Hosted Ubuntu"
+
+        packages "NuGetPush.Source.Package" {
+            acquisition_location = "Server"
+            feed = "Octopus Server (built-in)"
+            package_id = "Octostache"
+            properties = {
+                Extract = "False"
+                PackageParameterName = "NuGetPush.Source.Package"
+                SelectionMode = "deferred"
+            }
+        }
+    }
+}

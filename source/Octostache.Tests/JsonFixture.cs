@@ -1,10 +1,10 @@
 ﻿using System;
-using Xunit;
 using FluentAssertions;
+using Xunit;
 
 namespace Octostache.Tests
 {
-    public class JsonFixture :BaseFixture
+    public class JsonFixture : BaseFixture
     {
         [Fact]
         public void JsonDoesNotOverrideExisting()
@@ -45,10 +45,10 @@ namespace Octostache.Tests
         [InlineData("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", "{\"Bar\":\"11\"}", "Raw JSON returned")]
         [InlineData("{Name: \"#{Test.Value}\", Desc: \"Monkey\", Value: 12}", "#{Test.Name}", "12", "Non-Direct inner JSON")]
         public void SuccessfulJsonParsing(string json, string pattern, string expectedResult, string testName)
-        { 
+        {
             var variables = new VariableDictionary
             {
-                ["Test"] = json
+                ["Test"] = json,
             };
 
             variables.Evaluate(pattern).Should().Be(expectedResult);
@@ -104,20 +104,18 @@ namespace Octostache.Tests
             variables.Evaluate(pattern).Should().Be("Small:11.5,Large:15.21,");
         }
 
-
         [Fact]
         public void JsonEvaluatesConditionalsWithEscapes()
         {
             var variables = new VariableDictionary
             {
-                ["Foo"] = "test text"
+                ["Foo"] = "test text",
             };
 
             var pattern = "{\"Bar\":\"#{if Foo == \\\"test text\\\"}Blaa#{/if}\"}";
 
             variables.Evaluate(pattern).Should().Be("{\"Bar\":\"Blaa\"}");
         }
-
 
         [Fact]
         public void JsonObjectSupportsIteratorWithInnerSelection()
