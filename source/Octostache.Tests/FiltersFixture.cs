@@ -59,7 +59,7 @@ namespace Octostache.Tests
             var result = Evaluate(input, new Dictionary<string, string> { { "Foo", "Abc" } });
             result.Should().Be("ABC");
         }
-        
+
         [Theory]
         [InlineData("A&'bc", "A&amp;&apos;bc")]
         [InlineData("", "")]
