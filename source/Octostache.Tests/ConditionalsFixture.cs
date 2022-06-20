@@ -20,10 +20,19 @@ namespace Octostache.Tests
             result.Should().Be("result");
         }
 
-        [Fact]
-        public void ConditionalIsSupportedWithLeadingWhitespace()
+        [Theory]
+        [InlineData("#{ if Truthy}#{Result}#{/if}")]
+        [InlineData("#{  if Truthy}#{Result}#{/if}")]
+        [InlineData("#{if Truthy }#{Result}#{/if}")]
+        [InlineData("#{ if Truthy  }#{Result}#{/if}")]
+        [InlineData("#{if  Truthy}#{Result}#{/if}")]
+        [InlineData("#{if Truthy}#{ Result}#{/if}")]
+        [InlineData("#{if Truthy}#{  Result}#{/if}")]
+        [InlineData("#{if Truthy}#{Result }#{/if}")]
+        [InlineData("#{if Truthy}#{Result  }#{/if}")]
+        public void ConditionalIgnoresWhitespacesCorrectly(string input)
         {
-            var result = Evaluate("#{ if Truthy}#{Result}#{/if}",
+            var result = Evaluate(input,
                 new Dictionary<string, string>
                 {
                     { "Result", "result" },
@@ -33,28 +42,6 @@ namespace Octostache.Tests
             result.Should().Be("result");
 
             result = Evaluate("#{  if Truthy}#{Result}#{/if}",
-                new Dictionary<string, string>
-                {
-                    { "Result", "result" },
-                    { "Truthy", "true" },
-                });
-
-            result.Should().Be("result");
-        }
-
-        [Fact]
-        public void ConditionalIsSupportedWithTrailingWhitespace()
-        {
-            var result = Evaluate("#{if Truthy }#{Result}#{/if}",
-                new Dictionary<string, string>
-                {
-                    { "Result", "result" },
-                    { "Truthy", "true" },
-                });
-
-            result.Should().Be("result");
-
-            result = Evaluate("#{if Truthy  }#{Result}#{/if}",
                 new Dictionary<string, string>
                 {
                     { "Result", "result" },

@@ -150,8 +150,9 @@ namespace Octostache.Templates
 
         static readonly Parser<RepetitionToken> Repetition =
             (from leftDelim in LDelim
+                from sp1 in Parse.WhiteSpace.Many()
                 from keyEach in Keyword("each")
-                from sp in Parse.WhiteSpace.AtLeastOnce()
+                from sp2 in Parse.WhiteSpace.AtLeastOnce()
                 from enumerator in Identifier.Token()
                 from keyIn in Keyword("in").Token()
                 from expression in Symbol.Token()

@@ -30,6 +30,32 @@ namespace Octostache.Tests
             result.Should().Be("Package A-APackage B-B-Blank");
         }
 
+        [Theory]
+        [InlineData("#{ each a in Octopus.Action}#{a}-#{a.Name}#{/each}")]
+        [InlineData("#{  each a in Octopus.Action}#{a}-#{a.Name}#{/each}")]
+        [InlineData("#{each  a in Octopus.Action}#{a}-#{a.Name}#{/each}")]
+        [InlineData("#{each a  in Octopus.Action}#{a}-#{a.Name}#{/each}")]
+        [InlineData("#{each a in  Octopus.Action}#{a}-#{a.Name}#{/each}")]
+        [InlineData("#{each a in Octopus.Action }#{a}-#{a.Name}#{/each}")]
+        [InlineData("#{each a in Octopus.Action  }#{a}-#{a.Name}#{/each}")]
+        [InlineData("#{each a in Octopus.Action}#{ a}-#{a.Name}#{/each}")]
+        [InlineData("#{each a in Octopus.Action}#{  a}-#{a.Name}#{/each}")]
+        [InlineData("#{each a in Octopus.Action}#{a }-#{a.Name}#{/each}")]
+        [InlineData("#{each a in Octopus.Action}#{a  }-#{a.Name}#{/each}")]
+        public void IterationIgnoresWhitespacesCorrectly(string input)
+        {
+            var result = Evaluate(
+                input,
+                new Dictionary<string, string>
+                {
+                    { "Octopus.Action[Package A].Name", "A" },
+                    { "Octopus.Action[Package B].Name", "B" },
+                    { "Octopus.Action[].Name", "Blank" },
+                });
+
+            result.Should().Be("Package A-APackage B-B-Blank");
+        }
+        
         [Fact]
         public void NestedIterationIsSupported()
         {
