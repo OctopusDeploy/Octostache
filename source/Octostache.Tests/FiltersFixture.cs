@@ -46,6 +46,21 @@ namespace Octostache.Tests
         }
 
         [Theory]
+        [InlineData("#{Foo|ToUpper}")]
+        [InlineData("#{Foo | ToUpper}")]
+        [InlineData("#{Foo  | ToUpper}")]
+        [InlineData("#{Foo |  ToUpper}")]
+        [InlineData("#{ Foo | ToUpper}")]
+        [InlineData("#{  Foo | ToUpper}")]
+        [InlineData("#{Foo | ToUpper }")]
+        [InlineData("#{Foo | ToUpper  }")]
+        public void WhiteSpacesAreIgnored(string input)
+        {
+            var result = Evaluate(input, new Dictionary<string, string> { { "Foo", "Abc" } });
+            result.Should().Be("ABC");
+        }
+        
+        [Theory]
         [InlineData("A&'bc", "A&amp;&apos;bc")]
         [InlineData("", "")]
         [InlineData(null, "")]
