@@ -1,5 +1,9 @@
 using System;
 using Octostache.Templates;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Collections;
 #if HAS_NULLABLE_REF_TYPES
 using System.Diagnostics.CodeAnalysis;
 #endif

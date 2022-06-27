@@ -1,4 +1,7 @@
-﻿using System;
+﻿using FluentAssertions;
+using System;
+using System.Linq;
+using Xunit;
 
 namespace Octostache.Tests
 {
