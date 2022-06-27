@@ -16,12 +16,14 @@ namespace Octostache.Templates
         readonly Binding binding;
         readonly EvaluationContext? parent;
         readonly Stack<SymbolExpression> symbolStack = new Stack<SymbolExpression>();
+        public Dictionary<string, Func<string?, string[], string?>> Extensions;
 
-        public EvaluationContext(Binding binding, TextWriter output, EvaluationContext? parent = null)
+        public EvaluationContext(Binding binding, TextWriter output, EvaluationContext? parent = null, Dictionary<string, Func<string?, string[], string?>>? extensions = null)
         {
             this.binding = binding;
             Output = output;
             this.parent = parent;
+            Extensions = extensions ?? new Dictionary<string, Func<string?, string[], string?>>();
         }
 
         public string Resolve(SymbolExpression expression, out string[] missingTokens)
