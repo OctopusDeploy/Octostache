@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using FluentAssertions;
-using Xunit;
+﻿using System;
 
 namespace Octostache.Tests
 {
@@ -13,18 +10,14 @@ namespace Octostache.Tests
             var variables = new VariableDictionary();
             variables.Add("Foo", "Bar");
 
-            variables.AddExtension("testFunc", ExtensionFixture.ToLower);
+            variables.AddExtension("testFunc", ToLower);
 
             var result = variables.Evaluate("#{Foo|testFunc}");
 
             result.Should().Be("bar");
         }
 
-        public static string ToLower(string argument, string[] options)
-        {
-            return options.Any() ? null : argument?.ToLower();
-        }
-
+        public static string ToLower(string argument, string[] options) => options.Any() ? null : argument?.ToLower();
 
         [Fact]
         public void TestCustomExtension()
@@ -32,7 +25,7 @@ namespace Octostache.Tests
             var variables = new VariableDictionary();
             variables.Add("Foo", "Bar");
 
-            variables.AddExtension("supercoolfunc", ExtensionFixture.SuperCoolFunc);
+            variables.AddExtension("supercoolfunc", SuperCoolFunc);
 
             var result = variables.Evaluate("#{Foo|supercoolfunc}");
 
@@ -41,7 +34,7 @@ namespace Octostache.Tests
 
         public static string SuperCoolFunc(string argument, string[] options)
         {
-            return string.Join("-", argument.Select(c => (((int)char.ToUpper(c)) - 64).ToString()));
+            return string.Join("-", argument.Select(c => (char.ToUpper(c) - 64).ToString()));
         }
     }
 }

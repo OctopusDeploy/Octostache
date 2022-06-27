@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Octostache.CustomStringParsers;
 #if HAS_NULLABLE_REF_TYPES
 using System.Diagnostics.CodeAnalysis;
@@ -12,11 +9,11 @@ namespace Octostache.Templates
     class EvaluationContext
     {
         public TextWriter Output { get; }
-        public Dictionary<string, Func<string?, string[], string?>> Extensions;
 
         readonly Binding binding;
         readonly EvaluationContext? parent;
         readonly Stack<SymbolExpression> symbolStack = new Stack<SymbolExpression>();
+        public Dictionary<string, Func<string?, string[], string?>> Extensions;
 
         public EvaluationContext(Binding binding, TextWriter output, EvaluationContext? parent = null, Dictionary<string, Func<string?, string[], string?>>? extensions = null)
         {

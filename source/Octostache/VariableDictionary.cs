@@ -1,8 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Octostache.Templates;
 #if HAS_NULLABLE_REF_TYPES
 using System.Diagnostics.CodeAnalysis;
@@ -13,9 +9,9 @@ namespace Octostache
     public class VariableDictionary : IEnumerable<KeyValuePair<string, string>>
     {
         readonly Dictionary<string, string?> variables = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        readonly Dictionary<string, Func<string?, string[], string?>> extensions = new Dictionary<string, Func<string?, string[], string?>>();
         string? storageFilePath;
         Binding? binding;
-        Dictionary<string, Func<string?, string[], string?>> extensions = new Dictionary<string, Func<string?, string[], string?>>();
 
         public VariableDictionary() : this(null)
         {
@@ -71,10 +67,7 @@ namespace Octostache
         /// </summary>
         /// <param name="variableName">The name of the variable to set.</param>
         /// <param name="values">The list of values.</param>
-        public void SetPaths(string variableName, IEnumerable<string> values)
-        {
-            SetStrings(variableName, values, Environment.NewLine);
-        }
+        public void SetPaths(string variableName, IEnumerable<string> values) => SetStrings(variableName, values, Environment.NewLine);
 
         /// <summary>
         /// If this variable dictionary was read from a file, reloads all variables from the file.
@@ -171,7 +164,11 @@ namespace Octostache
 
             using (var writer = new StringWriter())
             {
-                TemplateEvaluator.Evaluate(template, Binding, writer, extensions, out var missingTokens);
+                TemplateEvaluator.Evaluate(template,
+                    Binding,
+                    writer,
+                    extensions,
+                    out var missingTokens);
                 if (missingTokens.Any())
                 {
                     var tokenList = string.Join(", ", missingTokens.Select(token => "'" + token + "'"));
@@ -323,10 +320,7 @@ namespace Octostache
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Add(string key, string? value)
-        {
-            Set(key, value);
-        }
+        public void Add(string key, string? value) => Set(key, value);
 
         /// <summary>
         /// Adds a custom extension function

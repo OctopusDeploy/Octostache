@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Octostache.Templates
 {
@@ -22,7 +19,11 @@ namespace Octostache.Templates
             Evaluate(template, context, out missingTokens);
         }
 
-        public static void Evaluate(Template template, Binding properties, TextWriter output, Dictionary<string, Func<string?, string[], string?>> extensions, out string[] missingTokens)
+        public static void Evaluate(Template template,
+            Binding properties,
+            TextWriter output,
+            Dictionary<string, Func<string?, string[], string?>> extensions,
+            out string[] missingTokens)
         {
             var context = new EvaluationContext(properties, output, extensions: extensions);
             Evaluate(template, context, out missingTokens);
@@ -180,10 +181,11 @@ namespace Octostache.Templates
             {
                 return funcOut;
             }
+
             return InvokeOrNullExtension(context.Extensions, fx.Function, argument, args);
         }
 
-        private string? InvokeOrNullExtension(Dictionary<string, Func<string?, string[], string?>> extensions, string function, string? argument, string[] args)
+        string? InvokeOrNullExtension(Dictionary<string, Func<string?, string[], string?>> extensions, string function, string? argument, string[] args)
         {
             var functionName = function.ToLowerInvariant();
 
