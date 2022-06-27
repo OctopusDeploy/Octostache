@@ -1,9 +1,9 @@
 using System;
-using Octostache.Templates;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections;
+using Octostache.Templates;
 #if HAS_NULLABLE_REF_TYPES
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -333,7 +333,6 @@ namespace Octostache
         /// <param name="func"></param>
         public void AddExtension(string name, Func<string?, string[], string?> func)
         {
-            // Naming conflicts with BuiltInFunctions?
             extensions[name.ToLowerInvariant()] = func;
         }
     }
