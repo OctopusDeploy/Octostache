@@ -14,22 +14,22 @@ namespace Octostache.Templates
     {
         static readonly Parser<Identifier> Identifier = Parse
             .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':' || c == '/' || c == '~' || c == '(' || c == ')', "identifier")
-            .Except(Parse.WhiteSpace.Many().FollowedBy("|"))
-            .Except(Parse.WhiteSpace.Many().FollowedBy("}"))
+            .Except(Parse.WhiteSpace.FollowedBy("|"))
+            .Except(Parse.WhiteSpace.FollowedBy("}"))
             .ExceptWhiteSpaceBeforeKeyword()
             .AtLeastOnce()
             .Text()
-            .Select(s => new Identifier(s))
+            .Select(s => new Identifier(s.Trim()))
             .WithPosition();
 
         static readonly Parser<Identifier> IdentifierWithoutWhitespace = Parse
             .Char(c => char.IsLetter(c) || char.IsDigit(c) || c == '_' || c == '-' || c == ':' || c == '/' || c == '~' || c == '(' || c == ')', "identifier")
-            .Except(Parse.WhiteSpace.Many().FollowedBy("|"))
-            .Except(Parse.WhiteSpace.Many().FollowedBy("}"))
+            .Except(Parse.WhiteSpace.FollowedBy("|"))
+            .Except(Parse.WhiteSpace.FollowedBy("}"))
             .ExceptWhiteSpaceBeforeKeyword()
             .AtLeastOnce()
             .Text()
-            .Select(s => new Identifier(s))
+            .Select(s => new Identifier(s.Trim()))
             .WithPosition();
 
         static readonly Parser<string> LDelim = Parse.String("#{").Except(Parse.String("#{/")).Text();

@@ -30,6 +30,8 @@ namespace Octostache.Tests
         [InlineData("#{if Truthy}#{  Result}#{/if}")]
         [InlineData("#{if Truthy}#{Result }#{/if}")]
         [InlineData("#{if Truthy}#{Result  }#{/if}")]
+        [InlineData("#{if Truthy  == \"true\"}#{Result}#{/if}")]
+        [InlineData("#{if Truthy  != \"false\"}#{Result}#{/if}")]
         public void ConditionalIgnoresWhitespacesCorrectly(string input)
         {
             var result = Evaluate(input,
