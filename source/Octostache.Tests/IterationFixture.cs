@@ -55,7 +55,7 @@ namespace Octostache.Tests
 
             result.Should().Be("Package A-APackage B-B-Blank");
         }
-        
+
         [Fact]
         public void NestedIterationIsSupported()
         {
