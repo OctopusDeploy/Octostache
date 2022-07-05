@@ -35,15 +35,15 @@ namespace Octostache.Templates
             {
                 foreach (var symbol in GetSymbols(ct.Token.LeftSide))
                 {
-                   yield return context.Expand(symbol); 
+                    yield return context.Expand(symbol);
                 }
-                    
+
                 var exp = ct.Token as ConditionalSymbolExpressionToken;
                 if (exp != null)
                 {
                     foreach (var symbol in GetSymbols(exp.RightSide))
                     {
-                       yield return context.Expand(symbol); 
+                        yield return context.Expand(symbol);
                     }
                 }
 

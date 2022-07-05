@@ -139,7 +139,7 @@ namespace Octostache.Templates
                 let isEq = eq == "=="
                 select new ConditionalSymbolExpressionToken(expression, isEq, compareTo))
             .WithPosition();
-        
+
         static readonly Parser<string> QuotedText =
             (from open in Parse.Char('"')
                 from content in Parse.CharExcept(new[] { '"', '#' }).Many().Text()
@@ -151,14 +151,14 @@ namespace Octostache.Templates
                 from content in Parse.AnyChar.Until(Parse.String("\\\"")).Text()
                 select content).Token();
 
-        static readonly Parser<ConditionalExpressionToken> LeftStringMatch = 
+        static readonly Parser<ConditionalExpressionToken> LeftStringMatch =
             (from compareTo in QuotedText.Token().Or(EscapedQuotedText.Token())
                 from eq in Keyword("==").Token().Or(Keyword("!=").Token())
                 from expression in Expression.Token()
                 let isEq = eq == "=="
                 select new ConditionalStringExpressionToken(expression, isEq, compareTo))
             .WithPosition();
-        
+
         static readonly Parser<ConditionalExpressionToken> RightStringMatch =
             (from expression in Expression.Token()
                 from eq in Keyword("==").Token().Or(Keyword("!=").Token())
@@ -190,7 +190,7 @@ namespace Octostache.Templates
                 .AtLeastOnce()
                 .Select(s => new TextToken(s.ToArray()))
                 .WithPosition();
-        
+
         static readonly Parser<TemplateToken> Token =
             Conditional.Select(t => (TemplateToken) t)
                 .Or(Repetition)

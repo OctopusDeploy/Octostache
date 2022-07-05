@@ -106,7 +106,7 @@ namespace Octostache.Tests
 
             result.Should().Be("result");
         }
-        
+
         [Fact]
         public void ConditionalNegationIsSupportedWhenStringIsOnTheLeftHandSide()
         {
@@ -199,10 +199,10 @@ namespace Octostache.Tests
                     { "Hello", "HELLO" },
                     { "Result", "result" },
                 });
-        
+
             result.Should().Be("result");
         }
-        
+
         [Fact]
         public void FunctionCallIsSupportedWithStringOnTheRightHandSide()
         {
@@ -212,10 +212,10 @@ namespace Octostache.Tests
                     { "Hello", "HELLO" },
                     { "Result", "result" },
                 });
-        
+
             result.Should().Be("result");
         }
-        
+
         [Fact]
         public void FunctionCallIsSupportedWithStringOnTheLeftHandSide()
         {
@@ -225,10 +225,10 @@ namespace Octostache.Tests
                     { "Hello", "HELLO" },
                     { "Result", "result" },
                 });
-        
+
             result.Should().Be("result");
         }
-        
+
         [Fact]
         public void FunctionCallIsSupportedOnBothSide()
         {
@@ -239,10 +239,10 @@ namespace Octostache.Tests
                     { "Hello", "HELLO" },
                     { "Result", "result" },
                 });
-        
+
             result.Should().Be("result");
         }
-        
+
         [Fact]
         public void ChainedFunctionCallIsSupported()
         {
@@ -253,21 +253,21 @@ namespace Octostache.Tests
                     { "Hello", "  HELLO " },
                     { "Result", "result" },
                 });
-        
+
             result.Should().Be("result");
         }
-        
-        
+
         [Fact]
         public void UnknownFunctionsAreEchoed()
         {
             const string template = "#{if Greeting | NonExistingFunction}#{Result}#{/if}";
-            var result = Evaluate(template, new Dictionary<string, string>
+            var result = Evaluate(template,
+                new Dictionary<string, string>
                 {
                     { "Greeting", "Hello world" },
                     { "Result", "result" },
                 });
-        
+
             result.Should().Be(template);
         }
     }

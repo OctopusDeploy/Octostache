@@ -24,11 +24,8 @@ namespace Octostache.Templates
             FalsyTemplate = falsyBranch.ToArray();
         }
 
-        public override string ToString() => 
-            "#{if " + Token.LeftSide + Token.EqualityText + "}" +
-            string.Join("", TruthyTemplate.Cast<object>()) + 
-            (FalsyTemplate.Length == 0 ? "" : "#{else}" + string.Join("", FalsyTemplate.Cast<object>())) +
-            "#{/if}";
+        public override string ToString() =>
+            "#{if " + Token.LeftSide + Token.EqualityText + "}" + string.Join("", TruthyTemplate.Cast<object>()) + (FalsyTemplate.Length == 0 ? "" : "#{else}" + string.Join("", FalsyTemplate.Cast<object>())) + "#{/if}";
 
         public override IEnumerable<string> GetArguments()
         {

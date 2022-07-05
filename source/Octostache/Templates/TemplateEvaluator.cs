@@ -109,7 +109,7 @@ namespace Octostache.Templates
                 missingTokens.Add(ct.Token.LeftSide.ToString());
                 return;
             }
-            
+
             var eqToken = ct.Token as ConditionalStringExpressionToken;
             if (eqToken != null)
             {
