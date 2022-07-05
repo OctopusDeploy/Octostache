@@ -8,6 +8,8 @@ namespace Octostache.Templates
     /// Example: <code>#{if Octopus.IsCool}...#{/if}</code>
     /// Example: <code>#{if Octopus.CoolStatus != "Uncool"}...#{/if}</code>
     /// Example: <code>#{if Octopus.IsCool == Octostache.IsCool}...#{/if}</code>
+    /// Example: <code>#{if "Cool" == Octostache.CoolStatus}...#{/if}</code>
+    /// Example: <code>#{if Octopus.CoolStatus | ToLower | StartsWith "cool"}...#{/if}</code>
     /// </summary>
     class ConditionalToken : TemplateToken
     {
@@ -22,7 +24,11 @@ namespace Octostache.Templates
             FalsyTemplate = falsyBranch.ToArray();
         }
 
-        public override string ToString() => "#{if " + Token.LeftSide + Token.EqualityText + "}" + string.Join("", TruthyTemplate.Cast<object>()) + "#{else}" + string.Join("", FalsyTemplate.Cast<object>()) + "#{/if}";
+        public override string ToString() => 
+            "#{if " + Token.LeftSide + Token.EqualityText + "}" +
+            string.Join("", TruthyTemplate.Cast<object>()) + 
+            (FalsyTemplate.Length == 0 ? "" : "#{else}" + string.Join("", FalsyTemplate.Cast<object>())) +
+            "#{/if}";
 
         public override IEnumerable<string> GetArguments()
         {

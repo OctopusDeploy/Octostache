@@ -103,7 +103,13 @@ namespace Octostache.Templates
         void EvaluateConditionalToken(EvaluationContext context, ConditionalToken ct)
         {
             var leftSide = Calculate(ct.Token.LeftSide, context);
-
+            if (leftSide == null)
+            {
+                context.Output.Write(ct.ToString());
+                missingTokens.Add(ct.Token.LeftSide.ToString());
+                return;
+            }
+            
             var eqToken = ct.Token as ConditionalStringExpressionToken;
             if (eqToken != null)
             {
@@ -123,6 +129,12 @@ namespace Octostache.Templates
                 var comparer = symToken.Equality ? new Func<string, string, bool>((x, y) => x == y) : (x, y) => x != y;
 
                 var rightSide = Calculate(symToken.RightSide, context);
+                if (rightSide == null)
+                {
+                    context.Output.Write(ct.ToString());
+                    missingTokens.Add(symToken.RightSide.ToString());
+                    return;
+                }
 
                 if (comparer(leftSide, rightSide))
                     Evaluate(ct.TruthyTemplate, context);

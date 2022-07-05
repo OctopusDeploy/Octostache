@@ -114,7 +114,7 @@ namespace Octostache.Tests
                 new Dictionary<string, string>
                 {
                     { "Result", "result" },
-                    { "software", "something else" },
+                    { "Octopus", "something else" },
                 });
 
             result.Should().Be("result");
@@ -127,13 +127,12 @@ namespace Octostache.Tests
                 new Dictionary<string, string>
                 {
                     { "Result", "result" },
-                    { "software", "something else" },
+                    { "Octopus", "something else" },
                 });
 
             result.Should().Be("result");
         }
 
-        
         [Fact]
         public void NestedConditionalsAreSupported()
         {
@@ -258,5 +257,18 @@ namespace Octostache.Tests
             result.Should().Be("result");
         }
         
+        
+        [Fact]
+        public void UnknownFunctionsAreEchoed()
+        {
+            const string template = "#{if Greeting | NonExistingFunction}#{Result}#{/if}";
+            var result = Evaluate(template, new Dictionary<string, string>
+                {
+                    { "Greeting", "Hello world" },
+                    { "Result", "result" },
+                });
+        
+            result.Should().Be(template);
+        }
     }
 }
