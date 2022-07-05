@@ -34,10 +34,10 @@ namespace Octostache.Templates
 
     class ConditionalExpressionToken : TemplateToken
     {
-        public SymbolExpression LeftSide { get; }
+        public ContentExpression LeftSide { get; }
         public virtual string EqualityText => "";
 
-        public ConditionalExpressionToken(SymbolExpression leftSide)
+        public ConditionalExpressionToken(ContentExpression leftSide)
         {
             LeftSide = leftSide;
         }
@@ -51,7 +51,7 @@ namespace Octostache.Templates
         public bool Equality { get; }
         public override string EqualityText => " " + (Equality ? "==" : "!=") + " \"" + RightSide + "\" ";
 
-        public ConditionalStringExpressionToken(SymbolExpression leftSide, bool eq, string rightSide) : base(leftSide)
+        public ConditionalStringExpressionToken(ContentExpression leftSide, bool eq, string rightSide) : base(leftSide)
         {
             Equality = eq;
             RightSide = rightSide;
@@ -65,11 +65,11 @@ namespace Octostache.Templates
 
     class ConditionalSymbolExpressionToken : ConditionalExpressionToken
     {
-        public SymbolExpression RightSide { get; }
+        public ContentExpression RightSide { get; }
         public bool Equality { get; }
         public override string EqualityText => " " + (Equality ? "==" : "!=") + " " + RightSide + " ";
 
-        public ConditionalSymbolExpressionToken(SymbolExpression leftSide, bool eq, SymbolExpression rightSide) : base(leftSide)
+        public ConditionalSymbolExpressionToken(ContentExpression leftSide, bool eq, ContentExpression rightSide) : base(leftSide)
         {
             Equality = eq;
             RightSide = rightSide;

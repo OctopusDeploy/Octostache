@@ -114,7 +114,7 @@ namespace Octostache.Templates
                 from sp1 in Parse.WhiteSpace.Many()
                 from kw in Keyword("if").Or(Keyword("unless"))
                 from sp in Parse.WhiteSpace.AtLeastOnce()
-                from expression in TokenMatch.Token().Or(LeftStringMatch.Token()).Or(RightStringMatch.Token()).Or(TruthyMatch.Token())
+                from expression in ExpressionsMatch.Token().Or(LeftStringMatch.Token()).Or(RightStringMatch.Token()).Or(TruthyMatch.Token())
                 from sp2 in Parse.WhiteSpace.Many()
                 from rightDelim in RDelim
                 from truthy in Parse.Ref(() => IfTemplate)
@@ -128,10 +128,18 @@ namespace Octostache.Templates
             .WithPosition();
 
         static readonly Parser<ConditionalExpressionToken> TruthyMatch =
-            (from expression in Symbol.Token()
+            (from expression in Expression.Token()
                 select new ConditionalExpressionToken(expression))
             .WithPosition();
 
+        static readonly Parser<ConditionalExpressionToken> ExpressionsMatch =
+            (from expression in Expression.Token()
+                from eq in Keyword("==").Token().Or(Keyword("!=").Token())
+                from compareTo in Expression.Token()
+                let isEq = eq == "=="
+                select new ConditionalSymbolExpressionToken(expression, isEq, compareTo))
+            .WithPosition();
+        
         static readonly Parser<string> QuotedText =
             (from open in Parse.Char('"')
                 from content in Parse.CharExcept(new[] { '"', '#' }).Many().Text()
@@ -146,25 +154,17 @@ namespace Octostache.Templates
         static readonly Parser<ConditionalExpressionToken> LeftStringMatch = 
             (from compareTo in QuotedText.Token().Or(EscapedQuotedText.Token())
                 from eq in Keyword("==").Token().Or(Keyword("!=").Token())
-                from expression in Symbol.Token()
+                from expression in Expression.Token()
                 let isEq = eq == "=="
                 select new ConditionalStringExpressionToken(expression, isEq, compareTo))
             .WithPosition();
         
         static readonly Parser<ConditionalExpressionToken> RightStringMatch =
-            (from expression in Symbol.Token()
+            (from expression in Expression.Token()
                 from eq in Keyword("==").Token().Or(Keyword("!=").Token())
                 from compareTo in QuotedText.Token().Or(EscapedQuotedText.Token())
                 let isEq = eq == "=="
                 select new ConditionalStringExpressionToken(expression, isEq, compareTo))
-            .WithPosition();
-
-        static readonly Parser<ConditionalExpressionToken> TokenMatch =
-            (from expression in Symbol.Token()
-                from eq in Keyword("==").Token().Or(Keyword("!=").Token())
-                from compareTo in Symbol.Token()
-                let isEq = eq == "=="
-                select new ConditionalSymbolExpressionToken(expression, isEq, compareTo))
             .WithPosition();
 
         static readonly Parser<RepetitionToken> Repetition =

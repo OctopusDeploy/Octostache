@@ -32,6 +32,7 @@ namespace Octostache.Tests
         [InlineData("#{if Truthy}#{Result  }#{/if}")]
         [InlineData("#{if Truthy  == \"true\"}#{Result}#{/if}")]
         [InlineData("#{if Truthy  != \"false\"}#{Result}#{/if}")]
+        [InlineData("#{if Truthy  |  ToLower  != \"false\"}#{Result}#{/if}")]
         public void ConditionalIgnoresWhitespacesCorrectly(string input)
         {
             var result = Evaluate(input,
@@ -191,16 +192,71 @@ namespace Octostache.Tests
         }
 
         [Fact]
-        public void FunctionCallIsSupportedForEquality()
+        public void FunctionCallIsSupported()
         {
-            var result = Evaluate("#{if Hello | ToLower == \"hello\"}#{Result}#{/if}",
+            var result = Evaluate("#{if Hello | Contains \"O\" }#{Result}#{/if}",
                 new Dictionary<string, string>
                 {
-                    {"Hello", "HELLO"},
+                    { "Hello", "HELLO" },
                     { "Result", "result" },
                 });
         
             result.Should().Be("result");
         }
+        
+        [Fact]
+        public void FunctionCallIsSupportedWithStringOnTheRightHandSide()
+        {
+            var result = Evaluate("#{if Hello | ToLower == \"hello\"}#{Result}#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "Hello", "HELLO" },
+                    { "Result", "result" },
+                });
+        
+            result.Should().Be("result");
+        }
+        
+        [Fact]
+        public void FunctionCallIsSupportedWithStringOnTheLeftHandSide()
+        {
+            var result = Evaluate("#{if \"hello\" == Hello | ToLower }#{Result}#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "Hello", "HELLO" },
+                    { "Result", "result" },
+                });
+        
+            result.Should().Be("result");
+        }
+        
+        [Fact]
+        public void FunctionCallIsSupportedOnBothSide()
+        {
+            var result = Evaluate("#{if Greeting | ToLower == Hello | ToLower }#{Result}#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "Greeting", "Hello" },
+                    { "Hello", "HELLO" },
+                    { "Result", "result" },
+                });
+        
+            result.Should().Be("result");
+        }
+        
+        [Fact]
+        public void ChainedFunctionCallIsSupported()
+        {
+            var result = Evaluate("#{if Greeting | Trim | ToUpper | ToLower == Hello | ToBase64 | FromBase64 | Trim | ToLower }#{Result}#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "Greeting", " Hello " },
+                    { "Hello", "  HELLO " },
+                    { "Result", "result" },
+                });
+        
+            result.Should().Be("result");
+        }
+        
     }
 }
