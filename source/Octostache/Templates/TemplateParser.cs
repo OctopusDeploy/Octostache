@@ -132,7 +132,7 @@ namespace Octostache.Templates
                 select new ConditionalExpressionToken(expression))
             .WithPosition();
 
-        static readonly Parser<ConditionalExpressionToken> TokenMatch =
+        static readonly Parser<ConditionalExpressionToken> StringMatch =
             (from expression in Symbol.Token()
                 from eq in Keyword("==").Token().Or(Keyword("!=").Token())
                 from compareTo in QuotedText.Token().Or(EscapedQuotedText.Token())
@@ -140,7 +140,7 @@ namespace Octostache.Templates
                 select new ConditionalStringExpressionToken(expression, isEq, compareTo))
             .WithPosition();
 
-        static readonly Parser<ConditionalExpressionToken> StringMatch =
+        static readonly Parser<ConditionalExpressionToken> TokenMatch =
             (from expression in Symbol.Token()
                 from eq in Keyword("==").Token().Or(Keyword("!=").Token())
                 from compareTo in Symbol.Token()
