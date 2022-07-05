@@ -81,7 +81,7 @@ namespace Octostache.Tests
         }
 
         [Fact]
-        public void ConditionalToStringIsSupported()
+        public void ConditionalToStringIsSupportedWhenStringIsOnTheRightHandSide()
         {
             var result = Evaluate("#{if Octopus == \"octopus\"}#{Result}#{/if}",
                 new Dictionary<string, string>
@@ -94,7 +94,33 @@ namespace Octostache.Tests
         }
 
         [Fact]
-        public void ConditionalNegationIsSupported()
+        public void ConditionalToStringIsSupportedWhenStringIsOnTheLeftHandSide()
+        {
+            var result = Evaluate("#{if \"octopus\" == Octopus }#{Result}#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "Result", "result" },
+                    { "Octopus", "octopus" },
+                });
+
+            result.Should().Be("result");
+        }
+        
+        [Fact]
+        public void ConditionalNegationIsSupportedWhenStringIsOnTheLeftHandSide()
+        {
+            var result = Evaluate("#{if \"software\" != Octopus}#{Result}#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "Result", "result" },
+                    { "software", "something else" },
+                });
+
+            result.Should().Be("result");
+        }
+
+        [Fact]
+        public void ConditionalNegationIsSupportedWhenStringIsOnTheRightHandSide()
         {
             var result = Evaluate("#{if Octopus != \"software\"}#{Result}#{/if}",
                 new Dictionary<string, string>
@@ -106,6 +132,7 @@ namespace Octostache.Tests
             result.Should().Be("result");
         }
 
+        
         [Fact]
         public void NestedConditionalsAreSupported()
         {
@@ -161,6 +188,19 @@ namespace Octostache.Tests
                 });
 
             result.Should().Be("elseresult");
+        }
+
+        [Fact]
+        public void FunctionCallIsSupportedForEquality()
+        {
+            var result = Evaluate("#{if Hello | ToLower == \"hello\"}#{Result}#{/if}",
+                new Dictionary<string, string>
+                {
+                    {"Hello", "HELLO"},
+                    { "Result", "result" },
+                });
+        
+            result.Should().Be("result");
         }
     }
 }
