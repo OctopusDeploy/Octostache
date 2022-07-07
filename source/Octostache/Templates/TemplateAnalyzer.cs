@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Markdig.Extensions.CustomContainers;
 
 namespace Octostache.Templates
 {
@@ -58,7 +59,24 @@ namespace Octostache.Templates
             var rt = token as RepetitionToken;
             if (rt != null)
             {
-                var ctx = context.BeginChild(rt.Enumerator, (SymbolExpression)rt.Collection);
+                var collection = rt.Collection;
+                foreach (var symbol in GetSymbols(rt.Collection))
+                {
+                    yield return context.Expand(symbol);
+                }
+                
+                while ((collection as FunctionCallExpression)?.Argument != null)
+                {
+                    collection = (collection as FunctionCallExpression)?.Argument;
+                }
+
+                collection = collection as SymbolExpression;
+                if (collection == null)
+                {
+                    throw new NotImplementedException("Unknown token type: " + token);
+                }
+                
+                var ctx = context.BeginChild(rt.Enumerator, (SymbolExpression)collection);
                 foreach (var dependency in GetDependencies(rt.Template, ctx))
                     yield return dependency;
 
