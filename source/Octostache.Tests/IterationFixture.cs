@@ -125,15 +125,41 @@ namespace Octostache.Tests
         [Fact]
         public void NestedIndexIterationIsSupported()
         {
-            var result = Evaluate("#{each a in Octopus.Action.Package}#{a}: #{a.Name} #{/each}",
+             var result = Evaluate("#{each a in Octopus.Action.Package}#{a}: #{a.Name} #{/each}",
+                 new Dictionary<string, string>
+                 {
+                     { "Octopus.Action.Package[container[0]].Name", "A" },
+                     { "Octopus.Action.Package[container[1]].Name", "B" },
+                     { "Octopus.Action.Package[container[2]].Name", "C" },
+                 });
+ 
+             result.Should().Be("container[0]: A container[1]: B container[2]: C "); 
+        }
+
+        [Fact]
+        public void IterationFilterIsSupported()
+        {
+          var result = Evaluate("#{each a in Octopus.Action.Package | Reverse}#{a}: #{a.Name} #{/each}",
+               new Dictionary<string, string>
+               {
+                   { "Octopus.Action.Package[0].Name", "A" },
+                   { "Octopus.Action.Package[1].Name", "B" },
+                   { "Octopus.Action.Package[2].Name", "C" },
+               });
+
+           result.Should().Be("2: C 1: B 0: A ");
+        }
+
+        [Fact]
+        public void ChainedIterationFilterIsSupported()
+        {
+            var result = Evaluate("#{each a in Array | Reverse | Reverse}#{a}#{/each}",
                 new Dictionary<string, string>
                 {
-                    { "Octopus.Action.Package[container[0]].Name", "A" },
-                    { "Octopus.Action.Package[container[1]].Name", "B" },
-                    { "Octopus.Action.Package[container[2]].Name", "C" },
+                    { "Array", "1,2,3" },
                 });
 
-            result.Should().Be("container[0]: A container[1]: B container[2]: C ");
+            result.Should().Be("123");
         }
     }
 }

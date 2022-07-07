@@ -174,7 +174,7 @@ namespace Octostache.Templates
                 from sp2 in Parse.WhiteSpace.AtLeastOnce()
                 from enumerator in Identifier.Token()
                 from keyIn in Keyword("in").Token()
-                from expression in Symbol.Token()
+                from expression in Expression.Token()
                 from rightDelim in RDelim
                 from body in Parse.Ref(() => Template)
                 from end in Parse.String("#{/each}")

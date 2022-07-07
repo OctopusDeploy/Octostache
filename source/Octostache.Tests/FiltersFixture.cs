@@ -23,19 +23,23 @@ namespace Octostache.Tests
             error.Should().Be($"The following tokens were unable to be evaluated: '{template}'");
         }
 
-        [Fact]
-        public void UnknownFiltersAreEchoed()
+        [Theory]
+        [InlineData("#{Foo | ToBazooka}")]
+        [InlineData("#{each f in Foo | ToBazooka}#{f}#{/each}")]
+        public void UnknownFiltersAreEchoed(string template)
         {
-            var result = Evaluate("#{Foo | ToBazooka}", new Dictionary<string, string> { { "Foo", "Abc" } });
-            result.Should().Be("#{Foo | ToBazooka}");
+            var result = Evaluate(template, new Dictionary<string, string> { { "Foo", "Abc" } });
+            result.Should().Be(template);
         }
 
-        [Fact]
-        public void UnknownFiltersWithOptionsAreEchoed()
+        [Theory]
+        [InlineData("#{Foo | ToBazooka 6}")]
+        [InlineData("#{each f in Foo | ToBazooka 6}#{f}#{/each}")]
+        public void UnknownFiltersWithOptionsAreEchoed(string template)
         {
-            var result = Evaluate("#{Foo | ToBazooka 6}", new Dictionary<string, string> { { "Foo", "Abc" } })
+            var result = Evaluate(template, new Dictionary<string, string> { { "Foo", "Abc" } })
                 .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
-            result.Should().Be("#{Foo | ToBazooka 6}");
+            result.Should().Be(template);
         }
 
         [Fact]
@@ -1358,6 +1362,62 @@ namespace Octostache.Tests
             resultReversed.Should().Be(expectedHash);
         }
 
+        [Fact]
+        public void ReverseCollections()
+        {
+            const string template = "#{each item in Collection | Reverse}#{item}#{/each}";
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "Collection[0]", "a" },
+                    { "Collection[1]", "b" },
+                    { "Collection[2]", "c" },
+                });
+
+            result.Should().Be("cba");
+        }
+        
+        [Fact]
+        public void ReverseJsonValues()
+        {
+            const string template = "#{each item in Collection | Reverse}#{item}#{/each}";
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "Collection", "[0,1,2]" },
+                });
+
+            result.Should().Be("210");
+        }
+
+        [Fact]
+        public void ReverseCommaSeperatedValues()
+        {
+            const string template = "#{each item in Collection | Reverse}#{item}#{/each}";
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "Collection", "0,1,2" },
+                });
+
+            result.Should().Be("210");
+        }
+        
+        [Fact]
+        public void Test()
+        {
+            const string template = "#{each item in Collection | Reverse}#{item.Name}#{/each}";
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "Collection[0].Name", "0" },
+                    { "Collection[1].Name", "1" },
+                    { "Collection[2]", "2" },
+                });
+
+            result.Should().Be("210");
+        }
+        
         class TestDocument
         {
             public string Key { get; set; }

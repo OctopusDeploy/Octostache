@@ -58,7 +58,7 @@ namespace Octostache.Templates
             var rt = token as RepetitionToken;
             if (rt != null)
             {
-                var ctx = context.BeginChild(rt.Enumerator, rt.Collection);
+                var ctx = context.BeginChild(rt.Enumerator, (SymbolExpression)rt.Collection);
                 foreach (var dependency in GetDependencies(rt.Template, ctx))
                     yield return dependency;
 

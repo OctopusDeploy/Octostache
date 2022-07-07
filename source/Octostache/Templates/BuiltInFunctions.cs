@@ -53,11 +53,26 @@ namespace Octostache.Templates
             { "sha512", HashFunction.Sha512 },
         };
 
+        static readonly IDictionary<string, Func<IEnumerable<Binding>?, string[], IEnumerable<Binding>?>> IterationExtensions = new Dictionary<string, Func<IEnumerable<Binding>?, string[], IEnumerable<Binding>?>>
+        {
+            { "reverse", IterationFunction.Reverse },
+        };
+        
         public static string? InvokeOrNull(string function, string? argument, string[] options)
         {
             var functionName = function.ToLowerInvariant();
 
             if (Extensions.TryGetValue(functionName, out var ext))
+                return ext(argument, options);
+
+            return null; // Undefined, will cause source text to print
+        }
+
+        public static IEnumerable<Binding>? InvokeOrNull(string function, IEnumerable<Binding>? argument, string[] options)
+        {
+            var functionName = function.ToLowerInvariant();
+
+            if (IterationExtensions.TryGetValue(functionName, out var ext))
                 return ext(argument, options);
 
             return null; // Undefined, will cause source text to print

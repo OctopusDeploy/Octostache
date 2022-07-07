@@ -6,11 +6,11 @@ namespace Octostache.Templates
 {
     class RepetitionToken : TemplateToken
     {
-        public SymbolExpression Collection { get; }
+        public ContentExpression Collection { get; }
         public Identifier Enumerator { get; }
         public TemplateToken[] Template { get; }
 
-        public RepetitionToken(SymbolExpression collection, Identifier enumerator, IEnumerable<TemplateToken> template)
+        public RepetitionToken(ContentExpression collection, Identifier enumerator, IEnumerable<TemplateToken> template)
         {
             Collection = collection;
             Enumerator = enumerator;

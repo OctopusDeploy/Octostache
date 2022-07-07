@@ -67,19 +67,22 @@ namespace Octostache.Templates
             var rt = token as RepetitionToken;
             if (rt != null)
             {
-                EvaluateRepititionToken(context, rt);
+                EvaluateRepetitionToken(context, rt);
                 return;
             }
 
             throw new NotImplementedException("Unknown token type: " + token);
         }
 
-        void EvaluateRepititionToken(EvaluationContext context, RepetitionToken rt)
+        void EvaluateRepetitionToken(EvaluationContext context, RepetitionToken rt)
         {
-            string[] innerTokens;
-            var items = context.ResolveAll(rt.Collection, out innerTokens).ToArray();
-            missingTokens.AddRange(innerTokens);
-
+            var items = CalculateIteration(rt.Collection, context);
+            if (items == null)
+            {
+                context.Output.Write(rt.ToString());
+                return;
+            }
+            
             for (var i = 0; i < items.Length; ++i)
             {
                 var item = items[i];
@@ -207,6 +210,31 @@ namespace Octostache.Templates
             return null;
         }
 
+        Binding[]? CalculateIteration(ContentExpression expression, EvaluationContext context)
+        {
+            if (expression is SymbolExpression sx)
+            {
+                var items = context.ResolveAll(sx, out var innerTokens).ToArray();
+                missingTokens.AddRange(innerTokens);
+                return items;
+            }
+
+            var fx = expression as FunctionCallExpression;
+            if (fx == null)
+            {
+                throw new NotImplementedException("Unknown expression type: " + expression);
+            }
+
+            var argument = CalculateIteration(fx.Argument, context);
+
+            var args = fx.Options.Select(opt => Resolve(opt, context)).ToArray();
+
+            var funcOut = BuiltInFunctions.InvokeOrNull(fx.Function, argument, args);
+            return funcOut?.ToArray();
+            
+            // for now we don't support custom extension for iteration functions
+        }
+        
         string Resolve(TemplateToken token, EvaluationContext context)
         {
             using (var x = new StringWriter())
