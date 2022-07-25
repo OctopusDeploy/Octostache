@@ -102,12 +102,22 @@ namespace Octostache.Templates
 
         void EvaluateConditionalToken(EvaluationContext context, ConditionalToken ct)
         {
-            var leftSide = Calculate(ct.Token.LeftSide, context);
-            if (leftSide == null)
+            string? leftSide;
+            var leftToken = ct.Token.LeftSide as SymbolExpression;
+            if (leftToken != null)
             {
-                context.Output.Write(ct.ToString());
-                missingTokens.Add(ct.Token.LeftSide.ToString());
-                return;
+                leftSide = context.Resolve(leftToken, out var innerTokens);
+                missingTokens.AddRange(innerTokens);
+            }
+            else
+            {
+                leftSide = Calculate(ct.Token.LeftSide, context);
+                if (leftSide == null)
+                {
+                    context.Output.Write(ct.ToString());
+                    missingTokens.Add(ct.Token.LeftSide.ToString());
+                    return;
+                }
             }
 
             var eqToken = ct.Token as ConditionalStringExpressionToken;
@@ -127,13 +137,23 @@ namespace Octostache.Templates
             if (symToken != null)
             {
                 var comparer = symToken.Equality ? new Func<string, string, bool>((x, y) => x == y) : (x, y) => x != y;
+                string? rightSide;
 
-                var rightSide = Calculate(symToken.RightSide, context);
-                if (rightSide == null)
+                var rightToken = symToken.RightSide as SymbolExpression;
+                if (rightToken != null)
                 {
-                    context.Output.Write(ct.ToString());
-                    missingTokens.Add(symToken.RightSide.ToString());
-                    return;
+                    rightSide = context.Resolve(rightToken, out var innerTokens);
+                    missingTokens.AddRange(innerTokens);
+                }
+                else
+                {
+                    rightSide = Calculate(symToken.RightSide, context);
+                    if (rightSide == null)
+                    {
+                        context.Output.Write(ct.ToString());
+                        missingTokens.Add(symToken.RightSide.ToString());
+                        return;
+                    }
                 }
 
                 if (comparer(leftSide, rightSide))

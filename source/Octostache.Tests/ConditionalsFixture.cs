@@ -67,6 +67,22 @@ namespace Octostache.Tests
             result.Should().Be("result");
         }
 
+        [Theory]
+        [InlineData("#{if MyVar}True#{/if}", "")]
+        [InlineData("#{unless MyVar}False#{/unless}", "False")]
+        public void UnknownVariablesAreTreatedAsFalsy(string template, string expected)
+        {
+            var result = Evaluate(template, new Dictionary<string, string>());
+            result.Should().Be(expected);
+        }
+
+        [Fact]
+        public void UnknownVariablesOnBothSidesAreTreatedAsEqual()
+        {
+            var result = Evaluate("#{if Unknown1 == Unknown2}Equal#{/if}", new Dictionary<string, string>());
+            result.Should().Be("Equal");
+        }
+
         [Fact]
         public void ConditionalToOtherDictValueIsSupported()
         {
@@ -266,6 +282,20 @@ namespace Octostache.Tests
                 {
                     { "Greeting", "Hello world" },
                     { "Result", "result" },
+                });
+
+            result.Should().Be(template);
+        }
+
+        [Fact]
+        public void UnknownVariablesAsFunctionArgumentsAreEchoed()
+        {
+            const string template = "#{if Greeting | TpUpper}#{Result}#{/if}";
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "Result", "result" },
+                    { "MyVar", "Value" },
                 });
 
             result.Should().Be(template);
