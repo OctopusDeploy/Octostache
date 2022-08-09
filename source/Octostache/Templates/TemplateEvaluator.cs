@@ -71,6 +71,24 @@ namespace Octostache.Templates
                 return;
             }
 
+            var cat = token as CalculationToken;
+            if (cat != null)
+            {
+                var value = cat.Expression.Evaluate(s =>
+                {
+                    var value = context.ResolveOptional(s, out var innerTokens);
+                    missingTokens.AddRange(innerTokens);
+                    return value;
+                });
+
+                if (value != null)
+                    context.Output.Write(value);
+                else
+                    context.Output.Write(cat.ToString());
+
+                return;
+            }
+
             throw new NotImplementedException("Unknown token type: " + token);
         }
 

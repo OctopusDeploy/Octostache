@@ -93,6 +93,7 @@ namespace Octostache.Templates
                 from fn in IdentifierWithoutWhitespace.Named("filter").WithPosition().Token()
                 from option in
                     Conditional.Select(t => (TemplateToken) t)
+                        .Or(Calculation)
                         .Or(Repetition)
                         .Or(Substitution)
                         .Or(IdentifierWithoutWhitespace.Token().Select(t => t.Text)
@@ -126,6 +127,46 @@ namespace Octostache.Templates
                 let falsey = elseMatch.IsDefined ? elseMatch.Get() : Enumerable.Empty<TemplateToken>()
                 select kw == "if" ? new ConditionalToken(expression, truthy, falsey) : new ConditionalToken(expression, falsey, truthy))
             .WithPosition();
+
+        static readonly Parser<CalculationToken> Calculation =
+            (from leftDelim in LDelim
+                from lsp in Parse.WhiteSpace.Many()
+                from kw in Keyword("calc")
+                from sp in Parse.WhiteSpace.AtLeastOnce()
+                from expression in Parse.Ref(() => CalculationExpression)
+                from rsp in Parse.WhiteSpace.Many()
+                from rightDelim in RDelim
+                select new CalculationToken(expression))
+            .WithPosition();
+
+        static readonly Parser<ICalculationComponent> CalculationConstant =
+            from number in Parse.Number.Select(double.Parse)
+            select new CalculationConstant(number);
+
+        static readonly Parser<ICalculationComponent> CalculationVariable =
+            from symbol in Symbol.Token()
+            select new CalculationVariable(symbol);
+
+        static readonly Parser<ICalculationComponent> CalculationValue =
+            CalculationConstant.XOr(CalculationVariable);
+
+        static readonly Parser<CalculationOperator> Add = CalculationOperator("+", Templates.CalculationOperator.Add);
+        static readonly Parser<CalculationOperator> Subtract = CalculationOperator("-", Templates.CalculationOperator.Subtract);
+        static readonly Parser<CalculationOperator> Multiply = CalculationOperator("*", Templates.CalculationOperator.Multiply);
+        static readonly Parser<CalculationOperator> Divide = CalculationOperator("/", Templates.CalculationOperator.Divide);
+
+        static readonly Parser<ICalculationComponent> CalculationFactor =
+            (from lparen in Parse.Char('(')
+                from expr in Parse.Ref(() => CalculationExpression)
+                from rparen in Parse.Char(')')
+                select expr).Named("expression")
+            .XOr(CalculationValue);
+
+        static readonly Parser<ICalculationComponent> CalculationTerm =
+            Parse.ChainOperator(Multiply.Or(Divide), CalculationFactor, (op, left, right) => new CalculationOperation(left, op, right));
+
+        static readonly Parser<ICalculationComponent> CalculationExpression =
+            Parse.ChainOperator(Add.Or(Subtract), CalculationTerm, (op, left, right) => new CalculationOperation(left, op, right));
 
         static readonly Parser<ConditionalExpressionToken> TruthyMatch =
             (from expression in Expression.Token()
@@ -193,6 +234,7 @@ namespace Octostache.Templates
 
         static readonly Parser<TemplateToken> Token =
             Conditional.Select(t => (TemplateToken) t)
+                .Or(Calculation)
                 .Or(Repetition)
                 .Or(Substitution)
                 .Or(Text);
@@ -209,6 +251,8 @@ namespace Octostache.Templates
         static readonly ItemCache<TemplateWithError> TemplateCache = new ItemCache<TemplateWithError>("OctostacheTemplate", 100, TimeSpan.FromMinutes(10));
         static readonly ItemCache<TemplateWithError> TemplateContinueCache = new ItemCache<TemplateWithError>("OctostacheTemplate", 100, TimeSpan.FromMinutes(10));
         static readonly ItemCache<SymbolExpression> PathCache = new ItemCache<SymbolExpression>("OctostachePath", 100, TimeSpan.FromMinutes(10));
+
+        static Parser<CalculationOperator> CalculationOperator(string op, CalculationOperator @operator) => Parse.String(op).Token().Return(@operator);
 
         static Parser<T> FollowedBy<T>(this Parser<T> parser, string lookahead)
         {
