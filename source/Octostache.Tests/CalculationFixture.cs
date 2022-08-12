@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using FluentAssertions;
 using Xunit;
 
@@ -8,15 +9,7 @@ namespace Octostache.Tests
     public class CalculationFixture : BaseFixture
     {
         [Theory]
-        [InlineData("3+2", "5")]
-        [InlineData("3-2", "1")]
-        [InlineData("3*2", "6")]
-        [InlineData("3/2", "1,5")]
-        [InlineData("3*2+2*4", "14")]
-        [InlineData("3*(2+2)*4", "48")]
-        [InlineData("A+2", "7")]
-        [InlineData("A+B", "12")]
-        [InlineData("C+2", "#{C+2}")]
+        [MemberData(nameof(ConditionalIsSupportedData))]
         public void ConditionalIsSupported(string expression, string expectedResult)
         {
             var result = Evaluate($"#{{calc {expression}}}",
@@ -27,6 +20,19 @@ namespace Octostache.Tests
                 });
 
             result.Should().Be(expectedResult);
+        }
+
+        public static IEnumerable<object[]> ConditionalIsSupportedData()
+        {
+            yield return new object[] { "3+2", "5" };
+            yield return new object[] { "3-2", "1" };
+            yield return new object[] { "3*2", "6" };
+            yield return new object[] { "3/2", (3d / 2).ToString(CultureInfo.CurrentCulture) };
+            yield return new object[] { "3*2+2*4", "14" };
+            yield return new object[] { "3*(2+2)*4", "48" };
+            yield return new object[] { "A+2", "7" };
+            yield return new object[] { "A+B", "12" };
+            yield return new object[] { "C+2", "#{C+2}" };
         }
     }
 }
