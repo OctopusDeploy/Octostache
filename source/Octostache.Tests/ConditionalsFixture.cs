@@ -163,6 +163,22 @@ namespace Octostache.Tests
             result.Should().Be("result");
         }
 
+        [Theory]
+        [InlineData("true", "result")]
+        [InlineData("false", null)]
+        public void ConditionalsWithNestedNullShouldReturnCorrect(string truthyValue, string expectedValue)
+        {
+            var result = Evaluate("#{if Truthy}#{Result}#{else}#{ | null }#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "Result", "result" },
+                    { "ElseResult", "elseresult" },
+                    { "Truthy", truthyValue },
+                });
+
+            result.Should().Be(expectedValue);
+        }
+
         [Fact]
         public void ElseIsSupportedTrue()
         {

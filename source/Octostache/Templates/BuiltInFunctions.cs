@@ -51,6 +51,7 @@ namespace Octostache.Templates
             { "sha256", HashFunction.Sha256 },
             { "sha384", HashFunction.Sha384 },
             { "sha512", HashFunction.Sha512 },
+            { "null", NullFunction.Null }
         };
 
         public static string? InvokeOrNull(string function, string? argument, string[] options)
