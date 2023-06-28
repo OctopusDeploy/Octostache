@@ -154,7 +154,6 @@ namespace Octostache
         /// <param name="error">Any parsing errors silently found.</param>
         /// <param name="haltOnError">Stop parsing if an error is found.</param>
         /// <returns>The result of the expression.</returns>
-        [return: NotNullIfNotNull("expressionOrVariableOrText")]
         public string? Evaluate(string? expressionOrVariableOrText, out string? error, bool haltOnError = true)
         {
             error = null;

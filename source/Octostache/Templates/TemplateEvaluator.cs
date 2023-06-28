@@ -18,7 +18,11 @@ namespace Octostache.Templates
             nullTokens = evaluator.nullTokens.Distinct().ToArray();
         }
 
-        public static void Evaluate(Template template, Binding properties, TextWriter output, out string[] missingTokens, out string[] nullTokens)
+        public static void Evaluate(Template template,
+            Binding properties,
+            TextWriter output,
+            out string[] missingTokens,
+            out string[] nullTokens)
         {
             var context = new EvaluationContext(properties, output);
             Evaluate(template, context, out missingTokens, out nullTokens);
@@ -210,6 +214,7 @@ namespace Octostache.Templates
                         return;
                     }
                 }
+
                 missingTokens.Add(st.ToString());
             }
 

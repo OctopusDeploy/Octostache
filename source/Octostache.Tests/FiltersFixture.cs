@@ -799,7 +799,7 @@ namespace Octostache.Tests
         }
 
         [Fact]
-        public void OutputNull()
+        public void NullFilterShouldOutputNull()
         {
             var result = Evaluate("#{ | null}", new Dictionary<string, string> { { "foo", "#{ | null}" } });
             result.Should().Be(null);
@@ -1367,7 +1367,7 @@ namespace Octostache.Tests
 
         class TestDocument
         {
-            public string Key { get; set; }
+            public string Key { get; }
         }
     }
 }
