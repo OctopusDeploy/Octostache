@@ -164,11 +164,13 @@ namespace Octostache.Tests
         }
 
         [Theory]
-        [InlineData("true", "result")]
-        [InlineData("false", null)]
-        public void ConditionalsWithNestedNullShouldReturnCorrect(string truthyValue, string expectedValue)
+        [InlineData("#{if Truthy}#{Result}#{else}#{ | null }#{/if}", "true", "result")]
+        [InlineData("#{if Truthy}#{Result}#{else}#{ | null }#{/if}", "false", null)]
+        [InlineData("#{if Truthy}#{ | null }#{else}#{ElseResult}#{/if}", "true", null)]
+        [InlineData("#{if Truthy}#{ | null }#{else}#{ElseResult}#{/if}", "false", "elseresult")]
+        public void ConditionalsWithNestedNullShouldReturnCorrect(string template, string truthyValue, string expectedValue)
         {
-            var result = Evaluate("#{if Truthy}#{Result}#{else}#{ | null }#{/if}",
+            var result = Evaluate(template,
                 new Dictionary<string, string>
                 {
                     { "Result", "result" },

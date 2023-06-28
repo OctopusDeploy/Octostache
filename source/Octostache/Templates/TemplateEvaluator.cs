@@ -205,14 +205,9 @@ namespace Octostache.Templates
             var value = Calculate(st.Expression, context);
             if (value == null)
             {
-                if (st.Expression is FunctionCallExpression)
+                if (st.Expression is FunctionCallExpression { Function: "null" } fx)
                 {
-                    var fx = st.Expression as FunctionCallExpression;
-                    if (fx.Function == "null")
-                    {
-                        nullTokens.Add(st.ToString());
-                        return;
-                    }
+                    nullTokens.Add(st.ToString());
                 }
 
                 missingTokens.Add(st.ToString());
@@ -235,6 +230,7 @@ namespace Octostache.Templates
             {
                 var resolvedSymbol = context.ResolveOptional(sx, out var innerTokens, out var innerNullTokens);
                 missingTokens.AddRange(innerTokens);
+                nullTokens.AddRange(innerNullTokens);
                 return resolvedSymbol;
             }
 
