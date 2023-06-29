@@ -83,9 +83,8 @@ namespace Octostache.Templates
             {
                 var value = cat.Expression.Evaluate(s =>
                 {
-                    var value = context.ResolveOptional(s, out var innerTokens, out var innerNullTokens);
+                    var value = context.ResolveOptional(s, out var innerTokens, out var _);
                     missingTokens.AddRange(innerTokens);
-                    nullTokens.AddRange(innerNullTokens);
                     return value;
                 });
 
@@ -103,10 +102,8 @@ namespace Octostache.Templates
         void EvaluateRepititionToken(EvaluationContext context, RepetitionToken rt)
         {
             string[] innerTokens;
-            string[] innerNullTokens;
-            var items = context.ResolveAll(rt.Collection, out innerTokens, out innerNullTokens).ToArray();
+            var items = context.ResolveAll(rt.Collection, out innerTokens, out _).ToArray();
             missingTokens.AddRange(innerTokens);
-            nullTokens.AddRange(innerNullTokens);
 
             for (var i = 0; i < items.Length; ++i)
             {
@@ -134,9 +131,8 @@ namespace Octostache.Templates
             var leftToken = ct.Token.LeftSide as SymbolExpression;
             if (leftToken != null)
             {
-                leftSide = context.Resolve(leftToken, out var innerTokens, out var innerNullTokens);
+                leftSide = context.Resolve(leftToken, out var innerTokens, out var _);
                 missingTokens.AddRange(innerTokens);
-                nullTokens.AddRange(innerNullTokens);
             }
             else
             {
@@ -171,9 +167,8 @@ namespace Octostache.Templates
                 var rightToken = symToken.RightSide as SymbolExpression;
                 if (rightToken != null)
                 {
-                    rightSide = context.Resolve(rightToken, out var innerTokens, out var innerNullTokens);
+                    rightSide = context.Resolve(rightToken, out var innerTokens, out var _);
                     missingTokens.AddRange(innerTokens);
-                    nullTokens.AddRange(innerNullTokens);
                 }
                 else
                 {
@@ -228,9 +223,8 @@ namespace Octostache.Templates
         {
             if (expression is SymbolExpression sx)
             {
-                var resolvedSymbol = context.ResolveOptional(sx, out var innerTokens, out var innerNullTokens);
+                var resolvedSymbol = context.ResolveOptional(sx, out var innerTokens, out var _);
                 missingTokens.AddRange(innerTokens);
-                nullTokens.AddRange(innerNullTokens);
                 return resolvedSymbol;
             }
 
