@@ -1360,6 +1360,7 @@ namespace Octostache.Tests
 
         class TestDocument
         {
+            // ReSharper disable once UnusedAutoPropertyAccessor.Local
             public string Key { get; set; }
         }
     }
