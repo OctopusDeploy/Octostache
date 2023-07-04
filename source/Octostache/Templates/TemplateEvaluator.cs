@@ -197,16 +197,17 @@ namespace Octostache.Templates
 
         void EvaluateSubstitutionToken(EvaluationContext context, SubstitutionToken st)
         {
-            if (st.Expression is FunctionCallExpression { Function: "null" })
-            {
-                nullTokens.Add(st.ToString());
-                return;
-            }
-            
             var value = Calculate(st.Expression, context);
             if (value == null)
             {
-                missingTokens.Add(st.ToString());
+                if (st.Expression is FunctionCallExpression { Function: "null" } fx)
+                {
+                    nullTokens.Add(st.ToString());
+                }
+                else
+                {
+                    missingTokens.Add(st.ToString());
+                }
             }
 
             context.Output.Write(value ?? st.ToString());
