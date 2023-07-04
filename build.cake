@@ -2,6 +2,7 @@
 // TOOLS
 //////////////////////////////////////////////////////////////////////
 #module nuget:?package=Cake.DotNetTool.Module&version=0.4.0
+#tool "dotnet:?package=GitVersion.Tool&version=5.12.0"
 #tool "nuget:?package=OctopusTools&version=9.0.0"
 #addin nuget:?package=Cake.Git&version=1.1.0
 
@@ -27,8 +28,7 @@ string nugetVersion;
 Setup(context =>
 {
     gitVersionInfo = GitVersion(new GitVersionSettings {
-        OutputType = GitVersionOutput.Json,
-        ToolPath = new FilePath("C:/Users/ContainerAdministrator/.nuget/packages/gitversion.tool/5.12.0/gitversion.tool.5.12.0.nupkg")
+        OutputType = GitVersionOutput.Json
     });
 
     nugetVersion = gitVersionInfo.NuGetVersion;
