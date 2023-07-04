@@ -27,7 +27,8 @@ string nugetVersion;
 Setup(context =>
 {
     gitVersionInfo = GitVersion(new GitVersionSettings {
-        OutputType = GitVersionOutput.Json
+        OutputType = GitVersionOutput.Json,
+        ToolPath = new FilePath("$HOME/.nuget/packages/gitversion.tool")
     });
 
     nugetVersion = gitVersionInfo.NuGetVersion;
