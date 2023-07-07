@@ -798,6 +798,13 @@ namespace Octostache.Tests
             result.Should().Be(string.Join("\n", Enumerable.Repeat("# Octopus Deploy", 3)));
         }
 
+        [Fact]
+        public void NullFilterShouldOutputNull()
+        {
+            var result = Evaluate("#{ | null}", new Dictionary<string, string> { { "foo", "#{ | null}" } });
+            result.Should().Be(null);
+        }
+
         [Theory]
         [InlineData("/docs", "UriPart Host", "[UriPart Host error: This operation is not supported for a relative URI.]")]
         [InlineData("https://octopus.com/docs", "UriPart", "[UriPart error: no argument given]")]

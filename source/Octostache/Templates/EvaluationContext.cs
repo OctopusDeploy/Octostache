@@ -26,9 +26,9 @@ namespace Octostache.Templates
             Extensions = extensions ?? new Dictionary<string, Func<string?, string[], string?>>();
         }
 
-        public string Resolve(SymbolExpression expression, out string[] missingTokens)
+        public string Resolve(SymbolExpression expression, out string[] missingTokens, out string[] nullTokens)
         {
-            var val = WalkTo(expression, out missingTokens);
+            var val = WalkTo(expression, out missingTokens, out nullTokens);
             if (val == null) return "";
             return val.Item ?? "";
         }
@@ -47,19 +47,20 @@ namespace Octostache.Templates
             }
         }
 
-        public string? ResolveOptional(SymbolExpression expression, out string[] missingTokens)
+        public string? ResolveOptional(SymbolExpression expression, out string[] missingTokens, out string[] nullTokens)
         {
-            var val = WalkTo(expression, out missingTokens);
+            var val = WalkTo(expression, out missingTokens, out nullTokens);
             return val?.Item;
         }
 
-        public Binding? Walker(TemplateToken token, out string[]? missingTokens)
+        public Binding? Walker(TemplateToken token, out string[]? missingTokens, out string[]? nullTokens)
         {
             missingTokens = null;
+            nullTokens = null;
             return null;
         }
 
-        Binding? WalkTo(SymbolExpression expression, out string[] missingTokens)
+        Binding? WalkTo(SymbolExpression expression, out string[] missingTokens, out string[] nullTokens)
         {
             ValidateThatRecursionIsNotOccuring(expression);
             symbolStack.Push(expression);
@@ -68,6 +69,7 @@ namespace Octostache.Templates
             {
                 var val = binding;
                 missingTokens = new string[0];
+                nullTokens = new string[0];
 
                 expression = CopyExpression(expression);
 
@@ -127,10 +129,10 @@ namespace Octostache.Templates
                     if (parent == null)
                         return null;
 
-                    return parent.WalkTo(expression, out missingTokens);
+                    return parent.WalkTo(expression, out missingTokens, out nullTokens);
                 }
 
-                return ParseTemplate(val, out missingTokens);
+                return ParseTemplate(val, out missingTokens, out nullTokens);
             }
             finally
             {
@@ -138,7 +140,7 @@ namespace Octostache.Templates
             }
         }
 
-        Binding ParseTemplate(Binding b, out string[] missingTokens)
+        Binding ParseTemplate(Binding b, out string[] missingTokens, out string[] nullTokens)
         {
             if (b.Item != null)
             {
@@ -148,7 +150,7 @@ namespace Octostache.Templates
                     {
                         var context = new EvaluationContext(new Binding(), x, this);
 
-                        TemplateEvaluator.Evaluate(template, context, out missingTokens);
+                        TemplateEvaluator.Evaluate(template, context, out missingTokens, out nullTokens);
                         x.Flush();
                         return new Binding(x.ToString());
                     }
@@ -156,6 +158,7 @@ namespace Octostache.Templates
             }
 
             missingTokens = new string[0];
+            nullTokens = new string[0];
             return b;
         }
 
@@ -169,7 +172,7 @@ namespace Octostache.Templates
             {
                 try
                 {
-                    parentBinding = ParseTemplate(parentBinding, out var _);
+                    parentBinding = ParseTemplate(parentBinding, out var _, out var _);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -189,7 +192,7 @@ namespace Octostache.Templates
             {
                 if (s is Indexer indexer && indexer.IsSymbol)
                 {
-                    var index = WalkTo(indexer.Symbol!, out var _);
+                    var index = WalkTo(indexer.Symbol!, out var _, out var _);
 
                     return index == null
                         ? new Indexer(CopyExpression(indexer.Symbol!))
@@ -200,9 +203,9 @@ namespace Octostache.Templates
             }));
         }
 
-        public IEnumerable<Binding> ResolveAll(SymbolExpression collection, out string[] missingTokens)
+        public IEnumerable<Binding> ResolveAll(SymbolExpression collection, out string[] missingTokens, out string[] nullTokens)
         {
-            var val = WalkTo(collection, out missingTokens);
+            var val = WalkTo(collection, out missingTokens, out nullTokens);
             if (val == null)
                 return Enumerable.Empty<Binding>();
 

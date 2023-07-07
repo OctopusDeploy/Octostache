@@ -154,7 +154,6 @@ namespace Octostache
         /// <param name="error">Any parsing errors silently found.</param>
         /// <param name="haltOnError">Stop parsing if an error is found.</param>
         /// <returns>The result of the expression.</returns>
-        [return: NotNullIfNotNull("expressionOrVariableOrText")]
         public string? Evaluate(string? expressionOrVariableOrText, out string? error, bool haltOnError = true)
         {
             error = null;
@@ -172,11 +171,17 @@ namespace Octostache
                     Binding,
                     writer,
                     extensions,
-                    out var missingTokens);
+                    out var missingTokens,
+                    out var nullTokens);
                 if (missingTokens.Any())
                 {
                     var tokenList = string.Join(", ", missingTokens.Select(token => "'" + token + "'"));
                     error = string.Format("The following tokens were unable to be evaluated: {0}", tokenList);
+                }
+
+                if (nullTokens.Any())
+                {
+                    return null;
                 }
 
                 return writer.ToString();
@@ -305,7 +310,7 @@ namespace Octostache
                 throw new Exception($"Could not evaluate indexes for path {variableCollectionName}");
 
             var context = new EvaluationContext(Binding, TextWriter.Null);
-            var bindings = context.ResolveAll(symbolExpression, out _);
+            var bindings = context.ResolveAll(symbolExpression, out _, out _);
             // ReSharper disable once RedundantEnumerableCastCall
             return bindings.Select(b => b.Item).Where(x => x != null).Cast<string>().ToList();
         }
