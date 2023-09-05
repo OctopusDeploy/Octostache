@@ -140,7 +140,7 @@ namespace Octostache.Templates
             .WithPosition();
 
         static readonly Parser<ICalculationComponent> CalculationConstant =
-            from number in Parse.Number.Select(double.Parse)
+            from number in Parse.Decimal.Select(double.Parse)
             select new CalculationConstant(number);
 
         static readonly Parser<ICalculationComponent> CalculationVariable =
