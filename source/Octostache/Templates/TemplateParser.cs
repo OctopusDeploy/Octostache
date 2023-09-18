@@ -79,7 +79,25 @@ namespace Octostache.Templates
         static readonly Parser<SymbolExpressionStep> TrailingStep =
             Parse.Char('.').Then(_ => Identifier).Select(i => (SymbolExpressionStep) i)
                 .XOr(Indexer);
-
+            
+        static readonly Parser<Identifier> MathematicalIdentifier = Parse
+            .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':' || c == '~' || c == '(' || c == ')', "identifier")
+            .Except(Parse.WhiteSpace.FollowedBy("|"))
+            .Except(Parse.WhiteSpace.FollowedBy("}"))
+            .ExceptWhiteSpaceBeforeKeyword()
+            .AtLeastOnce()
+            .Text()
+            .Select(s => new Identifier(s.Trim()))
+            .WithPosition();
+        
+        
+        static readonly Parser<SymbolExpression> TrentsSymbol =
+            (from first in MathematicalIdentifier
+                from rest in TrailingStep.Many()
+                select new SymbolExpression(new[] { first }.Concat(rest)))
+            .WithPosition();
+        
+        
         static readonly Parser<SymbolExpression> Symbol =
             (from first in Identifier
                 from rest in TrailingStep.Many()
@@ -144,7 +162,7 @@ namespace Octostache.Templates
             select new CalculationConstant(number);
 
         static readonly Parser<ICalculationComponent> CalculationVariable =
-            from symbol in Symbol.Token()
+            from symbol in TrentsSymbol.Token()
             select new CalculationVariable(symbol);
 
         static readonly Parser<ICalculationComponent> CalculationValue =
