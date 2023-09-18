@@ -91,7 +91,7 @@ namespace Octostache.Templates
             .WithPosition();
         
         
-        static readonly Parser<SymbolExpression> TrentsSymbol =
+        static readonly Parser<SymbolExpression> SymbolWithoutSlash =
             (from first in MathematicalIdentifier
                 from rest in TrailingStep.Many()
                 select new SymbolExpression(new[] { first }.Concat(rest)))
@@ -162,7 +162,7 @@ namespace Octostache.Templates
             select new CalculationConstant(number);
 
         static readonly Parser<ICalculationComponent> CalculationVariable =
-            from symbol in TrentsSymbol.Token()
+            from symbol in SymbolWithoutSlash.Token()
             select new CalculationVariable(symbol);
 
         static readonly Parser<ICalculationComponent> CalculationValue =
