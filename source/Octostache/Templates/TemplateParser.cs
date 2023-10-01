@@ -159,6 +159,13 @@ namespace Octostache.Templates
             from number in Parse.Decimal.Select(double.Parse)
             select new CalculationConstant(number);
 
+        // NOTE: The "/" symbol is currently 2 things in octostache:
+        // 1. A valid character in a variable identifier
+        // 2. The division operator
+        // Thus, when parsing #{calc B/2} - how should the "/" be interpreted?
+        // Currently, it is being _forced_ as a divide - thus, variables containing
+        // a "/" character will _not_ be correctly parsed when used in a calc block.
+        // This decision maximised utility, with minimal change.
         static readonly Parser<ICalculationComponent> CalculationVariable =
             from symbol in SymbolWithoutSlash.Token()
             select new CalculationVariable(symbol);
