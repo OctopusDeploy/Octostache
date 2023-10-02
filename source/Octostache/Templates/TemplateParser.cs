@@ -80,6 +80,22 @@ namespace Octostache.Templates
             Parse.Char('.').Then(_ => Identifier).Select(i => (SymbolExpressionStep) i)
                 .XOr(Indexer);
 
+        static readonly Parser<Identifier> MathematicalIdentifier = Parse
+            .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':' || c == '~' || c == '(' || c == ')', "identifier")
+            .Except(Parse.WhiteSpace.FollowedBy("|"))
+            .Except(Parse.WhiteSpace.FollowedBy("}"))
+            .ExceptWhiteSpaceBeforeKeyword()
+            .AtLeastOnce()
+            .Text()
+            .Select(s => new Identifier(s.Trim()))
+            .WithPosition();
+
+        static readonly Parser<SymbolExpression> SymbolWithoutSlash =
+            (from first in MathematicalIdentifier
+                from rest in TrailingStep.Many()
+                select new SymbolExpression(new[] { first }.Concat(rest)))
+            .WithPosition();
+
         static readonly Parser<SymbolExpression> Symbol =
             (from first in Identifier
                 from rest in TrailingStep.Many()
@@ -143,8 +159,15 @@ namespace Octostache.Templates
             from number in Parse.Decimal.Select(double.Parse)
             select new CalculationConstant(number);
 
+        // NOTE: The "/" symbol is currently 2 things in octostache:
+        // 1. A valid character in a variable identifier
+        // 2. The division operator
+        // Thus, when parsing #{calc B/2} - how should the "/" be interpreted?
+        // Currently, it is being _forced_ as a divide - thus, variables containing
+        // a "/" character will _not_ be correctly parsed when used in a calc block.
+        // This decision maximised utility, with minimal change.
         static readonly Parser<ICalculationComponent> CalculationVariable =
-            from symbol in Symbol.Token()
+            from symbol in SymbolWithoutSlash.Token()
             select new CalculationVariable(symbol);
 
         static readonly Parser<ICalculationComponent> CalculationValue =
