@@ -144,8 +144,8 @@ namespace Octostache.Templates
             select new CalculationConstant(number);
 
 
-        // As operators are also valid characters for identifiers - there are times people
-        // may want to wrap their variable names inside a calc block
+        // As "/" and "-" operators are also valid characters for identifiers - there are times people
+        // may want to wrap their variable names inside a calc block to avoid operator conflict
         static readonly Parser<ICalculationComponent> WrappedCalculationVariable =
             from leftDelim in Parse.String("{")
             from lsp in Parse.WhiteSpace.Many()

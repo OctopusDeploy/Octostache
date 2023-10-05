@@ -8,17 +8,17 @@ namespace Octostache.Tests
 {
     public class CalculationFixture : BaseFixture
     {
-        readonly Dictionary<string, string> variables = new Dictionary<string, string>
-        {
-            { "A", "5" },
-            { "B", "7" }
-        };
-
         [Theory]
         [MemberData(nameof(ConditionalIsSupportedData))]
         public void ConditionalIsSupported(string expression, string expectedResult)
         {
-            var result = Evaluate($"#{{calc {expression}}}", variables);
+            var result = Evaluate($"#{{calc {expression}}}",
+                new Dictionary<string, string>
+                {
+                    { "A", "5" },
+                    { "B", "7" },
+                });
+
             result.Should().Be(expectedResult);
         }
 
