@@ -79,7 +79,7 @@ namespace Octostache.Templates
         static readonly Parser<SymbolExpressionStep> TrailingStep =
             Parse.Char('.').Then(_ => Identifier).Select(i => (SymbolExpressionStep) i)
                 .XOr(Indexer);
-        
+
         static readonly Parser<SymbolExpression> Symbol =
             (from first in Identifier
                 from rest in TrailingStep.Many()
@@ -143,7 +143,6 @@ namespace Octostache.Templates
             from number in Parse.Decimal.Select(double.Parse)
             select new CalculationConstant(number);
 
-
         // As "/" and "-" operators are also valid characters for identifiers - there are times people
         // may want to wrap their variable names inside a calc block to avoid operator conflict
         static readonly Parser<ICalculationComponent> WrappedCalculationVariable =
@@ -153,7 +152,7 @@ namespace Octostache.Templates
             from rsp in Parse.WhiteSpace.Many()
             from rightDelim in RDelim
             select new CalculationVariable(symbol);
-        
+
         static readonly Parser<ICalculationComponent> CalculationVariable =
             from symbol in Symbol.Token()
             select new CalculationVariable(symbol);
