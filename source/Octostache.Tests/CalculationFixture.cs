@@ -17,6 +17,8 @@ namespace Octostache.Tests
                 {
                     { "A", "5" },
                     { "B", "7" },
+                    { "The/Var", "9" },
+                    { "Another-Var", "11" },
                 });
 
             result.Should().Be(expectedResult);
@@ -35,12 +37,18 @@ namespace Octostache.Tests
             yield return new object[] { "C+2", "#{C+2}" };
             yield return new object[] { "{B}-2", "5" };
             yield return new object[] { "2-B", "-5" };
+            yield return new object[] { "2-4", "-2" };
             yield return new object[] { "(B*2)-2", "12" };
             yield return new object[] { "2-(B*2)", "-12" };
             yield return new object[] { "{B}/2", (7d / 2).ToString(CultureInfo.CurrentCulture) };
             yield return new object[] { "2/B", (2d / 7).ToString(CultureInfo.CurrentCulture) };
+            yield return new object[] { "2/{B}", (2d / 7).ToString(CultureInfo.CurrentCulture) };
+            yield return new object[] { "2/4", "0.5" };
             yield return new object[] { "0.2*B", (7d * 0.2).ToString(CultureInfo.CurrentCulture) };
             yield return new object[] { "B*0.2", (7d * 0.2).ToString(CultureInfo.CurrentCulture) };
+            yield return new object[] { "{B}*0.2", (7d * 0.2).ToString(CultureInfo.CurrentCulture) };
+            yield return new object[] { "{Another-Var}-2", "9" };
+            yield return new object[] { "{The/Var}-2", "7" };
 
             //erroneous parsing - variables as rhs operands must be surrounded with "{ ... }" to calc correctly.
             yield return new object[] { "B-2", "#{B-2}" };
