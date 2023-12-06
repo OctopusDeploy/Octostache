@@ -5,7 +5,7 @@
         <NeutralLanguage>en-US</NeutralLanguage>
         <VersionPrefix>0.0.0</VersionPrefix>
         <Authors>Octopus Deploy</Authors>
-        <TargetFrameworks>netstandard2.1;net40</TargetFrameworks>
+        <TargetFrameworks>netstandard2.1;net462</TargetFrameworks>
         <AssemblyName>Octostache</AssemblyName>
         <PackageId>Octostache</PackageId>
         <PackageIconUrl>http://i.octopusdeploy.com/resources/Avatar3-32x32.png</PackageIconUrl>
@@ -26,7 +26,7 @@
     <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' ">
         <DefineConstants>$(DefineConstants);HAS_NULLABLE_REF_TYPES</DefineConstants>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(TargetFramework)' == 'net40' ">
+    <PropertyGroup Condition="'$(TargetFramework)' == 'NET462' ">
         <NoWarn>CS8600;CS8601;CS8602;CS8603;CS8604</NoWarn>
     </PropertyGroup>
 
@@ -41,7 +41,7 @@
         <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.8" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
+    <ItemGroup Condition=" '$(TargetFramework)' == 'NET462' ">
         <Reference Include="System.Runtime.Caching" />
         <Reference Include="System" />
         <Reference Include="Microsoft.CSharp" />
