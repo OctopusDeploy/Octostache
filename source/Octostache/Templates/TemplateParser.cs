@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Sprache;
 
-#if NET40
+#if NET462
 #else
 using System.Diagnostics.CodeAnalysis;
 #endif
