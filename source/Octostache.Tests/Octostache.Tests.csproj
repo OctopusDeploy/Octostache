@@ -34,10 +34,6 @@
         <PackageReference Include="YamlDotNet" Version="8.1.2" />
     </ItemGroup>
 
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net452' ">
-        <DefineConstants>$(DefineConstants);NET40</DefineConstants>
-    </PropertyGroup>
-
     <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
         <Reference Include="System.Runtime.Caching" />
     </ItemGroup>
