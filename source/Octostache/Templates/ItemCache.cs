@@ -1,5 +1,5 @@
 ﻿using System;
-#if NET40
+#if NET462
 using System.Runtime.Caching;
 using System.Collections.Specialized;
 
@@ -30,7 +30,7 @@ namespace Octostache.Templates
             MegabyteLimit = megabyteLimit;
             SlidingExpiration = slidingExpiration;
 
-#if NET40
+#if NET462
             cache = new MemoryCache(Name,
                 new NameValueCollection
                     { { "CacheMemoryLimitMegabytes", MegabyteLimit.ToString() } });
@@ -42,7 +42,7 @@ namespace Octostache.Templates
         // ReSharper disable once MemberCanBePrivate.Global
         public void Add(string key, T? item)
         {
-#if NET40
+#if NET462
             cache.Set(key, item ?? nullItem, new CacheItemPolicy { SlidingExpiration = SlidingExpiration });
 #else
             // NOTE: Setting the size to the string length, is not quite right, but close enough for our purposes. 
@@ -70,7 +70,7 @@ namespace Octostache.Templates
 
         public void Clear()
         {
-#if NET40
+#if NET462
             cache = new MemoryCache(Name,
                 new NameValueCollection
                     { { "CacheMemoryLimitMegabytes", MegabyteLimit.ToString() } });

@@ -8,6 +8,8 @@ namespace Octostache.Templates
     /// Example: <code>#{if Octopus.IsCool}...#{/if}</code>
     /// Example: <code>#{if Octopus.CoolStatus != "Uncool"}...#{/if}</code>
     /// Example: <code>#{if Octopus.IsCool == Octostache.IsCool}...#{/if}</code>
+    /// Example: <code>#{if "Cool" == Octostache.CoolStatus}...#{/if}</code>
+    /// Example: <code>#{if Octopus.CoolStatus | ToLower | StartsWith "cool"}...#{/if}</code>
     /// </summary>
     class ConditionalToken : TemplateToken
     {
@@ -22,7 +24,8 @@ namespace Octostache.Templates
             FalsyTemplate = falsyBranch.ToArray();
         }
 
-        public override string ToString() => "#{if " + Token.LeftSide + Token.EqualityText + "}" + string.Join("", TruthyTemplate.Cast<object>()) + "#{else}" + string.Join("", FalsyTemplate.Cast<object>()) + "#{/if}";
+        public override string ToString() =>
+            "#{if " + Token.LeftSide + Token.EqualityText + "}" + string.Join("", TruthyTemplate.Cast<object>()) + (FalsyTemplate.Length == 0 ? "" : "#{else}" + string.Join("", FalsyTemplate.Cast<object>())) + "#{/if}";
 
         public override IEnumerable<string> GetArguments()
         {
@@ -34,10 +37,10 @@ namespace Octostache.Templates
 
     class ConditionalExpressionToken : TemplateToken
     {
-        public SymbolExpression LeftSide { get; }
+        public ContentExpression LeftSide { get; }
         public virtual string EqualityText => "";
 
-        public ConditionalExpressionToken(SymbolExpression leftSide)
+        public ConditionalExpressionToken(ContentExpression leftSide)
         {
             LeftSide = leftSide;
         }
@@ -51,7 +54,7 @@ namespace Octostache.Templates
         public bool Equality { get; }
         public override string EqualityText => " " + (Equality ? "==" : "!=") + " \"" + RightSide + "\" ";
 
-        public ConditionalStringExpressionToken(SymbolExpression leftSide, bool eq, string rightSide) : base(leftSide)
+        public ConditionalStringExpressionToken(ContentExpression leftSide, bool eq, string rightSide) : base(leftSide)
         {
             Equality = eq;
             RightSide = rightSide;
@@ -65,11 +68,11 @@ namespace Octostache.Templates
 
     class ConditionalSymbolExpressionToken : ConditionalExpressionToken
     {
-        public SymbolExpression RightSide { get; }
+        public ContentExpression RightSide { get; }
         public bool Equality { get; }
         public override string EqualityText => " " + (Equality ? "==" : "!=") + " " + RightSide + " ";
 
-        public ConditionalSymbolExpressionToken(SymbolExpression leftSide, bool eq, SymbolExpression rightSide) : base(leftSide)
+        public ConditionalSymbolExpressionToken(ContentExpression leftSide, bool eq, ContentExpression rightSide) : base(leftSide)
         {
             Equality = eq;
             RightSide = rightSide;

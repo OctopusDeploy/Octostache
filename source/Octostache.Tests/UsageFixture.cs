@@ -297,6 +297,43 @@ namespace Octostache.Tests
             result.Should().Be("#{MY_VAR[#{foo}]}");
         }
 
+        [Theory]
+        [InlineData("#{if Octopus.IsCool}#{Result}#{/if}")]
+        [InlineData("#{if Octopus.CoolState == \"Cool\"}#{Result}#{/if}")]
+        [InlineData("#{if Octopus.CoolState != \"Uncool\"}#{Result}#{/if}")]
+        [InlineData("#{unless Octopus.CoolState == \"Uncool\"}#{Result}#{/unless}")]
+        [InlineData("#{if Octopus.Appraise == Octopus.CoolState}#{Result}#{/if}")]
+        public void ConditionalsAreSupported(string template)
+        {
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "Result", "Cool" },
+                    { "Octopus.IsCool", "true" },
+                    { "Octopus.CoolState", "Cool" },
+                    { "Octopus.Appraise", "Cool" },
+                });
+            result.Should().Be("Cool");
+        }
+
+        [Theory]
+        [InlineData("#{if Octopus.CoolState | ToUpper == \"COOL\"}#{Result}#{/if}")]
+        [InlineData("#{if Octopus.CoolState | ToUpper | ToLower == \"cool\"}#{Result}#{/if}")]
+        [InlineData("#{if \"cool\" == Octopus.CoolState | ToLower}#{Result}#{/if}")]
+        [InlineData("#{if Octopus.CoolState | ToLower == Octopus.Appraise | ToLower | Trim }#{Result}#{/if}")]
+        [InlineData("#{if Octopus.Appraise | ToLower | Contains #{Octopus.CoolState | ToLower} }#{Result}#{/if}")]
+        public void FiltersInConditionalsAreSupported(string template)
+        {
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "Result", "Cool" },
+                    { "Octopus.CoolState", "Cool" },
+                    { "Octopus.Appraise", " Cool " },
+                });
+            result.Should().Be("Cool");
+        }
+
         [Fact]
         public void IterationOverAnEmptyCollectionIsFine()
         {
@@ -356,7 +393,7 @@ namespace Octostache.Tests
         }
 
         [Fact]
-        public void IndexWithUnkownVariableDoesntFail()
+        public void IndexWithUnknownVariableDoesntFail()
         {
             var pattern = "#{Location[#{Continent}]}";
 

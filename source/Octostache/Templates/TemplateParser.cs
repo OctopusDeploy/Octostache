@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Sprache;
 
-#if NET40
+#if NET462
 #else
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -15,21 +15,21 @@ namespace Octostache.Templates
         static readonly Parser<Identifier> Identifier = Parse
             .Char(c => char.IsLetter(c) || char.IsDigit(c) || char.IsWhiteSpace(c) || c == '_' || c == '-' || c == ':' || c == '/' || c == '~' || c == '(' || c == ')', "identifier")
             .Except(Parse.WhiteSpace.FollowedBy("|"))
-            .Except(Parse.WhiteSpace.Many().FollowedBy("}"))
+            .Except(Parse.WhiteSpace.FollowedBy("}"))
             .ExceptWhiteSpaceBeforeKeyword()
             .AtLeastOnce()
             .Text()
-            .Select(s => new Identifier(s))
+            .Select(s => new Identifier(s.Trim()))
             .WithPosition();
 
         static readonly Parser<Identifier> IdentifierWithoutWhitespace = Parse
             .Char(c => char.IsLetter(c) || char.IsDigit(c) || c == '_' || c == '-' || c == ':' || c == '/' || c == '~' || c == '(' || c == ')', "identifier")
             .Except(Parse.WhiteSpace.FollowedBy("|"))
-            .Except(Parse.WhiteSpace.Many().FollowedBy("}"))
+            .Except(Parse.WhiteSpace.FollowedBy("}"))
             .ExceptWhiteSpaceBeforeKeyword()
             .AtLeastOnce()
             .Text()
-            .Select(s => new Identifier(s))
+            .Select(s => new Identifier(s.Trim()))
             .WithPosition();
 
         static readonly Parser<string> LDelim = Parse.String("#{").Except(Parse.String("#{/")).Text();
@@ -93,6 +93,7 @@ namespace Octostache.Templates
                 from fn in IdentifierWithoutWhitespace.Named("filter").WithPosition().Token()
                 from option in
                     Conditional.Select(t => (TemplateToken) t)
+                        .Or(Calculation)
                         .Or(Repetition)
                         .Or(Substitution)
                         .Or(IdentifierWithoutWhitespace.Token().Select(t => t.Text)
@@ -114,7 +115,7 @@ namespace Octostache.Templates
                 from sp1 in Parse.WhiteSpace.Many()
                 from kw in Keyword("if").Or(Keyword("unless"))
                 from sp in Parse.WhiteSpace.AtLeastOnce()
-                from expression in TokenMatch.Token().Or(StringMatch.Token()).Or(TruthyMatch.Token())
+                from expression in ExpressionsMatch.Token().Or(LeftStringMatch.Token()).Or(RightStringMatch.Token()).Or(TruthyMatch.Token())
                 from sp2 in Parse.WhiteSpace.Many()
                 from rightDelim in RDelim
                 from truthy in Parse.Ref(() => IfTemplate)
@@ -127,31 +128,101 @@ namespace Octostache.Templates
                 select kw == "if" ? new ConditionalToken(expression, truthy, falsey) : new ConditionalToken(expression, falsey, truthy))
             .WithPosition();
 
+        static readonly Parser<CalculationToken> Calculation =
+            (from leftDelim in LDelim
+                from lsp in Parse.WhiteSpace.Many()
+                from kw in Keyword("calc")
+                from sp in Parse.WhiteSpace.AtLeastOnce()
+                from expression in Parse.Ref(() => CalculationExpression)
+                from rsp in Parse.WhiteSpace.Many()
+                from rightDelim in RDelim
+                select new CalculationToken(expression))
+            .WithPosition();
+
+        static readonly Parser<ICalculationComponent> CalculationConstant =
+            from number in Parse.Decimal.Select(double.Parse)
+            select new CalculationConstant(number);
+
+        // As "/" and "-" operators are also valid characters for identifiers - there are times people
+        // may want to wrap their variable names inside a calc block to avoid operator conflict
+        static readonly Parser<ICalculationComponent> WrappedCalculationVariable =
+            from leftDelim in Parse.String("{")
+            from lsp in Parse.WhiteSpace.Many()
+            from symbol in Symbol.Token()
+            from rsp in Parse.WhiteSpace.Many()
+            from rightDelim in RDelim
+            select new CalculationVariable(symbol);
+
+        static readonly Parser<ICalculationComponent> CalculationVariable =
+            from symbol in Symbol.Token()
+            select new CalculationVariable(symbol);
+
+        static readonly Parser<ICalculationComponent> CalculationValue =
+            CalculationConstant.XOr(WrappedCalculationVariable).XOr(CalculationVariable);
+
+        static readonly Parser<CalculationOperator> Add = CalculationOperator("+", Templates.CalculationOperator.Add);
+        static readonly Parser<CalculationOperator> Subtract = CalculationOperator("-", Templates.CalculationOperator.Subtract);
+        static readonly Parser<CalculationOperator> Multiply = CalculationOperator("*", Templates.CalculationOperator.Multiply);
+        static readonly Parser<CalculationOperator> Divide = CalculationOperator("/", Templates.CalculationOperator.Divide);
+
+        static readonly Parser<ICalculationComponent> CalculationFactor =
+            (from lparen in Parse.Char('(')
+                from expr in Parse.Ref(() => CalculationExpression)
+                from rparen in Parse.Char(')')
+                select expr).Named("expression")
+            .XOr(CalculationValue);
+
+        static readonly Parser<ICalculationComponent> CalculationTerm =
+            Parse.ChainOperator(Multiply.Or(Divide), CalculationFactor, (op, left, right) => new CalculationOperation(left, op, right));
+
+        static readonly Parser<ICalculationComponent> CalculationExpression =
+            Parse.ChainOperator(Add.Or(Subtract), CalculationTerm, (op, left, right) => new CalculationOperation(left, op, right));
+
         static readonly Parser<ConditionalExpressionToken> TruthyMatch =
-            (from expression in Symbol.Token()
+            (from expression in Expression.Token()
                 select new ConditionalExpressionToken(expression))
             .WithPosition();
 
-        static readonly Parser<ConditionalExpressionToken> TokenMatch =
-            (from expression in Symbol.Token()
+        static readonly Parser<ConditionalExpressionToken> ExpressionsMatch =
+            (from expression in Expression.Token()
+                from eq in Keyword("==").Token().Or(Keyword("!=").Token())
+                from compareTo in Expression.Token()
+                let isEq = eq == "=="
+                select new ConditionalSymbolExpressionToken(expression, isEq, compareTo))
+            .WithPosition();
+
+        static readonly Parser<string> QuotedText =
+            (from open in Parse.Char('"')
+                from content in Parse.CharExcept(new[] { '"', '#' }).Many().Text()
+                from close in Parse.Char('"')
+                select content).Token();
+
+        static readonly Parser<string> EscapedQuotedText =
+            (from open in Parse.String("\\\"")
+                from content in Parse.AnyChar.Until(Parse.String("\\\"")).Text()
+                select content).Token();
+
+        static readonly Parser<ConditionalExpressionToken> LeftStringMatch =
+            (from compareTo in QuotedText.Token().Or(EscapedQuotedText.Token())
+                from eq in Keyword("==").Token().Or(Keyword("!=").Token())
+                from expression in Expression.Token()
+                let isEq = eq == "=="
+                select new ConditionalStringExpressionToken(expression, isEq, compareTo))
+            .WithPosition();
+
+        static readonly Parser<ConditionalExpressionToken> RightStringMatch =
+            (from expression in Expression.Token()
                 from eq in Keyword("==").Token().Or(Keyword("!=").Token())
                 from compareTo in QuotedText.Token().Or(EscapedQuotedText.Token())
                 let isEq = eq == "=="
                 select new ConditionalStringExpressionToken(expression, isEq, compareTo))
             .WithPosition();
 
-        static readonly Parser<ConditionalExpressionToken> StringMatch =
-            (from expression in Symbol.Token()
-                from eq in Keyword("==").Token().Or(Keyword("!=").Token())
-                from compareTo in Symbol.Token()
-                let isEq = eq == "=="
-                select new ConditionalSymbolExpressionToken(expression, isEq, compareTo))
-            .WithPosition();
-
         static readonly Parser<RepetitionToken> Repetition =
             (from leftDelim in LDelim
+                from sp1 in Parse.WhiteSpace.Many()
                 from keyEach in Keyword("each")
-                from sp in Parse.WhiteSpace.AtLeastOnce()
+                from sp2 in Parse.WhiteSpace.AtLeastOnce()
                 from enumerator in Identifier.Token()
                 from keyIn in Keyword("in").Token()
                 from expression in Symbol.Token()
@@ -171,19 +242,9 @@ namespace Octostache.Templates
                 .Select(s => new TextToken(s.ToArray()))
                 .WithPosition();
 
-        static readonly Parser<string> QuotedText =
-            (from open in Parse.Char('"')
-                from content in Parse.CharExcept(new[] { '"', '#' }).Many().Text()
-                from close in Parse.Char('"')
-                select content).Token();
-
-        static readonly Parser<string> EscapedQuotedText =
-            (from open in Parse.String("\\\"")
-                from content in Parse.AnyChar.Until(Parse.String("\\\"")).Text()
-                select content).Token();
-
         static readonly Parser<TemplateToken> Token =
             Conditional.Select(t => (TemplateToken) t)
+                .Or(Calculation)
                 .Or(Repetition)
                 .Or(Substitution)
                 .Or(Text);
@@ -200,6 +261,8 @@ namespace Octostache.Templates
         static readonly ItemCache<TemplateWithError> TemplateCache = new ItemCache<TemplateWithError>("OctostacheTemplate", 100, TimeSpan.FromMinutes(10));
         static readonly ItemCache<TemplateWithError> TemplateContinueCache = new ItemCache<TemplateWithError>("OctostacheTemplate", 100, TimeSpan.FromMinutes(10));
         static readonly ItemCache<SymbolExpression> PathCache = new ItemCache<SymbolExpression>("OctostachePath", 100, TimeSpan.FromMinutes(10));
+
+        static Parser<CalculationOperator> CalculationOperator(string op, CalculationOperator @operator) => Parse.String(op).Token().Return(@operator);
 
         static Parser<T> FollowedBy<T>(this Parser<T> parser, string lookahead)
         {

@@ -8,18 +8,35 @@ namespace Octostache.Templates
     class TemplateEvaluator
     {
         readonly List<string> missingTokens = new List<string>();
+        readonly List<string> nullTokens = new List<string>();
 
-        public static void Evaluate(Template template, EvaluationContext context, out string[] missingTokens)
+        public static void Evaluate(Template template, EvaluationContext context, out string[] missingTokens, out string[] nullTokens)
         {
             var evaluator = new TemplateEvaluator();
             evaluator.Evaluate(template.Tokens, context);
             missingTokens = evaluator.missingTokens.Distinct().ToArray();
+            nullTokens = evaluator.nullTokens.Distinct().ToArray();
         }
 
-        public static void Evaluate(Template template, Binding properties, TextWriter output, out string[] missingTokens)
+        public static void Evaluate(Template template,
+            Binding properties,
+            TextWriter output,
+            out string[] missingTokens,
+            out string[] nullTokens)
         {
             var context = new EvaluationContext(properties, output);
-            Evaluate(template, context, out missingTokens);
+            Evaluate(template, context, out missingTokens, out nullTokens);
+        }
+
+        public static void Evaluate(Template template,
+            Binding properties,
+            TextWriter output,
+            Dictionary<string, Func<string?, string[], string?>> extensions,
+            out string[] missingTokens,
+            out string[] nullTokens)
+        {
+            var context = new EvaluationContext(properties, output, extensions: extensions);
+            Evaluate(template, context, out missingTokens, out nullTokens);
         }
 
         void Evaluate(IEnumerable<TemplateToken> tokens, EvaluationContext context)
@@ -61,13 +78,31 @@ namespace Octostache.Templates
                 return;
             }
 
+            var cat = token as CalculationToken;
+            if (cat != null)
+            {
+                var value = cat.Expression.Evaluate(s =>
+                {
+                    var value = context.ResolveOptional(s, out var innerTokens, out var _);
+                    missingTokens.AddRange(innerTokens);
+                    return value;
+                });
+
+                if (value != null)
+                    context.Output.Write(value);
+                else
+                    context.Output.Write(cat.ToString());
+
+                return;
+            }
+
             throw new NotImplementedException("Unknown token type: " + token);
         }
 
         void EvaluateRepititionToken(EvaluationContext context, RepetitionToken rt)
         {
             string[] innerTokens;
-            var items = context.ResolveAll(rt.Collection, out innerTokens).ToArray();
+            var items = context.ResolveAll(rt.Collection, out innerTokens, out _).ToArray();
             missingTokens.AddRange(innerTokens);
 
             for (var i = 0; i < items.Length; ++i)
@@ -92,9 +127,23 @@ namespace Octostache.Templates
 
         void EvaluateConditionalToken(EvaluationContext context, ConditionalToken ct)
         {
-            string[] innerTokens;
-            var leftSide = context.Resolve(ct.Token.LeftSide, out innerTokens);
-            missingTokens.AddRange(innerTokens);
+            string? leftSide;
+            var leftToken = ct.Token.LeftSide as SymbolExpression;
+            if (leftToken != null)
+            {
+                leftSide = context.Resolve(leftToken, out var innerTokens, out var _);
+                missingTokens.AddRange(innerTokens);
+            }
+            else
+            {
+                leftSide = Calculate(ct.Token.LeftSide, context);
+                if (leftSide == null)
+                {
+                    context.Output.Write(ct.ToString());
+                    missingTokens.Add(ct.Token.LeftSide.ToString());
+                    return;
+                }
+            }
 
             var eqToken = ct.Token as ConditionalStringExpressionToken;
             if (eqToken != null)
@@ -113,9 +162,24 @@ namespace Octostache.Templates
             if (symToken != null)
             {
                 var comparer = symToken.Equality ? new Func<string, string, bool>((x, y) => x == y) : (x, y) => x != y;
+                string? rightSide;
 
-                var rightSide = context.Resolve(symToken.RightSide, out _);
-                missingTokens.AddRange(innerTokens);
+                var rightToken = symToken.RightSide as SymbolExpression;
+                if (rightToken != null)
+                {
+                    rightSide = context.Resolve(rightToken, out var innerTokens, out var _);
+                    missingTokens.AddRange(innerTokens);
+                }
+                else
+                {
+                    rightSide = Calculate(symToken.RightSide, context);
+                    if (rightSide == null)
+                    {
+                        context.Output.Write(ct.ToString());
+                        missingTokens.Add(symToken.RightSide.ToString());
+                        return;
+                    }
+                }
 
                 if (comparer(leftSide, rightSide))
                     Evaluate(ct.TruthyTemplate, context);
@@ -136,7 +200,14 @@ namespace Octostache.Templates
             var value = Calculate(st.Expression, context);
             if (value == null)
             {
-                missingTokens.Add(st.ToString());
+                if (st.Expression is FunctionCallExpression { Function: "null" } fx)
+                {
+                    nullTokens.Add(st.ToString());
+                }
+                else
+                {
+                    missingTokens.Add(st.ToString());
+                }
             }
 
             context.Output.Write(value ?? st.ToString());
@@ -154,7 +225,7 @@ namespace Octostache.Templates
         {
             if (expression is SymbolExpression sx)
             {
-                var resolvedSymbol = context.ResolveOptional(sx, out var innerTokens);
+                var resolvedSymbol = context.ResolveOptional(sx, out var innerTokens, out var _);
                 missingTokens.AddRange(innerTokens);
                 return resolvedSymbol;
             }
@@ -169,7 +240,23 @@ namespace Octostache.Templates
 
             var args = fx.Options.Select(opt => Resolve(opt, context)).ToArray();
 
-            return BuiltInFunctions.InvokeOrNull(fx.Function, argument, args);
+            var funcOut = BuiltInFunctions.InvokeOrNull(fx.Function, argument, args);
+            if (funcOut != null)
+            {
+                return funcOut;
+            }
+
+            return InvokeOrNullExtension(context.Extensions, fx.Function, argument, args);
+        }
+
+        string? InvokeOrNullExtension(Dictionary<string, Func<string?, string[], string?>> extensions, string function, string? argument, string[] args)
+        {
+            var functionName = function.ToLowerInvariant();
+
+            if (extensions.TryGetValue(functionName, out var ext))
+                return ext(argument, args);
+
+            return null;
         }
 
         string Resolve(TemplateToken token, EvaluationContext context)

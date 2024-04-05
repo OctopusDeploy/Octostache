@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <VersionPrefix>0.0.0</VersionPrefix>
-        <TargetFrameworks>netcoreapp3.1;net452</TargetFrameworks>
+        <TargetFrameworks>net8.0;net48</TargetFrameworks>
         <AssemblyName>Octostache.Tests</AssemblyName>
         <PackageId>Octostache.Tests</PackageId>
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
@@ -17,33 +17,21 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Octostache\Octostache.csproj"/>
+        <ProjectReference Include="..\Octostache\Octostache.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="FluentAssertions" Version="6.7.0"/>
-        <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2"/>
-        <PackageReference Include="Newtonsoft.Json" Version="9.0.1"/>
-        <PackageReference Include="Sprache" Version="2.1.0"/>
-        <PackageReference Include="xunit" Version="2.3.1"/>
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1"/>
-        <PackageReference Include="YamlDotNet" Version="8.1.2"/>
-    </ItemGroup>
-
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net452' ">
-        <DefineConstants>$(DefineConstants);NET40</DefineConstants>
-    </PropertyGroup>
-
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-        <Reference Include="System.Runtime.Caching"/>
+        <PackageReference Include="FluentAssertions" Version="6.7.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Sprache" Version="2.3.1" />
+        <PackageReference Include="xunit" Version="2.6.2" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.4" PrivateAssets="all" />
+        <PackageReference Include="YamlDotNet" Version="8.1.2" />
     </ItemGroup>
 
     <ItemGroup>
-        <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}"/>
+        <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
     </ItemGroup>
 
 </Project>
