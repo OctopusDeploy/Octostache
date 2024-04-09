@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <VersionPrefix>0.0.0</VersionPrefix>
-        <TargetFrameworks>net8.0;net48</TargetFrameworks>
+        <TargetFrameworks>net6.0;net48</TargetFrameworks>
         <AssemblyName>Octostache.Tests</AssemblyName>
         <PackageId>Octostache.Tests</PackageId>
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
