@@ -118,10 +118,12 @@ namespace Octostache.Templates.Functions
             }
 
             var length = int.Parse(options[0]);
+            var suffix = options.Length == 2 ? options[1] : null;
             return length < argument.Length
-                ? $"{argument.Substring(0, length)}..."
+                ? $"{argument.Substring(0, length)}{suffix}"
                 : argument;
         }
+
 
         [return: NotNullIfNotNull("argument")]
         public static string? Trim(string? argument, string[] options)
