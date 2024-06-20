@@ -124,7 +124,6 @@ namespace Octostache.Templates.Functions
                 : argument;
         }
 
-
         [return: NotNullIfNotNull("argument")]
         public static string? Trim(string? argument, string[] options)
         {

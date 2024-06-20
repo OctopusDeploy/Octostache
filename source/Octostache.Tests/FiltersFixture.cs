@@ -646,7 +646,7 @@ namespace Octostache.Tests
             result.Should().Be("Octopus");
             result.Should().HaveLength(7);
         }
-        
+
         [Fact]
         public void TruncateTruncatesArgumentToSpecifiedLengthWithCustomSuffix()
         {
