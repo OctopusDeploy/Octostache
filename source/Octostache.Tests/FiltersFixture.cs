@@ -106,7 +106,7 @@ namespace Octostache.Tests
         public void JsonIsEscaped(string input, string expectedResult, string testName)
         {
             var result = Evaluate("#{Foo | JsonEscape}", new Dictionary<string, string> { { "Foo", input } });
-            result.Should().Be(expectedResult, because: $"{testName} should be escaped in json");
+            result.Should().Be(expectedResult);
         }
 
         [Theory]
@@ -361,7 +361,7 @@ namespace Octostache.Tests
         public void NowDateReturnsNow()
         {
             var result = Evaluate("#{ | NowDate}", new Dictionary<string, string>());
-            DateTime.Parse(result).Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(60));
+            DateTime.Parse(result).Should().BeCloseTo(DateTime.Now, 60000);
         }
 
         [Fact]
@@ -389,7 +389,7 @@ namespace Octostache.Tests
         public void NowDateReturnsNowInUtc()
         {
             var result = Evaluate("#{ | NowDateUtc}", new Dictionary<string, string>());
-            DateTimeOffset.Parse(result).Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(60));
+            DateTimeOffset.Parse(result).Should().BeCloseTo(DateTimeOffset.UtcNow, 60000);
         }
 
         [Fact]
