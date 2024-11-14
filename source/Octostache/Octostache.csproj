@@ -32,7 +32,7 @@
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="Octopus.Versioning" Version="5.1.827" />
+        <PackageReference Include="Octopus.Versioning" Version="5.1.876" />
         <PackageReference Include="Sprache" Version="2.3.1" />
         <PackageReference Include="Markdig" Version="0.33.0" />
     </ItemGroup>
