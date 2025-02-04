@@ -10,22 +10,23 @@ namespace Octostache.Templates
         readonly List<string> missingTokens = new List<string>();
         readonly List<string> nullTokens = new List<string>();
 
-        public static void Evaluate(Template template, EvaluationContext context, out string[] missingTokens, out string[] nullTokens)
+        public static void Evaluate(Template template, EvaluationContext context, out string[] missingTokens, out string[] nullTokens, out ReplacementOcurrance[] replacements)
         {
             var evaluator = new TemplateEvaluator();
             evaluator.Evaluate(template.Tokens, context);
             missingTokens = evaluator.missingTokens.Distinct().ToArray();
             nullTokens = evaluator.nullTokens.Distinct().ToArray();
+            replacements = evaluator.ReplacementOccurances.ToArray();
         }
 
         public static void Evaluate(Template template,
             Binding properties,
             TextWriter output,
             out string[] missingTokens,
-            out string[] nullTokens)
+            out string[] nullTokens, out ReplacementOcurrance[] replacements)
         {
             var context = new EvaluationContext(properties, output);
-            Evaluate(template, context, out missingTokens, out nullTokens);
+            Evaluate(template, context, out missingTokens, out nullTokens, out replacements);
         }
 
         public static void Evaluate(Template template,
@@ -33,10 +34,10 @@ namespace Octostache.Templates
             TextWriter output,
             Dictionary<string, Func<string?, string[], string?>> extensions,
             out string[] missingTokens,
-            out string[] nullTokens)
+            out string[] nullTokens, out ReplacementOcurrance[] replacements)
         {
             var context = new EvaluationContext(properties, output, extensions: extensions);
-            Evaluate(template, context, out missingTokens, out nullTokens);
+            Evaluate(template, context, out missingTokens, out nullTokens, out replacements);
         }
 
         void Evaluate(IEnumerable<TemplateToken> tokens, EvaluationContext context)
@@ -195,22 +196,42 @@ namespace Octostache.Templates
                 Evaluate(ct.FalsyTemplate, context);
         }
 
-        void EvaluateSubstitutionToken(EvaluationContext context, SubstitutionToken st)
+        void EvaluateSubstitutionToken(EvaluationContext context, SubstitutionToken substitutionToken)
         {
-            var value = Calculate(st.Expression, context);
+            var value = Calculate(substitutionToken.Expression, context);
+            
+            var startPosn = (substitutionToken.InputPosition?.Pos ?? 0) + offset;
+            var raw = substitutionToken.ToString();
+            var endPosn = startPosn;
+            offset -= raw.Length;
+            if (value != null)
+            {
+                endPosn =+ value.Length;
+                offset += value.Length;
+            }
+            ReplacementOccurances.Add(new ReplacementOcurrance()
+            {
+                Raw = raw,
+                StartPosn = startPosn,
+                EndPosn = endPosn,
+            });
+            
+            
+            
+            
             if (value == null)
             {
-                if (st.Expression is FunctionCallExpression { Function: "null" } fx)
+                if (substitutionToken.Expression is FunctionCallExpression { Function: "null" } fx)
                 {
-                    nullTokens.Add(st.ToString());
+                    nullTokens.Add(substitutionToken.ToString());
                 }
                 else
                 {
-                    missingTokens.Add(st.ToString());
+                    missingTokens.Add(substitutionToken.ToString());
                 }
             }
 
-            context.Output.Write(value ?? st.ToString());
+            context.Output.Write(value ?? substitutionToken.ToString());
         }
 
         static void EvaluateTextToken(EvaluationContext context, TextToken tt)
@@ -221,12 +242,25 @@ namespace Octostache.Templates
             }
         }
 
+        List<ReplacementOcurrance> ReplacementOccurances = new List<ReplacementOcurrance>();
+        int offset = 0;
         string? Calculate(ContentExpression expression, EvaluationContext context)
         {
             if (expression is SymbolExpression sx)
             {
                 var resolvedSymbol = context.ResolveOptional(sx, out var innerTokens, out var _);
                 missingTokens.AddRange(innerTokens);
+
+                /*var startPosn = (expression?.InputPosition?.Pos ?? 0) + offset -1;
+                var endPosn = startPosn + resolvedSymbol.Length -1;
+                var raw = expression.ToString();
+                offset = offset - (raw.Length - resolvedSymbol.Length);
+                s.Add(new VariableReplacement()
+                {
+                    Raw = raw,
+                    StartPosn = startPosn,
+                    EndPosn = endPosn,
+                });*/
                 return resolvedSymbol;
             }
 

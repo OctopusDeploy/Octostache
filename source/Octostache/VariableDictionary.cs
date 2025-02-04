@@ -144,9 +144,13 @@ namespace Octostache
             if (!variables.TryGetValue(variableName, out var variable) || variable == null)
                 return defaultValue;
 
-            return Evaluate(variable, out error);
+            return Evaluate(variable, out error, out _);
         }
 
+        public string? Evaluate(string? expressionOrVariableOrText, out string? error, bool haltOnError = true)
+        {
+            return Evaluate(expressionOrVariableOrText, out error, out _, haltOnError);
+        }
         /// <summary>
         /// Evaluates a given expression as if it were the value of a variable.
         /// </summary>
@@ -154,9 +158,10 @@ namespace Octostache
         /// <param name="error">Any parsing errors silently found.</param>
         /// <param name="haltOnError">Stop parsing if an error is found.</param>
         /// <returns>The result of the expression.</returns>
-        public string? Evaluate(string? expressionOrVariableOrText, out string? error, bool haltOnError = true)
+        public string? Evaluate(string? expressionOrVariableOrText, out string? error, out ReplacementOcurrance[] replacements, bool haltOnError = true)
         {
             error = null;
+            replacements = new ReplacementOcurrance[0];
             if (expressionOrVariableOrText == null) return null;
 
             if (CanEvaluationBeSkippedForExpression(expressionOrVariableOrText))
@@ -172,7 +177,8 @@ namespace Octostache
                     writer,
                     extensions,
                     out var missingTokens,
-                    out var nullTokens);
+                    out var nullTokens,
+                    out replacements);
                 if (missingTokens.Any())
                 {
                     var tokenList = string.Join(", ", missingTokens.Select(token => "'" + token + "'"));
@@ -195,7 +201,7 @@ namespace Octostache
         /// <returns>Whether the expression evaluates with no errors and the result is truthy (Not empty, 0 or false).</returns>
         public bool EvaluateTruthy(string? expressionOrVariableOrText)
         {
-            var result = Evaluate(expressionOrVariableOrText, out var error);
+            var result = Evaluate(expressionOrVariableOrText, out var error, out _);
             return string.IsNullOrWhiteSpace(error) && result != null && TemplateEvaluator.IsTruthy(result);
         }
 
@@ -205,7 +211,7 @@ namespace Octostache
         /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>
         /// <returns>The result of the expression.</returns>
         [return: NotNullIfNotNull("expressionOrVariableOrText")]
-        public string? Evaluate(string? expressionOrVariableOrText) => Evaluate(expressionOrVariableOrText, out var _);
+        public string? Evaluate(string? expressionOrVariableOrText) => Evaluate(expressionOrVariableOrText, out var _, out _);
 
         /// <summary>
         /// Gets a list of strings, assuming each path is separated by commas or some other separator character. If the variable contains an expression, it will be evaluated first.

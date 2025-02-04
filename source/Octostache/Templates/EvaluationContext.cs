@@ -9,6 +9,14 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Octostache.Templates
 {
+    public class ReplacementOcurrance
+    {
+        public string Raw { get; set; }
+        public string Replaced { get; set; }
+        public int StartPosn { get; set; }
+        public int EndPosn { get; set; }
+    }
+    
     class EvaluationContext
     {
         public TextWriter Output { get; }
@@ -71,12 +79,11 @@ namespace Octostache.Templates
                 missingTokens = new string[0];
                 nullTokens = new string[0];
 
-                expression = CopyExpression(expression);
+                var clonedExpression = CopyExpression(expression);
 
-                foreach (var step in expression.Steps)
+                foreach (var step in clonedExpression.Steps)
                 {
-                    var iss = step as Identifier;
-                    if (iss != null)
+                    if (step is Identifier iss)
                     {
                         Binding? newVal;
                         if (val.TryGetValue(iss.Text, out newVal))
@@ -91,45 +98,42 @@ namespace Octostache.Templates
                             continue;
                         }
                     }
+                    else if (step is Indexer ix)
+                    {
+                        if (ix.IsSymbol || ix.Index == null)
+                        {
+                            // Substitution should have taken place in previous CopyExpression above.
+                            // If not then it must not be found.
+                            return null;
+                        }
+
+                        if (ix.Index == "*" && val?.Indexable.Count > 0)
+                        {
+                            val = val.Indexable.First().Value;
+                            continue;
+                        }
+
+                        if (val != null && val.Indexable.TryGetValue(ix.Index, out var newVal))
+                        {
+                            val = newVal;
+                            continue;
+                        }
+
+                        if (val != null && TryCustomParsers(val, ix.Index, out newVal))
+                        {
+                            val = newVal;
+                            continue;
+                        }
+                    }
                     else
                     {
-                        if (step is Indexer ix)
-                        {
-                            if (ix.IsSymbol || ix.Index == null)
-                            {
-                                // Substitution should have taken place in previous CopyExpression above.
-                                // If not then it must not be found.
-                                return null;
-                            }
-
-                            if (ix.Index == "*" && val?.Indexable.Count > 0)
-                            {
-                                val = val.Indexable.First().Value;
-                                continue;
-                            }
-
-                            if (val != null && val.Indexable.TryGetValue(ix.Index, out var newVal))
-                            {
-                                val = newVal;
-                                continue;
-                            }
-
-                            if (val != null && TryCustomParsers(val, ix.Index, out newVal))
-                            {
-                                val = newVal;
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            throw new NotImplementedException("Unknown step type: " + step);
-                        }
+                        throw new NotImplementedException("Unknown step type: " + step);
                     }
 
                     if (parent == null)
                         return null;
 
-                    return parent.WalkTo(expression, out missingTokens, out nullTokens);
+                    return parent.WalkTo(clonedExpression, out missingTokens, out nullTokens);
                 }
 
                 return ParseTemplate(val, out missingTokens, out nullTokens);
@@ -150,7 +154,7 @@ namespace Octostache.Templates
                     {
                         var context = new EvaluationContext(new Binding(), x, this);
 
-                        TemplateEvaluator.Evaluate(template, context, out missingTokens, out nullTokens);
+                        TemplateEvaluator.Evaluate(template, context, out missingTokens, out nullTokens, out _);
                         x.Flush();
                         return new Binding(x.ToString());
                     }
@@ -200,7 +204,7 @@ namespace Octostache.Templates
                 }
 
                 return s;
-            }));
+            })){InputPosition = expression.InputPosition};
         }
 
         public IEnumerable<Binding> ResolveAll(SymbolExpression collection, out string[] missingTokens, out string[] nullTokens)

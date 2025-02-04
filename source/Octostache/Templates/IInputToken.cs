@@ -7,6 +7,8 @@ namespace Octostache.Templates
     interface IInputToken
     {
         Position? InputPosition { get; set; }
+        
+        Position? EndPosition { get; set; }
 
         IEnumerable<string> GetArguments();
     }

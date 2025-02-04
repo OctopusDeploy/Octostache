@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using FluentAssertions;
 using Octostache.Templates;
 using Xunit;
@@ -681,6 +682,80 @@ namespace Octostache.Tests
             var absentIndexes = variableDictionary.GetIndexes("Foo.Bar");
 
             absentIndexes.Should().HaveCount(0);
+        }
+    }
+
+    public class Foo : BaseFixture
+    {
+        
+[Fact]
+        public void SingleLevelReplace()
+        {
+            
+            var template = "Hello #{Foo} World";
+            var variableDefinitions = "Foo=Baz";
+            
+            var final = "Hello Baz World";
+            /*
+             * Metadata should contain
+             *  #{Foo} posn 6-3
+             */
+            
+            var result = ParseVariables(variableDefinitions)
+                .Evaluate(template, out _);
+             result.Should().Be(final);
+        }
+    
+        [Fact]
+        public void IndexReplace()
+        {
+            var template = "Hello #{Something[Baz]} World";
+            var variableDefinitions = "Something[Baz]=Coke;";
+            
+            var final = "Hello Coke World";
+            
+            /*
+             * Metadata should contain
+             *  #{Something[Baz]} posn 6-4
+             */
+            var result = ParseVariables(variableDefinitions)
+                .Evaluate(template, out _);
+            result.Should().Be(final);
+            
+        }
+        
+        [Fact]
+        public void DoubleReplace()
+        {
+            var variableDefinitions = "Something[Baz]=Coke;Foo=Baz";
+            var template = "Hello #{Something[#{Foo}]} #{Foo | ToUpper} World";
+
+            var final = "Hello Coke Baz World";
+            /*
+             * Metadata should contain
+             *  #{Something[#{Foo}] - or Something[Baz]    -    posn 6-4
+             *  #{Foo | ToUpper}                                posn 11-14
+             */
+            var result = ParseVariables(variableDefinitions)
+                .Evaluate(template, out _, out var stuff);
+            result.Should().Be(final);
+        }
+        
+        [Fact]
+        public void DoubleLevelReplace2()
+        {
+            var template = "Hello #{if Octopus.IsCool == \"Yes\"}#{Inner}#{/if} World";
+            var variableDefinitions = "Octopus.IsCool=Yes;Inner=Sunny";
+            var final = "Hello Sunny World";
+            
+            /*
+             * Metadata should contain
+             *  #{if Octopus.IsCool == "Yes"}#{Inner}#{/if}    -    posn 6-5
+             */
+
+            var result = ParseVariables(variableDefinitions)
+                .Evaluate(template, out _, out var stuff);
+            result.Should().Be(final);
         }
     }
 }

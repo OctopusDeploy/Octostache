@@ -11,6 +11,7 @@ namespace Octostache.Templates
     abstract class SymbolExpressionStep : IInputToken
     {
         public Position? InputPosition { get; set; }
+        public Position? EndPosition { get; set; }
         public abstract IEnumerable<string> GetArguments();
 
         public virtual bool Equals(SymbolExpressionStep? other)

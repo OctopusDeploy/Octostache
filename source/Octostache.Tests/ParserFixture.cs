@@ -85,6 +85,14 @@ namespace Octostache.Tests
             templateConvertedBackToString.Trim().Should().BeEmpty();
         }
 
+        [Fact]
+        public void Foo()
+        {
+            var template = @"#{var}bar";
+
+            TemplateParser.TryParseTemplate(template, out var parsedTemplate1, out var error1, false);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

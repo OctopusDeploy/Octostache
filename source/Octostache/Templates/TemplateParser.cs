@@ -330,7 +330,9 @@ namespace Octostache.Templates
                 if (r.WasSuccessful)
                     // ReSharper disable once PossibleStructMemberModificationOfNonVariableStruct
                     r.Value.InputPosition = new Position(i.Position, i.Line, i.Column);
-
+//Position? END { get; set; }
+                r.Value!.EndPosition = new Position(r.Remainder.Position, r.Remainder.Line, r.Remainder.Column);
+                    
                 return r;
             };
         }
