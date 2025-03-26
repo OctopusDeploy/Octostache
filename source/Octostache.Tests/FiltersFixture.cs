@@ -423,7 +423,19 @@ namespace Octostache.Tests
             var result = Evaluate("#{foo | Replace abc def}", new Dictionary<string, string> { { "foo", "abc" } });
             result.Should().Be("def");
         }
-
+        [Fact]
+        public void ClubSparkRepro()
+        {
+            var result = Evaluate(@"if ($http_origin ~* ^https?://([^/]+.(?:#{domain | Replace ""*."" """" | Replace ""."" "".""}|#{web.nakeddomain | Replace ""*."" """" | Replace ""."" "".""}|#{web.standarddomain | Replace ""*."" """" | Replace ""."" "".""}#{web.extradomains | Replace ""*."" """" | Replace ""."" "".""}|octopussupport.(?:dev|io|pro):?\d*))/?$) {}", new Dictionary<string, string>
+            {
+                { "domain", "octopussupport.com" },
+                { "web.nakeddomain", "octopussupport.com" },
+                { "web.standarddomain", "octopussupport.com" },
+                { "web.extradomains", "octopussupportextra.com" },
+            });
+            result.Should().Be("if ($http_origin ~* ^https?://([^/]+\\\\.(?:octopussupport.com|octopussupport.com|octopussuport.com|*.octopussupportextra.com|octopussupport\\\\.(?:dev|io|pro):?\\\\d*))/?$){}");
+        } 
+        
         [Fact]
         public void ReplaceWithEmptyString()
         {
