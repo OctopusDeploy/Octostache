@@ -584,7 +584,7 @@ namespace Octostache.Tests
         }
 
         [Fact]
-        public void SubstringHandlesStartAndLengthIndexOutOfRange()
+        public void SubstringTruncatesLengthWhenExceedingStringBoundary()
         {
             var result = Evaluate(@"#{foo | Substring 8 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
                 .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
