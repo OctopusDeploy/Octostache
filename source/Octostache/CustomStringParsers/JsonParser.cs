@@ -17,7 +17,7 @@ namespace Octostache.CustomStringParsers
 
             try
             {
-                var obj = JsonConvert.DeserializeObject(parentBinding.Item);
+                var obj = JsonConvert.DeserializeObject(parentBinding.Item!);
 
                 if (obj is JValue jvalue)
                 {
@@ -50,7 +50,7 @@ namespace Octostache.CustomStringParsers
 
             try
             {
-                var obj = JsonConvert.DeserializeObject(binding.Item);
+                var obj = JsonConvert.DeserializeObject(binding.Item!);
 
                 var jarray = obj as JArray;
                 if (jarray != null)
@@ -100,7 +100,7 @@ namespace Octostache.CustomStringParsers
 
         static bool TryParseJObject(JObject jobj, string property, out Binding subBinding)
         {
-            subBinding = ConvertJTokenToBinding(jobj[property]);
+            subBinding = ConvertJTokenToBinding(jobj[property]!);
             return true;
         }
 

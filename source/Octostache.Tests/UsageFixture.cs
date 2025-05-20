@@ -592,9 +592,9 @@ namespace Octostache.Tests
         }
 
         [Theory]
-        [InlineData("{Sizes: {Small: \"#{Test.Sizes.Large.Price}\", Large: \"15\"}}\", Desc: \"Monkey\", Value: 12}", "#{Test.Sizes.Small.Price}", "#{Test.Sizes.Small.Price}", "Direct inner JSON")]
-        [InlineData("#{Test.Something}", "#{Test}", "#{Test.Something}", "Missing replacement")]
-        public void VariablesThatResolveToUnresolvableReturnError(string variable, string pattern, string expectedResult, string testName)
+        [InlineData("{Sizes: {Small: \"#{Test.Sizes.Large.Price}\", Large: \"15\"}}\", Desc: \"Monkey\", Value: 12}", "#{Test.Sizes.Small.Price}", "#{Test.Sizes.Small.Price}")]
+        [InlineData("#{Test.Something}", "#{Test}", "#{Test.Something}")]
+        public void VariablesThatResolveToUnresolvableReturnError(string variable, string pattern, string expectedResult)
         {
             var variables = new VariableDictionary
             {
