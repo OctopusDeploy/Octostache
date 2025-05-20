@@ -2,7 +2,7 @@
 // TOOLS
 //////////////////////////////////////////////////////////////////////
 #module nuget:?package=Cake.DotNetTool.Module&version=0.4.0
-#tool "dotnet:?package=GitVersion.Tool&version=6.0.4"
+#tool "dotnet:?package=GitVersion.Tool&version=5.12.0"
 #tool "nuget:?package=OctopusTools&version=9.0.0"
 #addin nuget:?package=Cake.Git&version=1.1.0
 
