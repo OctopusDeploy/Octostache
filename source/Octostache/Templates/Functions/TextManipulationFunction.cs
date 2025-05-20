@@ -138,7 +138,7 @@ namespace Octostache.Templates.Functions
                 case "end":
                     return argument.TrimEnd();
                 default:
-                    return argument.Trim();
+                    return null;
             }
         }
 
