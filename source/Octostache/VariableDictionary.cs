@@ -128,7 +128,7 @@ namespace Octostache
         /// <param name="defaultValue">The default value to return.</param>
         /// <returns>The value of the variable, or the default value if the variable is not defined.</returns>
         [return: NotNullIfNotNull("defaultValue")]
-        public string? Get(string variableName, string? defaultValue = null) => Get(variableName, out var _, defaultValue);
+        public string? Get(string variableName, string? defaultValue = null) => Get(variableName, out _, defaultValue);
 
         /// <summary>
         /// Gets the value of a variable, or returns a default value if the variable is not defined. If the variable contains an expression, it will be evaluated first.
@@ -205,7 +205,7 @@ namespace Octostache
         /// <param name="expressionOrVariableOrText">The value or expression to evaluate.</param>
         /// <returns>The result of the expression.</returns>
         [return: NotNullIfNotNull("expressionOrVariableOrText")]
-        public string? Evaluate(string? expressionOrVariableOrText) => Evaluate(expressionOrVariableOrText, out var _);
+        public string? Evaluate(string? expressionOrVariableOrText) => Evaluate(expressionOrVariableOrText, out _);
 
         /// <summary>
         /// Gets a list of strings, assuming each path is separated by commas or some other separator character. If the variable contains an expression, it will be evaluated first.
