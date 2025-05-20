@@ -7,15 +7,15 @@ namespace Octostache.Templates
 {
     class TemplateEvaluator
     {
-        readonly List<string> _missingTokens = new List<string>();
-        readonly List<string> _nullTokens = new List<string>();
+        readonly List<string> missingTokens = new List<string>();
+        readonly List<string> nullTokens = new List<string>();
 
         public static void Evaluate(Template template, EvaluationContext context, out string[] missingTokens, out string[] nullTokens)
         {
             var evaluator = new TemplateEvaluator();
             evaluator.Evaluate(template.Tokens, context);
-            missingTokens = evaluator._missingTokens.Distinct().ToArray();
-            nullTokens = evaluator._nullTokens.Distinct().ToArray();
+            missingTokens = evaluator.missingTokens.Distinct().ToArray();
+            nullTokens = evaluator.nullTokens.Distinct().ToArray();
         }
 
         public static void Evaluate(Template template,
@@ -84,7 +84,7 @@ namespace Octostache.Templates
                 var value = cat.Expression.Evaluate(s =>
                 {
                     var value = context.ResolveOptional(s, out var innerTokens, out _);
-                    _missingTokens.AddRange(innerTokens);
+                    missingTokens.AddRange(innerTokens);
                     return value;
                 });
 
@@ -103,7 +103,7 @@ namespace Octostache.Templates
         {
             string[] innerTokens;
             var items = context.ResolveAll(rt.Collection, out innerTokens, out _).ToArray();
-            _missingTokens.AddRange(innerTokens);
+            missingTokens.AddRange(innerTokens);
 
             for (var i = 0; i < items.Length; ++i)
             {
@@ -132,7 +132,7 @@ namespace Octostache.Templates
             if (leftToken != null)
             {
                 leftSide = context.Resolve(leftToken, out var innerTokens, out _);
-                _missingTokens.AddRange(innerTokens);
+                missingTokens.AddRange(innerTokens);
             }
             else
             {
@@ -140,7 +140,7 @@ namespace Octostache.Templates
                 if (leftSide == null)
                 {
                     context.Output.Write(ct.ToString());
-                    _missingTokens.Add(ct.Token.LeftSide.ToString());
+                    missingTokens.Add(ct.Token.LeftSide.ToString());
                     return;
                 }
             }
@@ -168,7 +168,7 @@ namespace Octostache.Templates
                 if (rightToken != null)
                 {
                     rightSide = context.Resolve(rightToken, out var innerTokens, out _);
-                    _missingTokens.AddRange(innerTokens);
+                    missingTokens.AddRange(innerTokens);
                 }
                 else
                 {
@@ -176,7 +176,7 @@ namespace Octostache.Templates
                     if (rightSide == null)
                     {
                         context.Output.Write(ct.ToString());
-                        _missingTokens.Add(symToken.RightSide.ToString());
+                        missingTokens.Add(symToken.RightSide.ToString());
                         return;
                     }
                 }
@@ -202,11 +202,11 @@ namespace Octostache.Templates
             {
                 if (st.Expression is FunctionCallExpression { Function: "null" })
                 {
-                    _nullTokens.Add(st.ToString());
+                    nullTokens.Add(st.ToString());
                 }
                 else
                 {
-                    _missingTokens.Add(st.ToString());
+                    missingTokens.Add(st.ToString());
                 }
             }
 
@@ -226,7 +226,7 @@ namespace Octostache.Templates
             if (expression is SymbolExpression sx)
             {
                 var resolvedSymbol = context.ResolveOptional(sx, out var innerTokens, out _);
-                _missingTokens.AddRange(innerTokens);
+                missingTokens.AddRange(innerTokens);
                 return resolvedSymbol;
             }
 

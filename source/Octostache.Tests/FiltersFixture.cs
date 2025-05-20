@@ -98,12 +98,12 @@ namespace Octostache.Tests
         }
 
         [Theory]
-        [InlineData("Test\"Test", "Test\\\"Test")]
-        [InlineData("Test\rTest", "Test\\rTest")]
-        [InlineData("Test\nTest", "Test\\nTest")]
-        [InlineData("Test\tTest", "Test\\tTest")]
-        [InlineData("Test\\Test", "Test\\\\Test")]
-        public void JsonIsEscaped(string input, string expectedResult)
+        [InlineData("Test\"Test", "Test\\\"Test", "Quotes")]
+        [InlineData("Test\rTest", "Test\\rTest", "Carriage return")]
+        [InlineData("Test\nTest", "Test\\nTest", "Linefeed")]
+        [InlineData("Test\tTest", "Test\\tTest", "Tab")]
+        [InlineData("Test\\Test", "Test\\\\Test", "Backslash")]
+        public void JsonIsEscaped(string input, string expectedResult, string testName)
         {
             var result = Evaluate("#{Foo | JsonEscape}", new Dictionary<string, string> { { "Foo", input } });
             result.Should().Be(expectedResult);
@@ -606,7 +606,7 @@ namespace Octostache.Tests
                 .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 0 -1}");
         }
-        
+
         [Fact]
         public void SubstringHandlesStartIndexExceedsLengthWithTwoOptions()
         {
@@ -614,7 +614,7 @@ namespace Octostache.Tests
                 .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 20 5}");
         }
-        
+
         [Fact]
         public void TruncateDoesNothing()
         {

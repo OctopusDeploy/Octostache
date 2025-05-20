@@ -38,13 +38,13 @@ namespace Octostache.Tests
         }
 
         [Theory]
-        [InlineData("{\"Hello\": \"World\"}", "#{Test[Hello]}", "World")]
-        [InlineData("{\"Hello\": \"World\"}", "#{Test.Hello}", "World")]
-        [InlineData("{\"Hello\": {\"World\": {\"Foo\": {\"Bar\": 12 }}}}", "#{Test[Hello][World][Foo][Bar]}", "12")]
-        [InlineData("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[1].Name}", "Bread")]
-        [InlineData("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", "{\"Bar\":\"11\"}")]
-        [InlineData("{Name: \"#{Test.Value}\", Desc: \"Monkey\", Value: 12}", "#{Test.Name}", "12")]
-        public void SuccessfulJsonParsing(string json, string pattern, string expectedResult)
+        [InlineData("{\"Hello\": \"World\"}", "#{Test[Hello]}", "World", "Simple Indexing")]
+        [InlineData("{\"Hello\": \"World\"}", "#{Test.Hello}", "World", "Simple Dot Notation")]
+        [InlineData("{\"Hello\": {\"World\": {\"Foo\": {\"Bar\": 12 }}}}", "#{Test[Hello][World][Foo][Bar]}", "12", "Deep")]
+        [InlineData("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[1].Name}", "Bread", "Arrays")]
+        [InlineData("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", "{\"Bar\":\"11\"}", "Raw JSON returned")]
+        [InlineData("{Name: \"#{Test.Value}\", Desc: \"Monkey\", Value: 12}", "#{Test.Name}", "12", "Non-Direct inner JSON")]
+        public void SuccessfulJsonParsing(string json, string pattern, string expectedResult, string testName)
         {
             var variables = new VariableDictionary
             {

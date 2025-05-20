@@ -205,6 +205,7 @@ namespace Octostache.Tests
                 result.Should().Be("Hello, World!");
                 iterations++;
             }
+
             iterations.Should().BeGreaterThan(10000);
         }
 
@@ -590,9 +591,9 @@ namespace Octostache.Tests
         }
 
         [Theory]
-        [InlineData("{Sizes: {Small: \"#{Test.Sizes.Large.Price}\", Large: \"15\"}}\", Desc: \"Monkey\", Value: 12}", "#{Test.Sizes.Small.Price}", "#{Test.Sizes.Small.Price}")]
-        [InlineData("#{Test.Something}", "#{Test}", "#{Test.Something}")]
-        public void VariablesThatResolveToUnresolvableReturnError(string variable, string pattern, string expectedResult)
+        [InlineData("{Sizes: {Small: \"#{Test.Sizes.Large.Price}\", Large: \"15\"}}\", Desc: \"Monkey\", Value: 12}", "#{Test.Sizes.Small.Price}", "#{Test.Sizes.Small.Price}", "Direct inner JSON")]
+        [InlineData("#{Test.Something}", "#{Test}", "#{Test.Something}", "Missing replacement")]
+        public void VariablesThatResolveToUnresolvableReturnError(string variable, string pattern, string expectedResult, string testName)
         {
             var variables = new VariableDictionary
             {
