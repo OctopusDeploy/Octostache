@@ -606,7 +606,7 @@ namespace Octostache.Tests
                 .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 0 -1}");
         }
-        
+
         [Fact]
         public void SubstringHandlesStartIndexExceedsLengthWithTwoOptions()
         {
@@ -614,7 +614,7 @@ namespace Octostache.Tests
                 .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 20 5}");
         }
-        
+
         [Fact]
         public void TruncateDoesNothing()
         {

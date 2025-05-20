@@ -19,8 +19,8 @@ namespace Octostache.Templates.Functions
             if (options.Length == 2 && int.Parse(options[0]) > argument.Length)
                 return null;
 
-            int startIndex = options.Length == 1 ? 0 : int.Parse(options[0]);
-            int length = options.Length == 1 ? int.Parse(options[0]) : int.Parse(options[1]);
+            var startIndex = options.Length == 1 ? 0 : int.Parse(options[0]);
+            var length = options.Length == 1 ? int.Parse(options[0]) : int.Parse(options[1]);
 
             // If starting position is valid but the length would exceed the string, use the remaining length of the string
             if (startIndex < argument.Length && startIndex + length > argument.Length)

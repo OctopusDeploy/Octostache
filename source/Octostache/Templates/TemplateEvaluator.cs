@@ -83,7 +83,7 @@ namespace Octostache.Templates
             {
                 var value = cat.Expression.Evaluate(s =>
                 {
-                    var value = context.ResolveOptional(s, out var innerTokens, out var _);
+                    var value = context.ResolveOptional(s, out var innerTokens, out _);
                     missingTokens.AddRange(innerTokens);
                     return value;
                 });
@@ -131,7 +131,7 @@ namespace Octostache.Templates
             var leftToken = ct.Token.LeftSide as SymbolExpression;
             if (leftToken != null)
             {
-                leftSide = context.Resolve(leftToken, out var innerTokens, out var _);
+                leftSide = context.Resolve(leftToken, out var innerTokens, out _);
                 missingTokens.AddRange(innerTokens);
             }
             else
@@ -167,7 +167,7 @@ namespace Octostache.Templates
                 var rightToken = symToken.RightSide as SymbolExpression;
                 if (rightToken != null)
                 {
-                    rightSide = context.Resolve(rightToken, out var innerTokens, out var _);
+                    rightSide = context.Resolve(rightToken, out var innerTokens, out _);
                     missingTokens.AddRange(innerTokens);
                 }
                 else
@@ -225,7 +225,7 @@ namespace Octostache.Templates
         {
             if (expression is SymbolExpression sx)
             {
-                var resolvedSymbol = context.ResolveOptional(sx, out var innerTokens, out var _);
+                var resolvedSymbol = context.ResolveOptional(sx, out var innerTokens, out _);
                 missingTokens.AddRange(innerTokens);
                 return resolvedSymbol;
             }
