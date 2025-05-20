@@ -205,8 +205,6 @@ namespace Octostache.Tests
                 result.Should().Be("Hello, World!");
                 iterations++;
             }
-
-            Console.WriteLine(iterations);
             iterations.Should().BeGreaterThan(10000);
         }
 
