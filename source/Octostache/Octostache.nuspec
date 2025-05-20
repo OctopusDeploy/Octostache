@@ -6,20 +6,20 @@
         <version>1.0.0.0</version>
         <authors>Octopus Deploy</authors>
         <description>Variable substitution syntax used in Octopus Deploy.</description>
-        <releaseNotes/>
+        <releaseNotes />
         <language>en-US</language>
         <iconUrl>https://i.octopusdeploy.com/resources/Avatar3-32x32.png</iconUrl>
         <projectUrl>https://github.com/OctopusDeploy/Octostache/</projectUrl>
         <licenseUrl>https://github.com/OctopusDeploy/Octostache/blob/master/LICENSE</licenseUrl>
         <dependencies>
-            <dependency id="MarkdownSharp" version=""/>
-            <dependency id="Sprache" version=""/>
-            <dependency id="Newtonsoft.Json" version=""/>
+            <dependency id="MarkdownSharp" version="" />
+            <dependency id="Sprache" version="" />
+            <dependency id="Newtonsoft.Json" version="" />
         </dependencies>
     </metadata>
     <files>
-        <file src="bin\Release\Octostache.dll" target="lib/net40"/>
-        <file src="bin\Release\Octostache.xml" target="lib/net40"/>
-        <file src="bin\Release\Octostache.pdb" target="lib/net40"/>
+        <file src="bin\Release\Octostache.dll" target="lib/net40" />
+        <file src="bin\Release\Octostache.xml" target="lib/net40" />
+        <file src="bin\Release\Octostache.pdb" target="lib/net40" />
     </files>
 </package>
