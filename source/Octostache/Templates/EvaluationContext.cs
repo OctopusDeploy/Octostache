@@ -144,7 +144,7 @@ namespace Octostache.Templates
         {
             if (b.Item != null)
             {
-                if (TemplateParser.TryParseTemplate(b.Item, out var template, out var _))
+                if (TemplateParser.TryParseTemplate(b.Item, out var template, out _))
                 {
                     using (var x = new StringWriter())
                     {
@@ -172,7 +172,7 @@ namespace Octostache.Templates
             {
                 try
                 {
-                    parentBinding = ParseTemplate(parentBinding, out var _, out var _);
+                    parentBinding = ParseTemplate(parentBinding, out _, out _);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -192,7 +192,7 @@ namespace Octostache.Templates
             {
                 if (s is Indexer indexer && indexer.IsSymbol)
                 {
-                    var index = WalkTo(indexer.Symbol!, out var _, out var _);
+                    var index = WalkTo(indexer.Symbol!, out _, out _);
 
                     return index == null
                         ? new Indexer(CopyExpression(indexer.Symbol!))

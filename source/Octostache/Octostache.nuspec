@@ -6,9 +6,9 @@
         <version>1.0.0.0</version>
         <authors>Octopus Deploy</authors>
         <description>Variable substitution syntax used in Octopus Deploy.</description>
-        <releaseNotes></releaseNotes>
+        <releaseNotes />
         <language>en-US</language>
-        <iconUrl>http://i.octopusdeploy.com/resources/Avatar3-32x32.png</iconUrl>
+        <iconUrl>https://i.octopusdeploy.com/resources/Avatar3-32x32.png</iconUrl>
         <projectUrl>https://github.com/OctopusDeploy/Octostache/</projectUrl>
         <licenseUrl>https://github.com/OctopusDeploy/Octostache/blob/master/LICENSE</licenseUrl>
         <dependencies>

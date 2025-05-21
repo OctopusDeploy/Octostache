@@ -67,7 +67,7 @@ namespace Octostache.Tests
                 #{MyVar | UriPart IsFile}
             ";
 
-            TemplateParser.TryParseTemplate(template, out var parsedTemplate, out var _);
+            TemplateParser.TryParseTemplate(template, out var parsedTemplate, out _);
             parsedTemplate.Should().NotBeNull();
             // ReSharper disable once PossibleNullReferenceException - Asserted above
             parsedTemplate.ToString().Should().NotBeEmpty();

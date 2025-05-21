@@ -259,10 +259,10 @@ namespace Octostache.Tests
         }
 
         [Theory]
-        [InlineData("#{Foo | Markdown}", "http://octopus.com", "<p><a href=\"http://octopus.com\">http://octopus.com</a></p>")]
-        [InlineData("#{Foo | MarkdownToHtml}", "http://octopus.com", "<p><a href=\"http://octopus.com\">http://octopus.com</a></p>")]
-        [InlineData("#{Foo | Markdown}", "[Some link](http://octopus.com)", "<p><a href=\"http://octopus.com\">Some link</a></p>")]
-        [InlineData("#{Foo | MarkdownToHtml}", "[Some link](http://octopus.com)", "<p><a href=\"http://octopus.com\">Some link</a></p>")]
+        [InlineData("#{Foo | Markdown}", "https://octopus.com", "<p><a href=\"https://octopus.com\">https://octopus.com</a></p>")]
+        [InlineData("#{Foo | MarkdownToHtml}", "https://octopus.com", "<p><a href=\"https://octopus.com\">https://octopus.com</a></p>")]
+        [InlineData("#{Foo | Markdown}", "[Some link](https://octopus.com)", "<p><a href=\"https://octopus.com\">Some link</a></p>")]
+        [InlineData("#{Foo | MarkdownToHtml}", "[Some link](https://octopus.com)", "<p><a href=\"https://octopus.com\">Some link</a></p>")]
         public void MarkdownHttpLinkIsProcessed(string input, string value, string expectedResult)
         {
             var result = Evaluate(input, new Dictionary<string, string> { { "Foo", value } });
@@ -584,11 +584,11 @@ namespace Octostache.Tests
         }
 
         [Fact]
-        public void SubstringHandlesStartAndLengthIndexOutOfRange()
+        public void SubstringTruncatesLengthWhenExceedingStringBoundary()
         {
             var result = Evaluate(@"#{foo | Substring 8 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
                 .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
-            result.Should().Be("#{foo | Substring 8 7}");
+            result.Should().Be("Deploy");
         }
 
         [Fact]
@@ -605,6 +605,14 @@ namespace Octostache.Tests
             var result = Evaluate(@"#{foo | Substring 0 -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
                 .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
             result.Should().Be("#{foo | Substring 0 -1}");
+        }
+
+        [Fact]
+        public void SubstringHandlesStartIndexExceedsLengthWithTwoOptions()
+        {
+            var result = Evaluate(@"#{foo | Substring 20 5}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            result.Should().Be("#{foo | Substring 20 5}");
         }
 
         [Fact]

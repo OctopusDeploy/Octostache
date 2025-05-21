@@ -239,7 +239,7 @@ namespace Octostache.Templates.Functions
             public string SubsequentIndent { get; }
             public bool IsValid { get; } = true;
 
-            static readonly Regex dualSizeEx = new Regex(@"^((\d{1,3})?/)?(\d{1,3})$", RegexOptions.Compiled);
+            static readonly Regex DualSizeEx = new Regex(@"^((\d{1,3})?/)?(\d{1,3})$", RegexOptions.Compiled);
 
             public IndentOptions(string[] options)
             {
@@ -251,7 +251,7 @@ namespace Octostache.Templates.Functions
 
                 if (options.Length == 1)
                 {
-                    var dualSize = dualSizeEx.Match(options[0]);
+                    var dualSize = DualSizeEx.Match(options[0]);
                     if (dualSize.Success)
                     {
                         var separator = dualSize.Groups[1];

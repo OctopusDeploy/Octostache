@@ -206,7 +206,6 @@ namespace Octostache.Tests
                 iterations++;
             }
 
-            Console.WriteLine(iterations);
             iterations.Should().BeGreaterThan(10000);
         }
 

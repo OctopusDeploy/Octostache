@@ -17,7 +17,7 @@ namespace Octostache.CustomStringParsers
 
             try
             {
-                var obj = JsonConvert.DeserializeObject(parentBinding.Item);
+                var obj = JsonConvert.DeserializeObject(parentBinding.Item!);
 
                 if (obj is JValue jvalue)
                 {
@@ -50,7 +50,7 @@ namespace Octostache.CustomStringParsers
 
             try
             {
-                var obj = JsonConvert.DeserializeObject(binding.Item);
+                var obj = JsonConvert.DeserializeObject(binding.Item!);
 
                 var jarray = obj as JArray;
                 if (jarray != null)
@@ -72,9 +72,9 @@ namespace Octostache.CustomStringParsers
             return false;
         }
 
-        static bool TryParseJObject(JObject jobj, out Binding[] subBindings)
+        static bool TryParseJObject(JObject jObject, out Binding[] subBindings)
         {
-            subBindings = jobj.Properties().Select(p =>
+            subBindings = jObject.Properties().Select(p =>
             {
                 var b = new Binding(p.Name)
                 {
@@ -98,9 +98,9 @@ namespace Octostache.CustomStringParsers
             return true;
         }
 
-        static bool TryParseJObject(JObject jobj, string property, out Binding subBinding)
+        static bool TryParseJObject(JObject jObject, string property, out Binding subBinding)
         {
-            subBinding = ConvertJTokenToBinding(jobj[property]);
+            subBinding = ConvertJTokenToBinding(jObject[property]!);
             return true;
         }
 
@@ -116,7 +116,7 @@ namespace Octostache.CustomStringParsers
             return true;
         }
 
-        static Binding ConvertJTokenToBinding(JToken token)
+        static Binding ConvertJTokenToBinding(JToken? token)
         {
             if (token == null)
             {
