@@ -54,12 +54,6 @@ Param(
     [Parameter(Position=0,Mandatory=$false,ValueFromRemainingArguments=$true)]
     [string[]]$ScriptArgs
 )
-Write-Host "Running dotnet tool restore..."
-dotnet tool restore
-Write-Host "Displaying HOME directory:"
-echo $HOME
-Write-Host "Listing GitVersion.Tool in packages directory:"
-ls $HOME/.nuget/packages/gitversion.tool
 
 [Reflection.Assembly]::LoadWithPartialName("System.Security") | Out-Null
 function MD5HashFile([string] $filePath)
