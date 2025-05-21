@@ -56,10 +56,8 @@ Param(
 )
 Write-Host "Running dotnet tool restore..."
 dotnet tool restore
-
 Write-Host "Displaying HOME directory:"
 echo $HOME
-
 Write-Host "Listing GitVersion.Tool in packages directory:"
 ls $HOME/.nuget/packages/gitversion.tool
 
