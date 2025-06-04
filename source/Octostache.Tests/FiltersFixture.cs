@@ -372,6 +372,23 @@ namespace Octostache.Tests
         }
 
         [Fact]
+        public void NowDateAcceptsTimeZoneId()
+        {
+            var result = Evaluate("#{ | NowDate \\\"Eastern Standard Time\\\"}", new Dictionary<string, string>());
+            DateTime.Parse(result).Should().BeCloseTo(TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Eastern Standard Time"), 60000);
+        }
+
+        [Fact]
+        public void NowDateAcceptsFormatAndTimeZoneId()
+        {
+            var result = Evaluate("#{ | NowDate \\\"Eastern Standard Time\\\" \\\"MM/dd/yy H:mm:ss zzz\\\"}", new Dictionary<string, string>());
+            DateTime.Parse(result).Should().BeCloseTo(TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Eastern Standard Time"), 60000);
+
+            var result1 = Evaluate("#{ | NowDate \\\"MM/dd/yy H:mm:ss zzz\\\" \\\"Eastern Standard Time\\\"}", new Dictionary<string, string>());
+            DateTime.Parse(result1).Should().BeCloseTo(TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Eastern Standard Time"), 60000);
+        }
+
+        [Fact]
         public void NullJsonPropertyTreatedAsEmptyString()
         {
             var result = Evaluate("Alpha#{Foo.Bar | ToUpper}bet", new Dictionary<string, string> { { "Foo", "{Bar: null}" } });
