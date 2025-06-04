@@ -651,7 +651,16 @@ namespace Octostache.Tests
         public void TruncateTruncatesArgumentToSpecifiedLength()
         {
             var result = Evaluate(@"#{foo | Truncate 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
-            result.Should().Be("Octopus...");
+            result.Should().Be("Octopus");
+            result.Should().HaveLength(7);
+        }
+
+        [Fact]
+        public void TruncateTruncatesArgumentToSpecifiedLengthWithCustomSuffix()
+        {
+            var result = Evaluate(@"#{foo | Truncate 7 ""<|>""}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus<|>");
+            result.Should().HaveLength(10);
         }
 
         [Fact]
