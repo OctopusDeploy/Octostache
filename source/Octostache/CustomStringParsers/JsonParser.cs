@@ -112,7 +112,9 @@ namespace Octostache.CustomStringParsers
             if (!int.TryParse(property, out index))
                 return false;
 
-            subBinding = ConvertJTokenToBinding(jarray[index]);
+            var value = index > 0 && index < jarray.Count ? jarray[index] : null;
+
+            subBinding = ConvertJTokenToBinding(value);
             return true;
         }
 

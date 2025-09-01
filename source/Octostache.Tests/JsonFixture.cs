@@ -92,6 +92,18 @@ namespace Octostache.Tests
         }
 
         [Fact]
+        public void JsonArrayOutsideOfBounds()
+        {
+            var variables = new VariableDictionary
+            {
+                ["Test"] = "[2,3,5,8]",
+            };
+
+            var pattern = "Alpha#{Test[4]}bet";
+            variables.Evaluate(pattern).Should().Be("Alphabet");
+        }
+
+        [Fact]
         public void JsonObjectSupportsIterator()
         {
             var variables = new VariableDictionary
