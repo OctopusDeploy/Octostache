@@ -10,22 +10,13 @@ using Nuke.Common.Utilities.Collections;
 [ShutdownDotNetAfterServerBuild]
 class Build : NukeBuild
 {
-    /// Support plugins are available for:
-    ///   - JetBrains ReSharper        https://nuke.build/resharper
-    ///   - JetBrains Rider            https://nuke.build/rider
-    ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
-    ///   - Microsoft VSCode           https://nuke.build/vscode
+    static readonly string Timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
 
-    public static int Main () => Execute<Build>(x => x.Compile);
+    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")] readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
-    readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
+    [Solution(GenerateProjects = true)] readonly Solution Solution;
 
-    [Solution(GenerateProjects = true)]
-    readonly Solution Solution;
-
-    [Parameter("Where to auto-detect the branch name - this is okay for a local build, but should not be used under CI.")]
-    readonly bool AutoDetectBranch = IsLocalBuild;
+    [Parameter("Where to auto-detect the branch name - this is okay for a local build, but should not be used under CI.")] readonly bool AutoDetectBranch = IsLocalBuild;
 
     [Parameter("Branch name for OctoVersion to use to calculate the version number. Can be set via the environment variable `OCTOVERSION_CurrentBranch`.", Name = "OCTOVERSION_CurrentBranch")]
     readonly string BranchName;
@@ -36,8 +27,6 @@ class Build : NukeBuild
     static AbsolutePath SourceDirectory => RootDirectory / "source";
     static AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
     static AbsolutePath LocalPackagesDirectory => RootDirectory / ".." / "LocalPackages";
-
-    static readonly string Timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
 
     string FullSemVer => IsLocalBuild
         ? $"{OctoVersionInfo.FullSemVer}-{Timestamp}"
@@ -117,4 +106,11 @@ class Build : NukeBuild
                     .ForEach(x => x.CopyToDirectory(LocalPackagesDirectory, ExistsPolicy.FileOverwrite));
             }
         );
+
+    /// Support plugins are available for:
+    /// - JetBrains ReSharper        https://nuke.build/resharper
+    /// - JetBrains Rider            https://nuke.build/rider
+    /// - Microsoft VisualStudio     https://nuke.build/visualstudio
+    /// - Microsoft VSCode           https://nuke.build/vscode
+    public static int Main() => Execute<Build>(x => x.Compile);
 }

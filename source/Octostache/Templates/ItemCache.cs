@@ -2,7 +2,6 @@
 #if NET462
 using System.Runtime.Caching;
 using System.Collections.Specialized;
-
 #else
 using Microsoft.Extensions.Caching.Memory;
 #endif
