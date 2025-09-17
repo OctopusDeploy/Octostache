@@ -1,7 +1,6 @@
 using System;
 using Nuke.Common;
 using Nuke.Common.CI;
-using Nuke.Common.CI.TeamCity;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.DotNet;
