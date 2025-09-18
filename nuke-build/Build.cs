@@ -1,6 +1,8 @@
 using System;
+using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.CI;
+using Nuke.Common.CI.TeamCity;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.DotNet;
@@ -35,6 +37,18 @@ class Build : NukeBuild
     string NuGetVersion => IsLocalBuild
         ? $"{OctoVersionInfo.NuGetVersion}-{Timestamp}"
         : OctoVersionInfo.NuGetVersion;
+
+    [UsedImplicitly]
+    Target CalculateVersion => _ => _
+        .OnlyWhenStatic(() => TeamCity.Instance != null)
+        .Executes(() =>
+            {
+                // Provides backwards compatibility with expected GitVersion configuration
+                TeamCity.Instance.SetConfigurationParameter("GitVersion.BranchName", BranchName);
+                TeamCity.Instance.SetConfigurationParameter("GitVersion.FullSemVer", FullSemVer);
+                TeamCity.Instance.SetConfigurationParameter("GitVersion.NuGetVersion", NuGetVersion);
+            }
+        );
 
     Target Clean => _ => _
         .Before(Restore)
@@ -97,6 +111,7 @@ class Build : NukeBuild
             }
         );
 
+    [UsedImplicitly]
     Target CopyToLocalPackages => _ => _
         .OnlyWhenStatic(() => IsLocalBuild)
         .DependsOn(Pack)
