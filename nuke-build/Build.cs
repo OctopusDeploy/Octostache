@@ -23,7 +23,10 @@ class Build : NukeBuild
     [Parameter("Branch name for OctoVersion to use to calculate the version number. Can be set via the environment variable `OCTOVERSION_CurrentBranch`.", Name = "OCTOVERSION_CurrentBranch")]
     readonly string BranchName;
 
-    [OctoVersion(UpdateBuildNumber = true, BranchMember = nameof(BranchName), AutoDetectBranchMember = nameof(AutoDetectBranch), Framework = "net9.0")]
+    [Parameter("Patch number override for OctoVersion")] readonly int? PatchNumberOverride;
+
+    [OctoVersion(UpdateBuildNumber = true, BranchMember = nameof(BranchName), AutoDetectBranchMember = nameof(AutoDetectBranch), PatchMember = nameof(PatchNumberOverride),
+        Framework = "net9.0")]
     readonly OctoVersionInfo OctoVersionInfo;
 
     static AbsolutePath SourceDirectory => RootDirectory / "source";
@@ -56,6 +59,12 @@ class Build : NukeBuild
 
                 TeamCity.Instance.SetConfigurationParameter("GitVersion.FullSemVer", FullSemVer);
                 TeamCity.Instance.SetConfigurationParameter("GitVersion.NuGetVersion", NuGetVersion);
+
+                // Make sure the patch version may be propagated to the build action
+                if (OctoVersionInfo.Patch.HasValue)
+                {
+                    TeamCity.Instance.SetConfigurationParameter("GitVersion.PatchNumber", OctoVersionInfo.Patch.Value.ToString());
+                }
             }
         );
 
