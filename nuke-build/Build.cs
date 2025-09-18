@@ -44,7 +44,16 @@ class Build : NukeBuild
         .Executes(() =>
             {
                 // Provides backwards compatibility with expected GitVersion configuration
-                TeamCity.Instance.SetConfigurationParameter("GitVersion.BranchName", BranchName);
+                if (TeamCity.Instance.IsPullRequest)
+                {
+                    // Use the actual branch name for PR builds rather than pull/xxx
+                    TeamCity.Instance.SetConfigurationParameter("GitVersion.BranchName", TeamCity.Instance.PullRequestSourceBranch);
+                }
+                else
+                {
+                    TeamCity.Instance.SetConfigurationParameter("GitVersion.BranchName", BranchName);
+                }
+
                 TeamCity.Instance.SetConfigurationParameter("GitVersion.FullSemVer", FullSemVer);
                 TeamCity.Instance.SetConfigurationParameter("GitVersion.NuGetVersion", NuGetVersion);
             }
