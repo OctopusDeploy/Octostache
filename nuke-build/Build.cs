@@ -23,11 +23,7 @@ class Build : NukeBuild
     [Parameter("Branch name for OctoVersion to use to calculate the version number. Can be set via the environment variable `OCTOVERSION_CurrentBranch`.", Name = "OCTOVERSION_CurrentBranch")]
     readonly string BranchName;
 
-    [Parameter("Patch number override for OctoVersion to use to calculate the version number. Can be set via the environment variable `OCTOVERSION_Patch`.", Name = "OCTOVERSION_Patch")]
-    readonly int? PatchNumber;
-
-    [OctoVersion(UpdateBuildNumber = true, BranchMember = nameof(BranchName), AutoDetectBranchMember = nameof(AutoDetectBranch), PatchMember = nameof(PatchNumber),
-        Framework = "net9.0")]
+    [OctoVersion(UpdateBuildNumber = true, BranchMember = nameof(BranchName), AutoDetectBranchMember = nameof(AutoDetectBranch), Framework = "net9.0")]
     readonly OctoVersionInfo OctoVersionInfo;
 
     static AbsolutePath SourceDirectory => RootDirectory / "source";
