@@ -120,6 +120,14 @@
           "type": "string",
           "description": "Branch name for OctoVersion to use to calculate the version number. Can be set via the environment variable `OCTOVERSION_CurrentBranch`"
         },
+        "OCTOVERSION_Patch": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Patch number override for OctoVersion to use to calculate the version number. Can be set via the environment variable `OCTOVERSION_Patch`",
+          "format": "int32"
+        },
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded"
