@@ -106,7 +106,7 @@
       "properties": {
         "AutoDetectBranch": {
           "type": "boolean",
-          "description": "Where to auto-detect the branch name - this is okay for a local build, but should not be used under CI"
+          "description": "Whether to auto-detect the branch name - this is okay for a local build, but should not be used under CI"
         },
         "Configuration": {
           "type": "string",
