@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!--
+    Build system is using net9.0 as tooling and SDK use net9.0
+    The project itself still targets netstandard2.1 and net462
+    This does not impact the framework used when running the tests
+    -->
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace></RootNamespace>
+    <NoWarn>CS0649;CS0169;CA1050;CA1822;CA2211;IDE1006</NoWarn>
+    <NukeRootDirectory>..</NukeRootDirectory>
+    <NukeScriptDirectory>..</NukeScriptDirectory>
+    <NukeTelemetryVersion>1</NukeTelemetryVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nuke.Common" Version="9.0.4" />
+    <PackageDownload Include="Octopus.OctoVersion.Tool" Version="[1.0.9]" />
+  </ItemGroup>
+
+</Project>
