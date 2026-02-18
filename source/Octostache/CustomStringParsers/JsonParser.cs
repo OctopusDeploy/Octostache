@@ -24,14 +24,12 @@ namespace Octostache.CustomStringParsers
                     return TryParseJValue(jvalue, out subBinding);
                 }
 
-                var jarray = obj as JArray;
-                if (jarray != null)
+                if (obj is JArray jarray)
                 {
                     return TryParseJArray(jarray, property, out subBinding);
                 }
 
-                var jobj = obj as JObject;
-                if (jobj != null)
+                if (obj is JObject jobj)
                 {
                     return TryParseJObject(jobj, property, out subBinding);
                 }
@@ -112,7 +110,7 @@ namespace Octostache.CustomStringParsers
             if (!int.TryParse(property, out index))
                 return false;
 
-            var value = index > 0 && index < jarray.Count ? jarray[index] : null;
+            var value = index < jarray.Count ? jarray[index] : null;
 
             subBinding = ConvertJTokenToBinding(value);
             return true;

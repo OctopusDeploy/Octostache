@@ -42,6 +42,7 @@ namespace Octostache.Tests
         [InlineData("{\"Hello\": \"World\"}", "#{Test.Hello}", "World", "Simple Dot Notation")]
         [InlineData("{\"Hello\": {\"World\": {\"Foo\": {\"Bar\": 12 }}}}", "#{Test[Hello][World][Foo][Bar]}", "12", "Deep")]
         [InlineData("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[1].Name}", "Bread", "Arrays")]
+        [InlineData("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[0].Name}", "Toast", "Arrays")]
         [InlineData("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", "{\"Bar\":\"11\"}", "Raw JSON returned")]
         [InlineData("{Name: \"#{Test.Value}\", Desc: \"Monkey\", Value: 12}", "#{Test.Name}", "12", "Non-Direct inner JSON")]
         public void SuccessfulJsonParsing(string json, string pattern, string expectedResult, string testName)
