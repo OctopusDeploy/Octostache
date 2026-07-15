@@ -26,7 +26,7 @@ class Build : NukeBuild
     [Parameter("Patch number override for OctoVersion")] readonly int? PatchNumberOverride;
 
     [OctoVersion(UpdateBuildNumber = true, BranchMember = nameof(BranchName), AutoDetectBranchMember = nameof(AutoDetectBranch), PatchMember = nameof(PatchNumberOverride),
-        Framework = "net9.0")]
+        Framework = "net10.0")]
     readonly OctoVersionInfo OctoVersionInfo;
 
     static AbsolutePath SourceDirectory => RootDirectory / "source";
