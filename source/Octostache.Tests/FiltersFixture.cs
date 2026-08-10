@@ -402,6 +402,136 @@ namespace Octostache.Tests
             result1.Should().Be(DateTimeOffset.Now.ToString("zz"));
         }
 
+        [Theory]
+        [InlineData("AddSeconds 30", "2030-05-22 09:05:30")]
+        [InlineData("AddSeconds -30", "2030-05-22 09:04:30")]
+        [InlineData("AddMinutes 2", "2030-05-22 09:07:00")]
+        [InlineData("AddHours 2", "2030-05-22 11:05:00")]
+        [InlineData("AddHours -2", "2030-05-22 07:05:00")]
+        [InlineData("AddHours 48", "2030-05-24 09:05:00")]
+        [InlineData("AddHours \"1.5\"", "2030-05-22 10:35:00")]
+        [InlineData("AddDays 1", "2030-05-23 09:05:00")]
+        [InlineData("AddDays 10", "2030-06-01 09:05:00")]
+        [InlineData("AddDays \"2.5\"", "2030-05-24 21:05:00")]
+        [InlineData("AddWeeks 1", "2030-05-29 09:05:00")]
+        [InlineData("AddWeeks -2", "2030-05-08 09:05:00")]
+        [InlineData("AddMonths 1", "2030-06-22 09:05:00")]
+        [InlineData("AddMonths 12", "2031-05-22 09:05:00")]
+        [InlineData("AddTimeSpan 02:00:00", "2030-05-22 11:05:00")]
+        [InlineData("AddTimeSpan \"2.12:00:00\"", "2030-05-24 21:05:00")]
+        public void DateAddFiltersShiftTheDate(string filter, string expected)
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            var result = Evaluate($"#{{Date | {filter} | Format \"yyyy-MM-dd HH:mm:ss\"}}", dict);
+            result.Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData("2030-01-31", "AddMonths 1", "2030-02-28")] // clamped, February is short
+        [InlineData("2032-01-31", "AddMonths 1", "2032-02-29")] // clamped to a leap year February
+        [InlineData("2030-03-31", "AddMonths -1", "2030-02-28")] // clamping applies going backwards too
+        [InlineData("2030-01-31", "AddMonths 2", "2030-03-31")] // no clamping needed
+        public void AddMonthsClampsToTheEndOfAShorterMonth(string date, string filter, string expected)
+        {
+            var dict = new Dictionary<string, string> { { "Date", date } };
+
+            var result = Evaluate($"#{{Date | {filter} | Format \"yyyy-MM-dd\"}}", dict);
+            result.Should().Be(expected);
+        }
+
+        [Fact]
+        public void AddMonthsTakesWholeMonthsOnly()
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            // Half a month has no fixed meaning, so a fractional amount is rejected rather than rounded
+            Evaluate("#{Date | AddMonths \"1.5\"}", dict)
+                .Replace("\"", "")
+                .Should().Be("#{Date | AddMonths 1.5}");
+        }
+
+        [Fact]
+        public void AddTimeSpanLeadingFieldOverTwentyThreeIsDaysNotHours()
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            // In a TimeSpan the hours field only holds 0-23, so once the leading field exceeds that it is
+            // read as days: AddTimeSpan 48:00:00 is 48 days, where AddHours 48 is 48 hours. Pinned here
+            // because it is silent, not an error.
+            Evaluate("#{Date | AddTimeSpan 48:00:00 | Format \"yyyy-MM-dd HH:mm:ss\"}", dict)
+                .Should().Be("2030-07-09 09:05:00");
+
+            Evaluate("#{Date | AddHours 48 | Format \"yyyy-MM-dd HH:mm:ss\"}", dict)
+                .Should().Be("2030-05-24 09:05:00");
+        }
+
+        [Fact]
+        public void AddTimeSpanDayFormHasToBeQuoted()
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            // '.' is not a valid character in an unquoted filter argument
+            Evaluate("#{Date | AddTimeSpan 2.00:00:00}", dict)
+                .Should().Be("#{Date | AddTimeSpan 2.00:00:00}");
+
+            Evaluate("#{Date | AddTimeSpan \"2.00:00:00\"}", dict)
+                .Should().Be("2030-05-24T09:05:00.0000000");
+        }
+
+        [Fact]
+        public void DateAddFiltersCanBeChainedTogether()
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            var result = Evaluate("#{Date | AddMonths 1 | AddDays 1 | AddHours 2 | Format \"yyyy-MM-dd HH:mm:ss\"}", dict);
+            result.Should().Be("2030-06-23 11:05:00");
+        }
+
+        [Theory]
+        [InlineData("AddHours 2", "2030-05-22T11:05:00.0000000+02:00")]
+        [InlineData("AddMonths 1", "2030-06-22T09:05:00.0000000+02:00")]
+        public void DateAddFiltersKeepAnExplicitOffset(string filter, string expected)
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22T09:05:00+02:00" } };
+
+            var result = Evaluate($"#{{Date | {filter}}}", dict);
+            result.Should().Be(expected);
+        }
+
+        [Fact]
+        public void DateAddFiltersCanBeChainedOffNowDate()
+        {
+            var result = Evaluate("#{ | NowDate | AddHours 2}", new Dictionary<string, string>());
+            DateTime.Parse(result).Should().BeCloseTo(DateTime.Now.AddHours(2), 60000);
+        }
+
+        [Fact]
+        public void DateAddFiltersOnNowDateUtcStayInUtc()
+        {
+            var result = Evaluate("#{ | NowDateUtc | AddHours 2 | Format DateTimeOffset zz}", new Dictionary<string, string>());
+            result.Should().Be("+00");
+        }
+
+        [Theory]
+        [InlineData("#{Date | AddHours}")] // no amount
+        [InlineData("#{Date | AddHours 2 3}")] // too many arguments
+        [InlineData("#{Date | AddHours abc}")] // amount isn't a number
+        [InlineData("#{Date | AddDays abc}")] // amount isn't a number
+        [InlineData("#{Date | AddWeeks abc}")] // amount isn't a number
+        [InlineData("#{Date | AddMonths abc}")] // amount isn't a number
+        [InlineData("#{Date | AddTimeSpan abc}")] // not a TimeSpan
+        [InlineData("#{Invalid | AddHours 2}")] // input isn't a date
+        [InlineData("#{ | AddHours 2}")] // no input at all
+        public void DateAddFiltersWithUnusableInputAreEchoed(string template)
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" }, { "Invalid", "hello World" } };
+
+            var result = Evaluate(template, dict)
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            result.Should().Be(template);
+        }
+
         [Fact]
         public void FiltersAreAppliedInOrder()
         {
