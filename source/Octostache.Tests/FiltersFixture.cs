@@ -402,6 +402,87 @@ namespace Octostache.Tests
             result1.Should().Be(DateTimeOffset.Now.ToString("zz"));
         }
 
+        [Theory]
+        [InlineData("02:00:00", "2030-05-22 11:05:00")] // 2 hours
+        [InlineData("-02:00:00", "2030-05-22 07:05:00")] // 2 hours back
+        [InlineData("00:02:00", "2030-05-22 09:07:00")] // 2 minutes
+        [InlineData("00:00:30", "2030-05-22 09:05:30")] // 30 seconds
+        [InlineData("\"2.00:00:00\"", "2030-05-24 09:05:00")] // 2 days
+        [InlineData("\"2.12:00:00\"", "2030-05-24 21:05:00")] // 2.5 days, ie 60 hours
+        [InlineData("2", "2030-05-24 09:05:00")] // a bare number is days
+        public void AddTimeSpanShiftsTheDate(string offset, string expected)
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            var result = Evaluate($"#{{Date | AddTimeSpan {offset} | Format \"yyyy-MM-dd HH:mm:ss\"}}", dict);
+            result.Should().Be(expected);
+        }
+
+        [Fact]
+        public void AddTimeSpanLeadingFieldOverTwentyThreeIsDaysNotHours()
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            // The hours field only holds 0-23, so once the leading field exceeds that it is read as
+            // days: 48:00:00 is 48 days, not 48 hours. Pinned here because it is silent, not an error.
+            Evaluate("#{Date | AddTimeSpan 23:00:00 | Format \"yyyy-MM-dd HH:mm:ss\"}", dict)
+                .Should().Be("2030-05-23 08:05:00");
+
+            Evaluate("#{Date | AddTimeSpan 48:00:00 | Format \"yyyy-MM-dd HH:mm:ss\"}", dict)
+                .Should().Be("2030-07-09 09:05:00");
+        }
+
+        [Fact]
+        public void AddTimeSpanDayFormHasToBeQuoted()
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            // '.' is not a valid character in an unquoted filter argument
+            Evaluate("#{Date | AddTimeSpan 2.00:00:00}", dict)
+                .Should().Be("#{Date | AddTimeSpan 2.00:00:00}");
+
+            Evaluate("#{Date | AddTimeSpan \"2.00:00:00\"}", dict)
+                .Should().Be("2030-05-24T09:05:00.0000000");
+        }
+
+        [Fact]
+        public void AddTimeSpanKeepsAnExplicitOffset()
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22T09:05:00+02:00" } };
+
+            var result = Evaluate("#{Date | AddTimeSpan 02:00:00}", dict);
+            result.Should().Be("2030-05-22T11:05:00.0000000+02:00");
+        }
+
+        [Fact]
+        public void AddTimeSpanCanBeChainedOffNowDate()
+        {
+            var result = Evaluate("#{ | NowDate | AddTimeSpan 02:00:00}", new Dictionary<string, string>());
+            DateTime.Parse(result).Should().BeCloseTo(DateTime.Now.AddHours(2), 60000);
+        }
+
+        [Fact]
+        public void AddTimeSpanOnNowDateUtcStaysInUtc()
+        {
+            var result = Evaluate("#{ | NowDateUtc | AddTimeSpan 02:00:00 | Format DateTimeOffset zz}", new Dictionary<string, string>());
+            result.Should().Be("+00");
+        }
+
+        [Theory]
+        [InlineData("#{Date | AddTimeSpan}")] // no offset
+        [InlineData("#{Date | AddTimeSpan 02:00:00 03:00:00}")] // too many arguments
+        [InlineData("#{Date | AddTimeSpan abc}")] // offset isn't a TimeSpan
+        [InlineData("#{Invalid | AddTimeSpan 02:00:00}")] // input isn't a date
+        [InlineData("#{ | AddTimeSpan 02:00:00}")] // no input at all
+        public void AddTimeSpanWithUnusableInputIsEchoed(string template)
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" }, { "Invalid", "hello World" } };
+
+            var result = Evaluate(template, dict)
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            result.Should().Be(template);
+        }
+
         [Fact]
         public void FiltersAreAppliedInOrder()
         {
