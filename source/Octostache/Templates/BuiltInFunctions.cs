@@ -25,6 +25,8 @@ namespace Octostache.Templates
             { "markdowntohtml", TextEscapeFunctions.MarkdownToHtml },
             { "nowdate", DateFunction.NowDate },
             { "nowdateutc", DateFunction.NowDateUtc },
+            { "addhours", DateFunction.AddHours },
+            { "adddays", DateFunction.AddDays },
             { "format", FormatFunction.Format },
             { "match", TextComparisonFunctions.Match },
             { "replace", TextReplaceFunction.Replace },

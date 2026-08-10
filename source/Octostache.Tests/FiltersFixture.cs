@@ -402,6 +402,112 @@ namespace Octostache.Tests
             result1.Should().Be(DateTimeOffset.Now.ToString("zz"));
         }
 
+        [Theory]
+        [InlineData("2", "2030-05-22 11:05:00")]
+        [InlineData("-2", "2030-05-22 07:05:00")]
+        [InlineData("0", "2030-05-22 09:05:00")]
+        [InlineData("\"1.5\"", "2030-05-22 10:35:00")]
+        [InlineData("24", "2030-05-23 09:05:00")]
+        public void AddHoursShiftsTheDate(string amount, string expected)
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            var result = Evaluate($"#{{Date | AddHours {amount} | Format \"yyyy-MM-dd HH:mm:ss\"}}", dict);
+            result.Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData("1", "2030-05-23 09:05:00")]
+        [InlineData("-1", "2030-05-21 09:05:00")]
+        [InlineData("10", "2030-06-01 09:05:00")] // rolls over the month
+        [InlineData("\"0.5\"", "2030-05-22 21:05:00")]
+        public void AddDaysShiftsTheDate(string amount, string expected)
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            var result = Evaluate($"#{{Date | AddDays {amount} | Format \"yyyy-MM-dd HH:mm:ss\"}}", dict);
+            result.Should().Be(expected);
+        }
+
+        [Fact]
+        public void AddDaysCanBeChainedWithAddHours()
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" } };
+
+            var result = Evaluate("#{Date | AddDays 1 | AddHours 2 | Format \"yyyy-MM-dd HH:mm:ss\"}", dict);
+            result.Should().Be("2030-05-23 11:05:00");
+        }
+
+        [Fact]
+        public void AddHoursAmountCanComeFromAnotherVariable()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                { "Date", "2030-05-22 09:05:00" },
+                { "ChangeWindowHours", "8" },
+            };
+
+            // Note: a nested substitution can't be followed by another filter in the same chain
+            // (a pre-existing parser limitation that applies equally to Format, Append and Truncate),
+            // so AddHours has to be the last filter when its amount comes from a variable.
+            var result = Evaluate("#{Date | AddHours #{ChangeWindowHours}}", dict);
+            result.Should().Be("2030-05-22T17:05:00.0000000");
+        }
+
+        [Fact]
+        public void AddHoursCanBeWrappedInAVariableToVaryTheAmount()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                { "Date", "2030-05-22 09:05:00" },
+                { "EndDate", "#{Date | AddHours 8 | Format \"yyyy-MM-dd HH:mm:ss\"}" },
+            };
+
+            var result = Evaluate("#{EndDate}", dict);
+            result.Should().Be("2030-05-22 17:05:00");
+        }
+
+        [Fact]
+        public void AddHoursKeepsAnExplicitOffset()
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22T09:05:00+02:00" } };
+
+            var result = Evaluate("#{Date | AddHours 2}", dict);
+            result.Should().Be("2030-05-22T11:05:00.0000000+02:00");
+        }
+
+        [Fact]
+        public void AddHoursCanBeChainedOffNowDate()
+        {
+            var result = Evaluate("#{ | NowDate | AddHours 2}", new Dictionary<string, string>());
+            DateTime.Parse(result).Should().BeCloseTo(DateTime.Now.AddHours(2), 60000);
+        }
+
+        [Fact]
+        public void AddHoursOnNowDateUtcStaysInUtc()
+        {
+            var result = Evaluate("#{ | NowDateUtc | AddHours 2 | Format DateTimeOffset zz}", new Dictionary<string, string>());
+            result.Should().Be("+00");
+        }
+
+        [Theory]
+        [InlineData("#{Date | AddHours}")] // no amount
+        [InlineData("#{Date | AddHours 2 3}")] // too many arguments
+        [InlineData("#{Date | AddHours abc}")] // amount isn't a number
+        [InlineData("#{Invalid | AddHours 2}")] // input isn't a date
+        [InlineData("#{ | AddHours 2}")] // no input at all
+        [InlineData("#{Date | AddDays}")]
+        [InlineData("#{Date | AddDays abc}")]
+        [InlineData("#{Invalid | AddDays 2}")]
+        public void DateAddFiltersWithUnusableInputAreEchoed(string template)
+        {
+            var dict = new Dictionary<string, string> { { "Date", "2030-05-22 09:05:00" }, { "Invalid", "hello World" } };
+
+            var result = Evaluate(template, dict)
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            result.Should().Be(template);
+        }
+
         [Fact]
         public void FiltersAreAppliedInOrder()
         {
