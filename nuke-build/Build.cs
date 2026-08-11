@@ -47,15 +47,19 @@ class Build : NukeBuild
         .Executes(() =>
             {
                 // Provides backwards compatibility with expected GitVersion configuration
-                if (TeamCity.Instance.IsPullRequest)
-                {
-                    // Use the actual branch name for PR builds rather than pull/xxx
-                    TeamCity.Instance.SetConfigurationParameter("GitVersion.BranchName", TeamCity.Instance.PullRequestSourceBranch);
-                }
-                else
-                {
-                    TeamCity.Instance.SetConfigurationParameter("GitVersion.BranchName", BranchName);
-                }
+
+                // TeamCity supplies the pull request parameters as the literal "N/A" on builds that
+                // aren't from a pull request, which is enough for IsPullRequest to report true. Check
+                // the source branch is usable as well, otherwise master builds end up with a branch
+                // name of "N/A" and anything consuming it, such as Octopus create-release --gitRef,
+                // fails to resolve a git reference.
+                var pullRequestSourceBranch = TeamCity.Instance.PullRequestSourceBranch;
+                var isPullRequest = TeamCity.Instance.IsPullRequest
+                    && !string.IsNullOrWhiteSpace(pullRequestSourceBranch)
+                    && !pullRequestSourceBranch.Equals("N/A", StringComparison.OrdinalIgnoreCase);
+
+                // Use the actual branch name for PR builds rather than pull/xxx
+                TeamCity.Instance.SetConfigurationParameter("GitVersion.BranchName", isPullRequest ? pullRequestSourceBranch : BranchName);
 
                 TeamCity.Instance.SetConfigurationParameter("GitVersion.FullSemVer", FullSemVer);
                 TeamCity.Instance.SetConfigurationParameter("GitVersion.NuGetVersion", NuGetVersion);
