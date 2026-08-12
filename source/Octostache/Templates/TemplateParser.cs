@@ -35,6 +35,14 @@ namespace Octostache.Templates
         static readonly Parser<string> LDelim = Parse.String("#{").Except(Parse.String("#{/")).Text();
         static readonly Parser<string> RDelim = Parse.String("}").Text();
 
+        // The opening of an `#{elseif <expression>}` clause. Unlike `#{else}` this is only a prefix, as the
+        // expression follows it, so we require the trailing whitespace to avoid capturing something like
+        // `#{elseifSomeVariable}` which is a perfectly valid substitution today.
+        static readonly Parser<char> ElseIfDelim =
+            from leftDelim in Parse.String("#{elseif")
+            from sp in Parse.WhiteSpace
+            select sp;
+
         static readonly Parser<SubstitutionToken> Substitution =
             (from leftDelim in LDelim
                 from expression in Expression.Token()
@@ -118,15 +126,30 @@ namespace Octostache.Templates
                 from expression in ExpressionsMatch.Token().Or(LeftStringMatch.Token()).Or(RightStringMatch.Token()).Or(TruthyMatch.Token())
                 from sp2 in Parse.WhiteSpace.Many()
                 from rightDelim in RDelim
-                from truthy in Parse.Ref(() => IfTemplate)
+                // `#{elseif}` is only supported for `#{if}`. `#{unless}` swaps the truthy and falsy branches which
+                // would make the meaning of an `elseif` chain ambiguous, so it keeps its original grammar.
+                from truthy in kw == "if" ? Parse.Ref(() => IfTemplate) : Parse.Ref(() => UnlessTemplate)
+                from elseIfs in kw == "if" ? Parse.Ref(() => ElseIfClauses) : Parse.Return(Enumerable.Empty<ElseIfClause>())
                 from elseMatch in
                     (from el in Parse.String("#{else}")
                         from template in Parse.Ref(() => Template)
                         select template).Optional()
                 from end in Parse.String("#{/" + kw + "}")
-                let falsey = elseMatch.IsDefined ? elseMatch.Get() : Enumerable.Empty<TemplateToken>()
+                let elseTemplate = elseMatch.IsDefined ? elseMatch.Get() : Enumerable.Empty<TemplateToken>()
+                let falsey = FoldElseIfClauses(elseIfs, elseTemplate)
                 select kw == "if" ? new ConditionalToken(expression, truthy, falsey) : new ConditionalToken(expression, falsey, truthy))
             .WithPosition();
+
+        static readonly Parser<ElseIfClause> ElseIf =
+            (from elseIfDelim in ElseIfDelim
+                from expression in ExpressionsMatch.Token().Or(LeftStringMatch.Token()).Or(RightStringMatch.Token()).Or(TruthyMatch.Token())
+                from sp in Parse.WhiteSpace.Many()
+                from rightDelim in RDelim
+                from truthy in Parse.Ref(() => IfTemplate)
+                select new ElseIfClause(expression, truthy))
+            .WithPosition();
+
+        static readonly Parser<IEnumerable<ElseIfClause>> ElseIfClauses = ElseIf.Many();
 
         static readonly Parser<CalculationToken> Calculation =
             (from leftDelim in LDelim
@@ -252,7 +275,12 @@ namespace Octostache.Templates
         static readonly Parser<TemplateToken[]> Template =
             Token.Many().Select(tokens => tokens.ToArray());
 
+        // The body of an `#{if}` or an `#{elseif}` clause: it ends at the next `#{elseif`, the `#{else}` or the `#{/if}`.
         static readonly Parser<TemplateToken[]> IfTemplate =
+            Token.Except(Parse.String("#{else}")).Except(ElseIfDelim).Many().Select(tokens => tokens.ToArray());
+
+        // The body of an `#{unless}`, which does not support `#{elseif}`.
+        static readonly Parser<TemplateToken[]> UnlessTemplate =
             Token.Except(Parse.String("#{else}")).Many().Select(tokens => tokens.ToArray());
 
         static readonly Parser<TemplateToken[]> ContinueOnErrorsTemplate =
@@ -263,6 +291,27 @@ namespace Octostache.Templates
         static readonly ItemCache<SymbolExpression> PathCache = new ItemCache<SymbolExpression>("OctostachePath", 100, TimeSpan.FromMinutes(10));
 
         static Parser<CalculationOperator> CalculationOperator(string op, CalculationOperator @operator) => Parse.String(op).Token().Return(@operator);
+
+        /// <summary>
+        /// Desugars an `#{elseif}` chain by folding the clauses right-to-left into nested conditionals, each one
+        /// living in the falsy branch of the clause before it. The resulting tree is identical to the one produced
+        /// by hand-nesting an `#{if}` inside an `#{else}`, so nothing downstream of the parser needs to know that
+        /// `#{elseif}` exists.
+        /// </summary>
+        static IEnumerable<TemplateToken> FoldElseIfClauses(IEnumerable<ElseIfClause> clauses, IEnumerable<TemplateToken> elseTemplate)
+        {
+            var falsey = elseTemplate;
+            foreach (var clause in clauses.Reverse())
+            {
+                var conditional = new ConditionalToken(clause.Expression, clause.Template, falsey)
+                {
+                    InputPosition = clause.InputPosition,
+                };
+                falsey = new TemplateToken[] { conditional };
+            }
+
+            return falsey;
+        }
 
         static Parser<T> FollowedBy<T>(this Parser<T> parser, string lookahead)
         {
@@ -446,6 +495,26 @@ namespace Octostache.Templates
         {
             public Template? Result { get; set; }
             public string? Error { get; set; }
+        }
+
+        /// <summary>
+        /// A single parsed `#{elseif expression}template` clause. This never escapes the parser: it is folded into a
+        /// nested <see cref="ConditionalToken" /> by <see cref="FoldElseIfClauses" />.
+        /// </summary>
+        class ElseIfClause : IInputToken
+        {
+            public Position? InputPosition { get; set; }
+            public ConditionalExpressionToken Expression { get; }
+            public TemplateToken[] Template { get; }
+
+            public ElseIfClause(ConditionalExpressionToken expression, TemplateToken[] template)
+            {
+                Expression = expression;
+                Template = template;
+            }
+
+            public IEnumerable<string> GetArguments() =>
+                Expression.GetArguments().Concat(Template.SelectMany(t => t.GetArguments()));
         }
     }
 }
