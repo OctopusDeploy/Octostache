@@ -100,6 +100,8 @@ namespace Octostache.Tests
         [InlineData("#{a/b}", "a/b=Foo", "Foo")]
         [InlineData("#{a~b}", "a~b=Foo", "Foo")]
         [InlineData("#{(abc)}", "(abc)=Foo", "Foo")]
+        [InlineData("#{@a}", "@a=Foo", "Foo")]
+        [InlineData("#{a@b}", "a@b=Foo", "Foo")]
         public void AwkwardCharacters(string template, string variableDefinitions, string expectedResult)
         {
             var result = ParseVariables(variableDefinitions).Evaluate(template);

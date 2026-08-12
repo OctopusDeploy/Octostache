@@ -45,6 +45,8 @@ namespace Octostache.Tests
         [InlineData("{\"Items\": [{\"Name\": \"Toast\"}, {\"Name\": \"Bread\"}]}", "#{Test.Items[0].Name}", "Toast", "Arrays")]
         [InlineData("{\"Foo\": {\"Bar\":\"11\"}}", "#{Test.Foo}", "{\"Bar\":\"11\"}", "Raw JSON returned")]
         [InlineData("{Name: \"#{Test.Value}\", Desc: \"Monkey\", Value: 12}", "#{Test.Name}", "12", "Non-Direct inner JSON")]
+        [InlineData("{\"@type\": \"Widget\"}", "#{Test.@type}", "Widget", "Property name containing @")]
+        [InlineData("{\"@type\": \"Widget\"}", "#{Test[@type]}", "Widget", "Indexed property name containing @")]
         public void SuccessfulJsonParsing(string json, string pattern, string expectedResult, string testName)
         {
             var variables = new VariableDictionary
