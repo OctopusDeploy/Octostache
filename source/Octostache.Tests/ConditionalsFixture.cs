@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FluentAssertions;
+using Octostache.Templates;
 using Xunit;
 
 namespace Octostache.Tests
@@ -222,6 +223,236 @@ namespace Octostache.Tests
                 });
 
             result.Should().Be("elseresult");
+        }
+
+        [Fact]
+        public void ElseIfIsSupportedWhenTheElseIfBranchIsTaken()
+        {
+            var result = Evaluate("#{if First}#{FirstResult}#{elseif Second}#{SecondResult}#{else}#{ElseResult}#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "FirstResult", "first" },
+                    { "SecondResult", "second" },
+                    { "ElseResult", "else" },
+                    { "First", "false" },
+                    { "Second", "true" },
+                });
+
+            result.Should().Be("second");
+        }
+
+        [Fact]
+        public void ElseIfIsSkippedWhenTheIfBranchIsTaken()
+        {
+            var result = Evaluate("#{if First}#{FirstResult}#{elseif Second}#{SecondResult}#{else}#{ElseResult}#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "FirstResult", "first" },
+                    { "SecondResult", "second" },
+                    { "ElseResult", "else" },
+                    { "First", "true" },
+                    { "Second", "true" },
+                });
+
+            result.Should().Be("first");
+        }
+
+        [Fact]
+        public void ElseIfFallsThroughToElseWhenNothingMatches()
+        {
+            var result = Evaluate("#{if First}#{FirstResult}#{elseif Second}#{SecondResult}#{else}#{ElseResult}#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "FirstResult", "first" },
+                    { "SecondResult", "second" },
+                    { "ElseResult", "else" },
+                    { "First", "false" },
+                    { "Second", "false" },
+                });
+
+            result.Should().Be("else");
+        }
+
+        [Theory]
+        [InlineData("Development", "dev")]
+        [InlineData("Test", "test")]
+        [InlineData("Staging", "staging")]
+        [InlineData("Production", "prod")]
+        [InlineData("Sandbox", "other")]
+        public void ChainedElseIfClausesOnlyRenderTheFirstMatchingBranch(string environment, string expected)
+        {
+            var result = Evaluate("#{if Environment == \"Development\"}dev"
+                + "#{elseif Environment == \"Test\"}test"
+                + "#{elseif Environment == \"Staging\"}staging"
+                + "#{elseif Environment == \"Production\"}prod"
+                + "#{else}other#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "Environment", environment },
+                });
+
+            result.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ElseIfWithNoElseRendersNothingWhenNothingMatches()
+        {
+            var result = Evaluate("#{if First}#{FirstResult}#{elseif Second}#{SecondResult}#{elseif Third}#{ThirdResult}#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "FirstResult", "first" },
+                    { "SecondResult", "second" },
+                    { "ThirdResult", "third" },
+                    { "First", "false" },
+                    { "Second", "false" },
+                    { "Third", "false" },
+                });
+
+            result.Should().Be("");
+        }
+
+        [Theory]
+        [InlineData("#{if First}first#{elseif Octopus == \"octopus\"}second#{else}third#{/if}", "second")]
+        [InlineData("#{if First}first#{elseif Octopus != \"octopus\"}second#{else}third#{/if}", "third")]
+        [InlineData("#{if First}first#{elseif \"octopus\" == Octopus}second#{else}third#{/if}", "second")]
+        [InlineData("#{if First}first#{elseif Octopus == Compare}second#{else}third#{/if}", "second")]
+        [InlineData("#{if First}first#{elseif Second}second#{else}third#{/if}", "third")]
+        [InlineData("#{if First}first#{elseif Third}second#{else}third#{/if}", "second")]
+        [InlineData("#{if First}first#{elseif Octopus | ToUpper == \"OCTOPUS\"}second#{/if}", "second")]
+        public void ElseIfSupportsTheSameConditionsAsIf(string template, string expected)
+        {
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "First", "false" },
+                    { "Second", "false" },
+                    { "Third", "true" },
+                    { "Octopus", "octopus" },
+                    { "Compare", "octopus" },
+                });
+
+            result.Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData("#{if First}first#{elseif  Second}second#{/if}")]
+        [InlineData("#{if First}first#{elseif Second }second#{/if}")]
+        [InlineData("#{if First}first#{elseif  Second  }second#{/if}")]
+        [InlineData("#{if First}first#{elseif Second  ==  \"true\"}second#{/if}")]
+        public void ElseIfIgnoresWhitespacesCorrectly(string template)
+        {
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "First", "false" },
+                    { "Second", "true" },
+                });
+
+            result.Should().Be("second");
+        }
+
+        [Fact]
+        public void NestedConditionalsInsideAnElseIfBranchAreSupported()
+        {
+            var result = Evaluate("#{if First}first#{elseif Second}#{if Fooey == \"foo\"}nested#{else}notnested#{/if}#{else}else#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "First", "false" },
+                    { "Second", "true" },
+                    { "Fooey", "foo" },
+                });
+
+            result.Should().Be("nested");
+        }
+
+        [Fact]
+        public void NestedElseIfChainsInsideAnElseIfBranchAreSupported()
+        {
+            var result = Evaluate("#{if First}first#{elseif Second}#{if Third}third#{elseif Fourth}fourth#{else}none#{/if}#{else}else#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "First", "false" },
+                    { "Second", "true" },
+                    { "Third", "false" },
+                    { "Fourth", "true" },
+                });
+
+            result.Should().Be("fourth");
+        }
+
+        [Theory]
+        [InlineData("Development", "dev")]
+        [InlineData("Test", "test")]
+        [InlineData("Production", "other")]
+        public void ElseIfIsSupportedAcrossMultipleLines(string environment, string expected)
+        {
+            var template = "#{if Octopus.Environment.Name == \"Development\"}dev"
+                + Environment.NewLine
+                + "#{elseif Octopus.Environment.Name == \"Test\"}test"
+                + Environment.NewLine
+                + "#{else}other"
+                + Environment.NewLine
+                + "#{/if}";
+
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "Octopus.Environment.Name", environment },
+                });
+
+            result.Should().Be(expected + Environment.NewLine);
+        }
+
+        [Fact]
+        public void ElseIfIsSupportedWhenNotHaltingOnErrors()
+        {
+            var result = Evaluate("#{if First}first#{elseif Second}second#{else}else#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "First", "false" },
+                    { "Second", "true" },
+                },
+                false);
+
+            result.Should().Be("second");
+        }
+
+        [Fact]
+        public void ElseIfIsNotSupportedInsideUnless()
+        {
+            var parsed = TemplateParser.TryParseTemplate("#{unless First}first#{elseif Second == \"x\"}second#{/unless}", out _, out _);
+
+            parsed.Should().BeFalse();
+        }
+
+        [Fact]
+        public void ElseIfDesugarsToNestedConditionals()
+        {
+            // The parser folds an elseif chain into nested conditionals, so the round trip through ToString()
+            // renders the equivalent nested #{if}s rather than the original elseif text.
+            var template = TemplateParser.ParseTemplate("#{if First}first#{elseif Second}second#{else}else#{/if}");
+
+            template.ToString().Should().Be("#{if First}first#{else}#{if Second}second#{else}else#{/if}#{/if}");
+        }
+
+        [Fact]
+        public void ArgumentNamesAreExtractedFromElseIfConditionsAndBranches()
+        {
+            var result = TemplateParser.ParseTemplateAndGetArgumentNames("#{if first}#{firstResult}"
+                + "#{elseif second == \"value\"}#{secondResult}"
+                + "#{elseif third}#{thirdResult}"
+                + "#{else}#{elseResult}#{/if}");
+
+            result.Should().Contain(new[]
+            {
+                "first",
+                "firstResult",
+                "second",
+                "secondResult",
+                "third",
+                "thirdResult",
+                "elseResult",
+            });
         }
 
         [Fact]
