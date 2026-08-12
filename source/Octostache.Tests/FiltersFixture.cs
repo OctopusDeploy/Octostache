@@ -682,11 +682,19 @@ namespace Octostache.Tests
         }
 
         [Fact]
-        public void SubstringHandlesLengthIndexOutOfRange()
+        public void SubstringLengthBeyondEndReturnsWholeString()
         {
             var result = Evaluate(@"#{foo | Substring 20}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
                 .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
-            result.Should().Be("#{foo | Substring 20}");
+            result.Should().Be("Octopus Deploy");
+        }
+
+        [Fact]
+        public void SubstringStartAtEndOfStringReturnsEmpty()
+        {
+            var result = Evaluate(@"#{foo | Substring 14 5}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            result.Should().Be("");
         }
 
         [Fact]
@@ -758,6 +766,27 @@ namespace Octostache.Tests
         {
             var result = Evaluate(@"#{foo | Truncate 7}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
             result.Should().Be("Octopus...");
+        }
+
+        [Fact]
+        public void TruncateAppliesACustomSuffix()
+        {
+            var result = Evaluate(@"#{foo | Truncate 7 ""<|>""}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus<|>");
+        }
+
+        [Fact]
+        public void TruncateWithAnEmptySuffixOmitsTheEllipsis()
+        {
+            var result = Evaluate(@"#{foo | Truncate 7 """"}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus");
+        }
+
+        [Fact]
+        public void TruncateDoesNotApplyTheSuffixWhenNothingIsTruncated()
+        {
+            var result = Evaluate(@"#{foo | Truncate 50 ""<|>""}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus Deploy");
         }
 
         [Fact]

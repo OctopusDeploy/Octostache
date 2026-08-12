@@ -112,14 +112,15 @@ namespace Octostache.Templates.Functions
 
         public static string? Truncate(string? argument, string[] options)
         {
-            if (argument == null || !options.Any() || !int.TryParse(options[0], out _) || int.Parse(options[0]) < 0)
+            if (argument == null || !options.Any() || !int.TryParse(options[0], out var length) || length < 0)
             {
                 return null;
             }
 
-            var length = int.Parse(options[0]);
+            // The suffix defaults to an ellipsis for backwards compatibility. Pass "" to omit it.
+            var suffix = options.Length > 1 ? options[1] : "...";
             return length < argument.Length
-                ? $"{argument.Substring(0, length)}..."
+                ? $"{argument.Substring(0, length)}{suffix}"
                 : argument;
         }
 
