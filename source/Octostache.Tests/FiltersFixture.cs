@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
@@ -361,7 +361,7 @@ namespace Octostache.Tests
         public void NowDateReturnsNow()
         {
             var result = Evaluate("#{ | NowDate}", new Dictionary<string, string>());
-            DateTime.Parse(result).Should().BeCloseTo(DateTime.Now, 60000);
+            DateTime.Parse(result).Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(60000));
         }
 
         [Fact]
@@ -389,7 +389,7 @@ namespace Octostache.Tests
         public void NowDateReturnsNowInUtc()
         {
             var result = Evaluate("#{ | NowDateUtc}", new Dictionary<string, string>());
-            DateTimeOffset.Parse(result).Should().BeCloseTo(DateTimeOffset.UtcNow, 60000);
+            DateTimeOffset.Parse(result).Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(60000));
         }
 
         [Fact]
@@ -480,7 +480,7 @@ namespace Octostache.Tests
         public void AddHoursCanBeChainedOffNowDate()
         {
             var result = Evaluate("#{ | NowDate | AddHours 2}", new Dictionary<string, string>());
-            DateTime.Parse(result).Should().BeCloseTo(DateTime.Now.AddHours(2), 60000);
+            DateTime.Parse(result).Should().BeCloseTo(DateTime.Now.AddHours(2), TimeSpan.FromMilliseconds(60000));
         }
 
         [Fact]

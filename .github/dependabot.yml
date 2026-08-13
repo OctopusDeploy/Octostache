@@ -7,3 +7,10 @@ updates:
       time: "09:00"
       timezone: "Pacific/Auckland"
     open-pull-requests-limit: 2
+    ignore:
+      # FluentAssertions 8.0.0 moved to a paid commercial licence. Staying on 7.x
+      # is a licensing decision rather than a routine upgrade, so don't raise it
+      # automatically. Note this is an explicit version range and not
+      # `version-update:semver-major`, which would also block 5.x/6.x/7.x.
+      - dependency-name: "FluentAssertions"
+        versions: [">=8.0.0"]
