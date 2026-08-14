@@ -35,6 +35,21 @@ namespace Octostache.Tests
             result.Should().Be("2-1-18");
         }
 
+        [Fact]
+        public void TestRecursiveCustomExtension()
+        {
+            var variables = new VariableDictionary();
+            variables.Add("Foo", "Bar");
+
+            variables.AddExtension("supercoolfunc", SuperCoolFunc);
+            variables.Add("Var1", "#{Foo|supercoolfunc}");
+            variables.Add("Var2", "#{Var1}");
+
+            var result = variables.Get("Var2");
+
+            result.Should().Be("2-1-18");
+        }
+
         public static string SuperCoolFunc(string argument, string[] options)
         {
             return string.Join("-", argument.Select(c => (char.ToUpper(c) - 64).ToString()));
