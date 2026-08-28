@@ -135,5 +135,106 @@ namespace Octostache.Tests
 
             result.Should().Be("container[0]: A container[1]: B container[2]: C ");
         }
+
+        [Fact]
+        public void KeyIsAvailableWhenIndexedCollectionHasDirectValues()
+        {
+            var result = Evaluate("#{each x in Simple}[#{x.Key}]#{/each}",
+                new Dictionary<string, string>
+                {
+                    { "Simple[a]", "5" },
+                    { "Simple[b]", "7" },
+                });
+
+            result.Should().Be("[a][b]");
+        }
+
+        [Fact]
+        public void KeyIsAvailableWhenIndexedCollectionHasOnlySubProperties()
+        {
+            var result = Evaluate("#{each x in NoDirect}[#{x.Key}]#{/each}",
+                new Dictionary<string, string>
+                {
+                    { "NoDirect[a].Name", "Alpha" },
+                    { "NoDirect[b].Name", "Beta" },
+                });
+
+            result.Should().Be("[a][b]");
+        }
+
+        [Fact]
+        public void KeyIsAvailableAlongsideSubPropertiesForCertificateShapedCollections()
+        {
+            var result = Evaluate("#{each x in Cert}[#{x.Key}=#{x.Thumbprint}]#{/each}",
+                new Dictionary<string, string>
+                {
+                    { "Cert[a]", "Certificate-1" },
+                    { "Cert[a].Thumbprint", "AAA" },
+                    { "Cert[b]", "Certificate-2" },
+                    { "Cert[b].Thumbprint", "BBB" },
+                });
+
+            result.Should().Be("[a=AAA][b=BBB]");
+        }
+
+        [Theory]
+        [InlineData("#{each x in Simple}[#{x}]#{/each}", "[5][7]")]
+        [InlineData("#{each x in NoDirect}[#{x}]#{/each}", "[a][b]")]
+        [InlineData("#{each x in Cert}[#{x}]#{/each}", "[Certificate-1][Certificate-2]")]
+        public void BareIterationVariableIsUnaffectedByTheKeyBinding(string template, string expected)
+        {
+            var result = Evaluate(template,
+                new Dictionary<string, string>
+                {
+                    { "Simple[a]", "5" },
+                    { "Simple[b]", "7" },
+                    { "NoDirect[a].Name", "Alpha" },
+                    { "NoDirect[b].Name", "Beta" },
+                    { "Cert[a]", "Certificate-1" },
+                    { "Cert[a].Thumbprint", "AAA" },
+                    { "Cert[b]", "Certificate-2" },
+                    { "Cert[b].Thumbprint", "BBB" },
+                });
+
+            result.Should().Be(expected);
+        }
+
+        [Fact]
+        public void UserDefinedKeyVariableOverridesTheSynthesizedKey()
+        {
+            var result = Evaluate("#{each x in Coll}[#{x.Key}]#{/each} #{Coll[a].Key}",
+                new Dictionary<string, string>
+                {
+                    { "Coll[a]", "val-a" },
+                    { "Coll[a].Key", "user-supplied" },
+                });
+
+            result.Should().Be("[user-supplied] user-supplied");
+        }
+
+        [Fact]
+        public void UserDefinedKeyVariableOverridesTheSynthesizedKeyRegardlessOfDeclarationOrder()
+        {
+            var result = Evaluate("#{each x in Coll}[#{x.Key}]#{/each}",
+                new Dictionary<string, string>
+                {
+                    { "Coll[a].Key", "user-supplied" },
+                    { "Coll[a].Name", "Alpha" },
+                });
+
+            result.Should().Be("[user-supplied]");
+        }
+
+        [Fact]
+        public void KeyAndValueRemainAvailableForJsonBackedCollections()
+        {
+            var result = Evaluate("#{each x in Json}[#{x.Key}=#{x.Value}]#{/each}",
+                new Dictionary<string, string>
+                {
+                    { "Json", "{\"a\": \"AAA\", \"b\": \"BBB\"}" },
+                });
+
+            result.Should().Be("[a=AAA][b=BBB]");
+        }
     }
 }
