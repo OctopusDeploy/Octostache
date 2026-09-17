@@ -1013,7 +1013,7 @@ namespace Octostache.Tests
                 });
             result.Should().Be("true", "Match can handle variable options");
         }
-        
+
         [Fact]
         public void MatchWithInvalidRegex()
         {
@@ -1024,7 +1024,6 @@ namespace Octostache.Tests
                     { "regex", "d(ef" },
                 });
             result.Should().Match("[Match error:*d(ef*]", "should error ");
-            
         }
 
         [Theory]
