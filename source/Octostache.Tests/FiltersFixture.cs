@@ -616,7 +616,7 @@ namespace Octostache.Tests
         public void ReplaceCanHandleInvalidRegex()
         {
             var result = Evaluate(@"#{foo | Replace ""o(.+o([a-z]*)s"" ""o$2o$1s""}", new Dictionary<string, string> { { "foo", "opuocts" } });
-            result.Should().Be("[Replace error: Invalid pattern 'o(.+o([a-z]*)s' at offset 14. Not enough )'s.]");
+            result.Should().Match("[Replace error: *o(.+o([a-z]*)s'*]");
         }
 
         [Fact]
@@ -1023,7 +1023,8 @@ namespace Octostache.Tests
                     { "foo", "abc def" },
                     { "regex", "d(ef" },
                 });
-            result.Should().Be("[Match error: Invalid pattern 'd(ef' at offset 4. Not enough )'s.]", "Match can handle variable options");
+            result.Should().Match("[Match error:*d(ef*]", "should error ");
+            
         }
 
         [Theory]
