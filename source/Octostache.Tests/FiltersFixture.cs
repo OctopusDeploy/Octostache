@@ -616,7 +616,7 @@ namespace Octostache.Tests
         public void ReplaceCanHandleInvalidRegex()
         {
             var result = Evaluate(@"#{foo | Replace ""o(.+o([a-z]*)s"" ""o$2o$1s""}", new Dictionary<string, string> { { "foo", "opuocts" } });
-            result.Should().Match("[Replace error: *o(.+o([a-z]*)s'*]");
+            result.Should().Match("[Replace error: *o(.+o([a-z]*)s*]");
         }
 
         [Fact]
