@@ -10,7 +10,11 @@ namespace Octostache.Templates.Functions
             if (argument == null || options.Length == 0)
                 return null;
 
-            return Regex.Replace(argument, options[0], options.Length == 1 ? "" : options[1]);
+            return Regex.Replace(argument,
+                options[0],
+                options.Length == 1 ? "" : options[1],
+                RegexOptions.None,
+                RegexDefaults.MatchTimeout);
         }
     }
 }
