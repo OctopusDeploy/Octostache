@@ -549,5 +549,34 @@ namespace Octostache.Tests
 
             result.Should().Be(template);
         }
+
+        [Theory]
+        [InlineData("20", "expiring")]
+        [InlineData("40", "fine")]
+        public void ComparisonFiltersAreSupportedInConditionals(string daysUntilExpiration, string expected)
+        {
+            var result = Evaluate("#{if DaysUntilExpiration | LessThan 31}expiring#{else}fine#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "DaysUntilExpiration", daysUntilExpiration },
+                });
+
+            result.Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData("5", "low")]
+        [InlineData("50", "medium")]
+        [InlineData("500", "high")]
+        public void ComparisonFiltersAreSupportedInElseIfChains(string count, string expected)
+        {
+            var result = Evaluate("#{if Count | LessThan 10}low#{elseif Count | LessThan 100}medium#{else}high#{/if}",
+                new Dictionary<string, string>
+                {
+                    { "Count", count },
+                });
+
+            result.Should().Be(expected);
+        }
     }
 }

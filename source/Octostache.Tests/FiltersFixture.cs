@@ -1178,6 +1178,107 @@ namespace Octostache.Tests
             result.Should().Be("true", "Contains can handle variable options");
         }
 
+        [Theory]
+        [InlineData("5", "LessThan 31", "true", "Value is less than the argument")]
+        [InlineData("40", "LessThan 31", "false", "Value is greater than the argument")]
+        [InlineData("31", "LessThan 31", "false", "LessThan excludes the boundary")]
+        [InlineData("9", "LessThan 10", "true", "Comparison is numeric, not lexicographic")]
+        [InlineData("-5", "LessThan 0", "true", "Negative values compare numerically")]
+        [InlineData("1.5", "LessThan 2", "true", "Decimals compare numerically")]
+        [InlineData("1e2", "LessThan 200", "true", "Exponent notation is numeric")]
+        [InlineData(" 5 ", "LessThan 31", "true", "Surrounding whitespace is ignored")]
+        [InlineData("abc", "LessThan 31", "false", "A non-numeric value is not less than anything")]
+        [InlineData("", "LessThan 31", "false", "An empty value is not less than anything")]
+        [InlineData("5", "LessThan abc", "false", "Nothing is less than a non-numeric argument")]
+        [InlineData("5", "LessThan", "[LessThan error: no argument given]", "No argument provided")]
+        [InlineData("5", "LessThan 1 2", "[LessThan error: expected 1 argument, got 2]", "Too many arguments provided")]
+        [InlineData("1,5", "LessThan 2", "false", "Numbers use the invariant culture, so a comma is not a decimal separator")]
+        [InlineData("1,000", "LessThan 2000", "false", "Thousands separators are not accepted")]
+        public void LessThan(string inputValue, string inputFilterExpression, string expectedOutput, string because)
+        {
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
+            result.Should().Be(expectedOutput, because);
+        }
+
+        [Theory]
+        [InlineData("40", "GreaterThan 31", "true", "Value is greater than the argument")]
+        [InlineData("5", "GreaterThan 31", "false", "Value is less than the argument")]
+        [InlineData("31", "GreaterThan 31", "false", "GreaterThan excludes the boundary")]
+        [InlineData("10", "GreaterThan 9", "true", "Comparison is numeric, not lexicographic")]
+        [InlineData("abc", "GreaterThan 31", "false", "A non-numeric value is not greater than anything")]
+        [InlineData("5", "GreaterThan", "[GreaterThan error: no argument given]", "No argument provided")]
+        public void GreaterThan(string inputValue, string inputFilterExpression, string expectedOutput, string because)
+        {
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
+            result.Should().Be(expectedOutput, because);
+        }
+
+        [Theory]
+        [InlineData("5", "LessThanOrEqual 31", "true", "Value is less than the argument")]
+        [InlineData("31", "LessThanOrEqual 31", "true", "LessThanOrEqual includes the boundary")]
+        [InlineData("40", "LessThanOrEqual 31", "false", "Value is greater than the argument")]
+        [InlineData("abc", "LessThanOrEqual 31", "false", "A non-numeric value is not less than or equal to anything")]
+        [InlineData("5", "LessThanOrEqual", "[LessThanOrEqual error: no argument given]", "No argument provided")]
+        public void LessThanOrEqual(string inputValue, string inputFilterExpression, string expectedOutput, string because)
+        {
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
+            result.Should().Be(expectedOutput, because);
+        }
+
+        [Theory]
+        [InlineData("40", "GreaterThanOrEqual 31", "true", "Value is greater than the argument")]
+        [InlineData("31", "GreaterThanOrEqual 31", "true", "GreaterThanOrEqual includes the boundary")]
+        [InlineData("5", "GreaterThanOrEqual 31", "false", "Value is less than the argument")]
+        [InlineData("abc", "GreaterThanOrEqual 31", "false", "A non-numeric value is not greater than or equal to anything")]
+        [InlineData("5", "GreaterThanOrEqual", "[GreaterThanOrEqual error: no argument given]", "No argument provided")]
+        public void GreaterThanOrEqual(string inputValue, string inputFilterExpression, string expectedOutput, string because)
+        {
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
+            result.Should().Be(expectedOutput, because);
+        }
+
+        [Theory]
+        [InlineData("LessThan 31", "false", "NaN is never less than a number")]
+        [InlineData("GreaterThanOrEqual 31", "false", "NaN is never greater than or equal to a number")]
+        public void ComparisonsFollowDoubleSemanticsForNaN(string inputFilterExpression, string expectedOutput, string because)
+        {
+            var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", "NaN" } });
+            result.Should().Be(expectedOutput, because);
+        }
+
+        [Fact]
+        public void LessThanWithVariableOptions()
+        {
+            var result = Evaluate("#{foo | LessThan #{limit}}",
+                new Dictionary<string, string>
+                {
+                    { "foo", "5" },
+                    { "limit", "31" },
+                });
+            result.Should().Be("true", "LessThan can handle variable options");
+        }
+
+        [Fact]
+        public void ComparisonOnAMissingVariableIsLeftUnevaluated()
+        {
+            var result = Evaluate("#{missing | LessThan 31}", new Dictionary<string, string> { { "foo", "5" } });
+            result.Should().Be("#{missing | LessThan \"31\"}", "an unresolved variable is reported as a missing token rather than compared");
+        }
+
+        [Fact]
+        public void ComparisonFilterNamesAreCaseInsensitive()
+        {
+            var result = Evaluate("#{foo | lessthan 31}", new Dictionary<string, string> { { "foo", "5" } });
+            result.Should().Be("true", "filter names are matched case-insensitively");
+        }
+
+        [Fact]
+        public void ComparisonFiltersCanBeChained()
+        {
+            var result = Evaluate("#{foo | Trim | LessThan 31}", new Dictionary<string, string> { { "foo", "  5  " } });
+            result.Should().Be("true", "comparison filters compose with other filters");
+        }
+
         [Fact]
         public void AppendDoesNotRequireAnArgument()
         {

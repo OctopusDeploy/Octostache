@@ -50,6 +50,34 @@ The suffix is only appended when the value is actually longer than `<length>`.
 
 A `<startIndex>` past the end of the value is still an error, and leaves the expression unevaluated.
 
+### Comparison filters
+
+`LessThan`, `LessThanOrEqual`, `GreaterThan` and `GreaterThanOrEqual` compare a value to a single argument and evaluate to `true` or `false`:
+
+```
+#{DaysUntilExpiration | LessThan 31}              // true, when DaysUntilExpiration is 20
+#{DaysUntilExpiration | GreaterThanOrEqual 31}    // false, when DaysUntilExpiration is 20
+```
+
+Because they are filters, they work anywhere a variable expression does — including as a run condition on its own — and they compose with conditionals and other filters:
+
+```
+#{if DaysUntilExpiration | LessThan 31}Expiring soon#{/if}
+#{Total | Trim | GreaterThan 100}
+```
+
+Both sides are parsed as numbers using the invariant culture, so `.` is always the decimal separator and thousands separators are not accepted.
+
+The three ways a comparison can fail are deliberately distinct, so that a comparison used as a run condition never fails open:
+
+```
+#{Total | LessThan "abc"}   // false      - a value that is not a number satisfies no comparison
+#{Missing | LessThan 31}    // unevaluated, and reported as a missing token
+#{Total | LessThan}         // [LessThan error: no argument given]
+```
+
+Passing the wrong number of arguments is a mistake in the template that no value could make valid, so it is reported as an error rather than compared as `false`.
+
 ## Contributing
 🐙 We welcome Pull Requests ❤️🧑‍💻
 

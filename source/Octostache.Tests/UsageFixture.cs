@@ -655,6 +655,45 @@ namespace Octostache.Tests
             result.Should().BeTrue();
         }
 
+        // A comparison filter is truthy in its own right, so it can be used directly as a run condition.
+        [Theory]
+        [InlineData("20", true)]
+        [InlineData("40", false)]
+        public void ShouldEvaluateAComparisonFilterAsARunCondition(string daysUntilExpiration, bool expected)
+        {
+            var result = EvaluateTruthy("#{Octopus.Action[Get Days Until Expiration].Output.DaysUntilExpiration | LessThan 31}",
+                new Dictionary<string, string>
+                {
+                    { "Octopus.Action[Get Days Until Expiration].Output.DaysUntilExpiration", daysUntilExpiration },
+                });
+
+            result.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ShouldEvaluateANonNumericComparisonRunConditionToFalse()
+        {
+            var result = EvaluateTruthy("#{DaysUntilExpiration | LessThan 31}",
+                new Dictionary<string, string>
+                {
+                    { "DaysUntilExpiration", "not a number" },
+                });
+
+            result.Should().BeFalse("a value that is not a number compares as false, so the step does not run");
+        }
+
+        [Fact]
+        public void ShouldEvaluateAComparisonOnAMissingVariableToFalse()
+        {
+            var result = EvaluateTruthy("#{Mispelled | LessThan 31}",
+                new Dictionary<string, string>
+                {
+                    { "DaysUntilExpiration", "20" },
+                });
+
+            result.Should().BeFalse("a missing variable leaves the token unevaluated, so a typo does not silently pass");
+        }
+
         [Fact]
         public void CanGetIndexes()
         {
