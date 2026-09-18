@@ -187,6 +187,7 @@ namespace Octostache.Templates
         static readonly Parser<CalculationOperator> Subtract = CalculationOperator("-", Templates.CalculationOperator.Subtract);
         static readonly Parser<CalculationOperator> Multiply = CalculationOperator("*", Templates.CalculationOperator.Multiply);
         static readonly Parser<CalculationOperator> Divide = CalculationOperator("/", Templates.CalculationOperator.Divide);
+        static readonly Parser<CalculationOperator> Modulo = CalculationOperator("%", Templates.CalculationOperator.Modulo);
 
         static readonly Parser<ICalculationComponent> CalculationFactor =
             (from lparen in Parse.Char('(')
@@ -196,7 +197,7 @@ namespace Octostache.Templates
             .XOr(CalculationValue);
 
         static readonly Parser<ICalculationComponent> CalculationTerm =
-            Parse.ChainOperator(Multiply.Or(Divide), CalculationFactor, (op, left, right) => new CalculationOperation(left, op, right));
+            Parse.ChainOperator(Multiply.Or(Divide).Or(Modulo), CalculationFactor, (op, left, right) => new CalculationOperation(left, op, right));
 
         static readonly Parser<ICalculationComponent> CalculationExpression =
             Parse.ChainOperator(Add.Or(Subtract), CalculationTerm, (op, left, right) => new CalculationOperation(left, op, right));

@@ -85,6 +85,7 @@ namespace Octostache.Templates
                 CalculationOperator.Subtract => "-",
                 CalculationOperator.Multiply => "*",
                 CalculationOperator.Divide => "/",
+                CalculationOperator.Modulo => "%",
                 _ => throw new ArgumentOutOfRangeException(),
             };
 
@@ -104,8 +105,40 @@ namespace Octostache.Templates
                 CalculationOperator.Subtract => leftValue - rightValue,
                 CalculationOperator.Multiply => leftValue * rightValue,
                 CalculationOperator.Divide => leftValue / rightValue,
+                CalculationOperator.Modulo => Modulo(leftValue.Value, rightValue.Value),
                 _ => throw new ArgumentOutOfRangeException(),
             };
+        }
+
+        // Modulo is only defined over whole numbers, so both sides are taken as a long and a long
+        // comes back out. Fractional operands, operands too large to be a long, and a zero divisor
+        // have no answer - returning null leaves the raw template echoed, as an unresolvable
+        // variable does.
+        static double? Modulo(double left, double right)
+        {
+            if (!TryAsWholeNumber(left, out var leftWhole) || !TryAsWholeNumber(right, out var rightWhole))
+                return null;
+
+            if (rightWhole == 0)
+                return null;
+
+            return leftWhole % rightWhole;
+        }
+
+        static bool TryAsWholeNumber(double value, out long result)
+        {
+            result = 0;
+
+            if (double.IsNaN(value) || double.IsInfinity(value) || value % 1 != 0)
+                return false;
+
+            // long.MaxValue is not exactly representable as a double and rounds up to 2^63, so the
+            // upper bound has to be exclusive to avoid overflowing the cast.
+            if (value < long.MinValue || value >= 9223372036854775808d)
+                return false;
+
+            result = (long) value;
+            return true;
         }
 
         public IEnumerable<string> GetArguments() => Left.GetArguments().Concat(Right.GetArguments());
@@ -125,5 +158,6 @@ namespace Octostache.Templates
         Subtract,
         Multiply,
         Divide,
+        Modulo,
     }
 }
