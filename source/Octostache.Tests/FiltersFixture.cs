@@ -706,6 +706,30 @@ namespace Octostache.Tests
         }
 
         [Fact]
+        public void SubstringWithExplicitStartAndLengthBeyondEndReturnsWholeString()
+        {
+            var result = Evaluate(@"#{foo | Substring 0 20}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            result.Should().Be("Octopus Deploy");
+        }
+
+        [Fact]
+        public void SubstringWithLengthFarBeyondEndReturnsRemainderOfString()
+        {
+            var result = Evaluate(@"#{foo | Substring 8 100}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            result.Should().Be("Deploy");
+        }
+
+        [Fact]
+        public void SubstringHandlesStartIndexJustPastEndOfString()
+        {
+            var result = Evaluate(@"#{foo | Substring 15 1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
+                .Replace("\"", ""); // function parameters have quotes added when evaluated back to a string, so we need to remove them
+            result.Should().Be("#{foo | Substring 15 1}");
+        }
+
+        [Fact]
         public void SubstringHandlesNegativeValueForLength()
         {
             var result = Evaluate(@"#{foo | Substring -1}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } })
@@ -787,6 +811,56 @@ namespace Octostache.Tests
         {
             var result = Evaluate(@"#{foo | Truncate 50 ""<|>""}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
             result.Should().Be("Octopus Deploy");
+        }
+
+        [Fact]
+        public void TruncateWithZeroLengthKeepsOnlyTheSuffix()
+        {
+            var result = Evaluate(@"#{foo | Truncate 0}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("...");
+        }
+
+        [Fact]
+        public void TruncateWithZeroLengthAndAnEmptySuffixReturnsNothing()
+        {
+            var result = Evaluate(@"#{foo | Truncate 0 """"}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("");
+        }
+
+        [Fact]
+        public void TruncateSuffixCanContainWhitespace()
+        {
+            var result = Evaluate(@"#{foo | Truncate 7 "" (more)""}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus (more)");
+        }
+
+        [Fact]
+        public void TruncateSuffixCanBeASingleSpace()
+        {
+            var result = Evaluate(@"#{foo | Truncate 7 "" ""}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus ");
+        }
+
+        [Fact]
+        public void TruncateSuffixCanContainQuotesWhenEscaped()
+        {
+            // The quoted form can't carry a `"` of its own, so the escaped form (\"...\") is the way to do it
+            var result = Evaluate(@"#{foo | Truncate 7 \""a""b\""}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be(@"Octopusa""b");
+        }
+
+        [Fact]
+        public void TruncateWithAnEmptySuffixOnAnEmptyVariableReturnsNothing()
+        {
+            var result = Evaluate(@"#{foo | Truncate 5 """"}", new Dictionary<string, string> { { "foo", "" } });
+            result.Should().Be("");
+        }
+
+        [Fact]
+        public void TruncateWithAnEmptySuffixCanBeChained()
+        {
+            var result = Evaluate(@"#{foo | Truncate 8 """" | Trim}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("Octopus");
         }
 
         [Fact]
