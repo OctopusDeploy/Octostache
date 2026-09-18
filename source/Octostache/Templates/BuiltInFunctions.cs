@@ -53,6 +53,7 @@ namespace Octostache.Templates
             { "sha256", HashFunction.Sha256 },
             { "sha384", HashFunction.Sha384 },
             { "sha512", HashFunction.Sha512 },
+            { "hashbucket", HashBucketFunction.HashBucket },
             { "null", NullFunction.Null },
         };
 

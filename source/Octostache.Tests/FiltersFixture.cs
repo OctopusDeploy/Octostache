@@ -1601,6 +1601,76 @@ namespace Octostache.Tests
             resultReversed.Should().Be(expectedHash);
         }
 
+        [Theory]
+        [InlineData("#{foo | HashBucket}", "[HashBucket error: expected a single bucket count]")]
+        [InlineData("#{foo | HashBucket 8 extra}", "[HashBucket error: expected a single bucket count]")]
+        [InlineData("#{foo | HashBucket 0}", "[HashBucket error: bucket count '0' is not a positive integer]")]
+        [InlineData("#{foo | HashBucket -1}", "[HashBucket error: bucket count '-1' is not a positive integer]")]
+        [InlineData("#{foo | HashBucket bar}", "[HashBucket error: bucket count 'bar' is not a positive integer]")]
+        // An unquoted "1.5" is not a single option as far as the parser is concerned, so quote it to reach the filter
+        [InlineData(@"#{foo | HashBucket ""1.5""}", "[HashBucket error: bucket count '1.5' is not a positive integer]")]
+        public void HashBucketWithAnInvalidBucketCountReturnsAnError(string template, string expectedError)
+        {
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", "bar" } });
+            result.Should().Be(expectedError);
+        }
+
+        [Fact]
+        public void HashBucketReportsAnInvalidBucketCountEvenWhenTheInputIsMissing()
+        {
+            var result = Evaluate("#{foo | HashBucket bar}", new Dictionary<string, string>(), false);
+            result.Should().Be("[HashBucket error: bucket count 'bar' is not a positive integer]");
+        }
+
+        [Theory]
+        [InlineData("Octopus Deploy", 8, "7")]
+        [InlineData("foo", 8, "3")]
+        [InlineData("bar", 8, "6")]
+        [InlineData("tenant-a", 4, "3")]
+        [InlineData("Octopus Deploy", 1, "0")]
+        public void HashBucketReturnsAStableKnownBucket(string input, int buckets, string expectedBucket)
+        {
+            var template = $"#{{foo | HashBucket {buckets}}}";
+            var result = Evaluate(template, new Dictionary<string, string> { { "foo", input } });
+            result.Should().Be(expectedBucket);
+        }
+
+        [Fact]
+        public void HashBucketReturnsEmptyStringForEmptyInput()
+        {
+            var result = Evaluate("#{foo | HashBucket 8}", new Dictionary<string, string> { { "foo", "" } });
+            result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void HashBucketReturnsEmptyStringForMissingInput()
+        {
+            var result = Evaluate("#{foo | HashBucket 8}", new Dictionary<string, string>(), false);
+            result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void HashBucketSpreadsValuesAcrossEveryBucket()
+        {
+            var counts = new int[8];
+            for (var i = 0; i < 200; i++)
+            {
+                var result = Evaluate("#{foo | HashBucket 8}", new Dictionary<string, string> { { "foo", $"tenant-{i}" } });
+                counts[int.Parse(result)]++;
+            }
+
+            counts.Should().OnlyContain(count => count > 0, "every bucket should receive at least one of 200 distinct values");
+            counts.Should().OnlyContain(count => count < 50, "no bucket should take more than twice its fair share of 200 distinct values");
+            counts.Sum().Should().Be(200);
+        }
+
+        [Fact]
+        public void HashBucketCanBeChained()
+        {
+            var result = Evaluate(@"#{foo | HashBucket 4 | Prepend ""pool-""}", new Dictionary<string, string> { { "foo", "Octopus Deploy" } });
+            result.Should().Be("pool-3");
+        }
+
         class TestDocument
         {
             // ReSharper disable once UnusedAutoPropertyAccessor.Local
