@@ -679,7 +679,7 @@ namespace Octostache.Tests
                     { "DaysUntilExpiration", "not a number" },
                 });
 
-            result.Should().BeFalse("an uncomparable value leaves the token unevaluated, which is not truthy");
+            result.Should().BeFalse("a value that is not a number compares as false, so the step does not run");
         }
 
         [Fact]

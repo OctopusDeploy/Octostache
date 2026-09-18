@@ -66,7 +66,17 @@ Because they are filters, they work anywhere a variable expression does — incl
 #{Total | Trim | GreaterThan 100}
 ```
 
-Both sides are parsed as numbers using the invariant culture, so `.` is always the decimal separator and thousands separators are not accepted. If either side is not a number the expression is left unevaluated, which is not truthy.
+Both sides are parsed as numbers using the invariant culture, so `.` is always the decimal separator and thousands separators are not accepted.
+
+The three ways a comparison can fail are deliberately distinct, so that a comparison used as a run condition never fails open:
+
+```
+#{Total | LessThan "abc"}   // false      - a value that is not a number satisfies no comparison
+#{Missing | LessThan 31}    // unevaluated, and reported as a missing token
+#{Total | LessThan}         // [LessThan error: no argument given]
+```
+
+Passing the wrong number of arguments is a mistake in the template that no value could make valid, so it is reported as an error rather than compared as `false`.
 
 ## Contributing
 🐙 We welcome Pull Requests ❤️🧑‍💻

@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace Octostache.Templates.Functions
 {
@@ -17,13 +18,23 @@ namespace Octostache.Templates.Functions
         public static string? GreaterThanOrEqual(string? argument, string[] options)
             => Compare(argument, options, (left, right) => left >= right);
 
-        static string? Compare(string? argument, string[] options, Func<double, double, bool> comparer)
+        // The caller is captured so that Error.Format reports the filter the author actually wrote
+        // (`[LessThan error: ...]`) rather than the name of this helper.
+        static string? Compare(string? argument, string[] options, Func<double, double, bool> comparer, [CallerMemberName] string? caller = null)
         {
-            if (argument == null || options.Length != 1)
+            // Being given the wrong number of arguments is a mistake in the template itself, which no value could
+            // make valid, so it is reported as an error rather than silently comparing as false.
+            if (options.Length != 1)
+                return Error.Format(options.Length == 0 ? "no argument given" : $"expected 1 argument, got {options.Length}", caller: caller);
+
+            // An unresolved variable is left to the missing token machinery, consistent with every other filter, so
+            // that a misspelled variable name is reported instead of quietly comparing as false.
+            if (argument == null)
                 return null;
 
+            // A value that is present but not a number cannot satisfy any comparison, so it compares as false.
             if (!TryParseNumber(argument, out var left) || !TryParseNumber(options[0], out var right))
-                return null;
+                return bool.FalseString.ToLowerInvariant();
 
             return comparer(left, right).ToString().ToLowerInvariant();
         }

@@ -1187,13 +1187,13 @@ namespace Octostache.Tests
         [InlineData("1.5", "LessThan 2", "true", "Decimals compare numerically")]
         [InlineData("1e2", "LessThan 200", "true", "Exponent notation is numeric")]
         [InlineData(" 5 ", "LessThan 31", "true", "Surrounding whitespace is ignored")]
-        [InlineData("abc", "LessThan 31", "#{foo | LessThan \"31\"}", "Non-numeric value is not comparable")]
-        [InlineData("", "LessThan 31", "#{foo | LessThan \"31\"}", "Empty value is not comparable")]
-        [InlineData("5", "LessThan abc", "#{foo | LessThan \"abc\"}", "Non-numeric argument is not comparable")]
-        [InlineData("5", "LessThan", "#{foo | LessThan}", "No argument provided")]
-        [InlineData("5", "LessThan 1 2", "#{foo | LessThan \"1\" \"2\"}", "Too many arguments provided")]
-        [InlineData("1,5", "LessThan 2", "#{foo | LessThan \"2\"}", "Numbers use the invariant culture, so a comma is not a decimal separator")]
-        [InlineData("1,000", "LessThan 2000", "#{foo | LessThan \"2000\"}", "Thousands separators are not accepted")]
+        [InlineData("abc", "LessThan 31", "false", "A non-numeric value is not less than anything")]
+        [InlineData("", "LessThan 31", "false", "An empty value is not less than anything")]
+        [InlineData("5", "LessThan abc", "false", "Nothing is less than a non-numeric argument")]
+        [InlineData("5", "LessThan", "[LessThan error: no argument given]", "No argument provided")]
+        [InlineData("5", "LessThan 1 2", "[LessThan error: expected 1 argument, got 2]", "Too many arguments provided")]
+        [InlineData("1,5", "LessThan 2", "false", "Numbers use the invariant culture, so a comma is not a decimal separator")]
+        [InlineData("1,000", "LessThan 2000", "false", "Thousands separators are not accepted")]
         public void LessThan(string inputValue, string inputFilterExpression, string expectedOutput, string because)
         {
             var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
@@ -1205,8 +1205,8 @@ namespace Octostache.Tests
         [InlineData("5", "GreaterThan 31", "false", "Value is less than the argument")]
         [InlineData("31", "GreaterThan 31", "false", "GreaterThan excludes the boundary")]
         [InlineData("10", "GreaterThan 9", "true", "Comparison is numeric, not lexicographic")]
-        [InlineData("abc", "GreaterThan 31", "#{foo | GreaterThan \"31\"}", "Non-numeric value is not comparable")]
-        [InlineData("5", "GreaterThan", "#{foo | GreaterThan}", "No argument provided")]
+        [InlineData("abc", "GreaterThan 31", "false", "A non-numeric value is not greater than anything")]
+        [InlineData("5", "GreaterThan", "[GreaterThan error: no argument given]", "No argument provided")]
         public void GreaterThan(string inputValue, string inputFilterExpression, string expectedOutput, string because)
         {
             var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
@@ -1217,8 +1217,8 @@ namespace Octostache.Tests
         [InlineData("5", "LessThanOrEqual 31", "true", "Value is less than the argument")]
         [InlineData("31", "LessThanOrEqual 31", "true", "LessThanOrEqual includes the boundary")]
         [InlineData("40", "LessThanOrEqual 31", "false", "Value is greater than the argument")]
-        [InlineData("abc", "LessThanOrEqual 31", "#{foo | LessThanOrEqual \"31\"}", "Non-numeric value is not comparable")]
-        [InlineData("5", "LessThanOrEqual", "#{foo | LessThanOrEqual}", "No argument provided")]
+        [InlineData("abc", "LessThanOrEqual 31", "false", "A non-numeric value is not less than or equal to anything")]
+        [InlineData("5", "LessThanOrEqual", "[LessThanOrEqual error: no argument given]", "No argument provided")]
         public void LessThanOrEqual(string inputValue, string inputFilterExpression, string expectedOutput, string because)
         {
             var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
@@ -1229,8 +1229,8 @@ namespace Octostache.Tests
         [InlineData("40", "GreaterThanOrEqual 31", "true", "Value is greater than the argument")]
         [InlineData("31", "GreaterThanOrEqual 31", "true", "GreaterThanOrEqual includes the boundary")]
         [InlineData("5", "GreaterThanOrEqual 31", "false", "Value is less than the argument")]
-        [InlineData("abc", "GreaterThanOrEqual 31", "#{foo | GreaterThanOrEqual \"31\"}", "Non-numeric value is not comparable")]
-        [InlineData("5", "GreaterThanOrEqual", "#{foo | GreaterThanOrEqual}", "No argument provided")]
+        [InlineData("abc", "GreaterThanOrEqual 31", "false", "A non-numeric value is not greater than or equal to anything")]
+        [InlineData("5", "GreaterThanOrEqual", "[GreaterThanOrEqual error: no argument given]", "No argument provided")]
         public void GreaterThanOrEqual(string inputValue, string inputFilterExpression, string expectedOutput, string because)
         {
             var result = Evaluate($"#{{foo | {inputFilterExpression}}}", new Dictionary<string, string> { { "foo", inputValue } });
@@ -1256,6 +1256,13 @@ namespace Octostache.Tests
                     { "limit", "31" },
                 });
             result.Should().Be("true", "LessThan can handle variable options");
+        }
+
+        [Fact]
+        public void ComparisonOnAMissingVariableIsLeftUnevaluated()
+        {
+            var result = Evaluate("#{missing | LessThan 31}", new Dictionary<string, string> { { "foo", "5" } });
+            result.Should().Be("#{missing | LessThan \"31\"}", "an unresolved variable is reported as a missing token rather than compared");
         }
 
         [Fact]
