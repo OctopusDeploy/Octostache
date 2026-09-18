@@ -173,7 +173,7 @@ namespace Octostache.Templates.Functions
                 return null;
 
             if (!options.Any())
-                return $"[{nameof(UriPart)} error: no argument given]";
+                return Error.Format("no argument given");
 
             if (!Uri.TryCreate(argument, UriKind.RelativeOrAbsolute, out var uri))
                 return argument;
@@ -225,12 +225,12 @@ namespace Octostache.Templates.Functions
                     case "userinfo":
                         return uri.UserInfo;
                     default:
-                        return $"[{nameof(UriPart)} {options[0]} error: argument '{options[0]}' not supported]";
+                        return Error.Format($"argument '{options[0]}' not supported", options[0]);
                 }
             }
             catch (Exception e)
             {
-                return $"[{nameof(UriPart)} {options[0]} error: {e.Message}]";
+                return Error.Format(e, options[0]);
             }
         }
 

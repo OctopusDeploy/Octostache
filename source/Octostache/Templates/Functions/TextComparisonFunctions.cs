@@ -10,7 +10,14 @@ namespace Octostache.Templates.Functions
             if (argument == null || options.Length != 1)
                 return null;
 
-            return Regex.Match(argument, options[0]).Success.ToString().ToLowerInvariant();
+            try
+            {
+                return Regex.Match(argument, options[0]).Success.ToString().ToLowerInvariant();
+            }
+            catch (ArgumentException ex)
+            {
+                return Error.Format(ex.Message);
+            }
         }
 
         public static string? StartsWith(string? argument, string[] options)
