@@ -23,6 +23,33 @@ var eval = variables.Evaluate("#{Url}/foo");  // http://web01:10933/foo
 
 More examples can be found in [UsageFixture](https://github.com/OctopusDeploy/Octostache/blob/master/source/Octostache.Tests/UsageFixture.cs). 
 
+## Filters
+
+The full list of filters is in the [variable filters documentation](https://octopus.com/docs/projects/variables/variable-filters). A couple of behaviours worth calling out here:
+
+### Truncate
+
+`Truncate <length>` shortens a value and appends an ellipsis. The suffix is configurable via an optional second option, so pass an empty string to truncate without any suffix:
+
+```
+#{MyVariable | Truncate 7}            // Octopus...
+#{MyVariable | Truncate 7 ""}         // Octopus
+#{MyVariable | Truncate 7 " (more)"}  // Octopus (more)
+```
+
+The suffix is only appended when the value is actually longer than `<length>`.
+
+### Substring
+
+`Substring <length>` and `Substring <startIndex> <length>` both clamp the length to what remains in the value, so asking for more characters than are available returns the rest of the string rather than failing:
+
+```
+#{MyVariable | Substring 100}    // Octopus Deploy
+#{MyVariable | Substring 8 100}  // Deploy
+```
+
+A `<startIndex>` past the end of the value is still an error, and leaves the expression unevaluated.
+
 ## Contributing
 🐙 We welcome Pull Requests ❤️🧑‍💻
 
