@@ -48,6 +48,7 @@ namespace Octostache.Templates
             { "versionmetadata", VersionParseFunction.VersionMetadata },
             { "append", TextManipulationFunction.Append },
             { "prepend", TextManipulationFunction.Prepend },
+            { "rsaencrypt", TextEncryptFunction.RsaEncrypt },
             { "md5", HashFunction.Md5 },
             { "sha1", HashFunction.Sha1 },
             { "sha256", HashFunction.Sha256 },
